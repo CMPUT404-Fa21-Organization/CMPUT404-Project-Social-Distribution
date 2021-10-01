@@ -18,8 +18,8 @@ from . import views
 
 urlpatterns = [
     path('', views.homeView, name='home'),
-    path('service/', views.serviceView, name='service'),
-    path('service/authors/', views.authorsView, name='authorsView'),
-    path('service/posts/',  include('LinkedSpace.Posts.urls')),
-    path('service/author/', include('LinkedSpace.Author.urls')),
+    path('login/', views.loginView, name='login'),
+    path('authors/', views.authorsView, name='authorsView'),
+    path('posts/',  include('Posts.urls')),
+    path('author/', include('Author.urls')),
 ]

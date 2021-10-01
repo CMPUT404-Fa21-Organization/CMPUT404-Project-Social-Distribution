@@ -15,30 +15,10 @@
     <body>
         <div class="navbar">
             <a href={% url 'home' %}>Home</a>
-            <a href={% url 'service' %}>Service</a>
             <a href={% url 'authorsView' %}>Authors</a>
-            <div class="dropdown">
-                <button class="dropbtn">
-                    <a href={% url 'authorHome' %}>Author</a> 
-                    <i class="fa fa-caret-down"></i>
-                </button>
-                <div class="dropdown-content">
-                    <a href="">1</a>
-                    <a href="">2</a>
-                    <a href="">3</a>
-                </div>
-            </div>
-            <div class="dropdown">
-                <button class="dropbtn">
-                    <a href={% url 'postsHome' %}>Posts</a>
-                    <i class="fa fa-caret-down"></i>
-                </button>
-                <div class="dropdown-content">
-                    <a href="">1</a>
-                    <a href="">2</a>
-                    <a href="">3</a>
-                </div>
-            </div>
+            <a href={% url 'authorHome' %}>Author</a> 
+            <a href={% url 'postsHome' %}>Posts</a>
+            <a href={% url 'login' %}>Login</a>
         </div>
 
         <center>

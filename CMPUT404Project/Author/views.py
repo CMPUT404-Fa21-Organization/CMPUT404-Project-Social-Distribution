@@ -1,4 +1,6 @@
+from django.db import models
 from django.shortcuts import HttpResponse, render
+from Posts.models import *
 
 # Create your views here.
 def authorHome(request):

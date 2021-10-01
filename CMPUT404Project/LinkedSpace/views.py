@@ -5,8 +5,8 @@ def homeView(request):
     template_name = 'LinkedSpace/home.html'
     return render(request, template_name)
 
-def serviceView(request):
-    template_name = 'LinkedSpace/service.html'
+def loginView(request):
+    template_name = 'LinkedSpace/login.html'
     return render(request, template_name)
 
 def authorsView(request):
