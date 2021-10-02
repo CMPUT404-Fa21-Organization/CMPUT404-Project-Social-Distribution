@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-w0e_@#r2^_-v-27lx#eodb-a(k0_-d(52uo3mw^*n@maoh7gba
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+SERVER_URL = 'http://127.0.0.1:8000'
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -117,6 +118,8 @@ USE_L10N = True
 
 USE_TZ = True
 
+# default user model
+AUTH_USER_MODEL = 'Author.Author'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
