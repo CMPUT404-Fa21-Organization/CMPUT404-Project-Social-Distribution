@@ -39,15 +39,19 @@ class AuthorManager(BaseUserManager):
 
 # Create your models here.
 class Author(AbstractBaseUser, PermissionsMixin):
-    urn = HOST + '/author/' + uuid.uuid4().hex
+    # uid = uuid.uuid4().hex
+    # urn = HOST + '/author/' + uid
+    # auth_pk = models.UUIDField(primary_key=True, max_length=100, default=uid, editable=False)
+    # id = models.CharField(max_length=200, default=urn, editable=False)
+    # id = models.CharField(primary_key=True, max_length=200, default=urn, editable=False)
+    # url = models.CharField(max_length=200, default=urn, editable=False)
+
     email = models.EmailField(verbose_name='email', max_length=60, unique=True)
-    # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    id = models.CharField(primary_key=True, max_length=200, default=urn, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     type = models.CharField(max_length=30, default='author', editable=False)
-    host = models.CharField(max_length=200, default=HOST + '/')
+    host = models.CharField(max_length=200, default=HOST)
     displayName = models.CharField(max_length=50, editable=True)
-    # url = models.CharField(max_length=200, default='', blank=True)
-    url = models.CharField(max_length=200, default=urn, editable=False)
+    url = models.CharField(max_length=200, default=HOST, blank=True)
     github = models.CharField(max_length=200, default='', blank=True)
 
     # Required for extending AbstractUser ...
