@@ -1,6 +1,10 @@
-from django.db import models
 from django.shortcuts import HttpResponse, render
 from Posts.models import *
+from .serializers import AuthorSerializer
+from .models import Author
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 # Create your views here.
 def authorHome(request):
@@ -9,3 +13,45 @@ def authorHome(request):
 
 def author(request, author_id):
     return HttpResponse("You're looking at author %s." % author_id)
+
+@api_view(['GET'])
+def authorsList(request):
+
+    authors = Author.objects.all()
+    serializer = AuthorSerializer(authors, many=True)
+
+    response_dict = {
+        "type": "authors",
+        "items": serializer.data
+    }
+
+    return Response(response_dict)
+
+@api_view(['GET'])
+def authorDetail(request, id):
+
+    authors = Author.objects.get(id=id)
+    serializer = AuthorSerializer(authors, many=False)
+
+    return Response(serializer.data)
+
+@api_view(['PUT'])
+def authorCreate(request):
+
+    serializer = AuthorSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def authorUpdate(request, id):
+
+    author = Author.objects.get(id=id)
+    serializer = AuthorSerializer(instance=author, data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+
+    return Response(serializer.data)

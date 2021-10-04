@@ -15,11 +15,15 @@ Including another URLconf
 """
 from django.urls import include, path
 from . import views
+from Author.views import authorsList, authorCreate
 
 urlpatterns = [
     path('', views.homeView, name='home'),
     path('login/', views.loginView, name='login'),
-    path('authors/', views.authorsView, name='authorsView'),
-    path('posts/',  include('Posts.urls')),
+    path('register/', authorCreate, name='author-create'),
     path('author/', include('Author.urls')),
+    # path('authors/', views.authorsView, name='authorsView'),
+    path('posts/',  include('Posts.urls')),
+    # path('author/', include('Author.urls')),
+    path('authors/', authorsList, name='authors-list'),
 ]

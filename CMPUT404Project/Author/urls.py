@@ -17,6 +17,9 @@ from django.urls import include, path
 from . import views
 
 urlpatterns = [
-    path('', views.authorHome, name='authorHome'),
-    path('<int:author_id>/', views.author, name='author'),
+    # path('', views.authorsOverview, name="author-overview"),
+    path('<uuid:id>/', views.authorDetail, name='author-detail'),
+    path('<uuid:id>/', views.authorUpdate, name='author-update'),
+    # path('', views.authorHome, name='authorHome'),
+    # path('<int:author_id>/', views.author, name='author'),
 ]
