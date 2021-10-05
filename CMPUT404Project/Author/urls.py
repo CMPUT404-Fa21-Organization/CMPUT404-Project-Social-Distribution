@@ -20,6 +20,7 @@ urlpatterns = [
     # path('', views.authorsOverview, name="author-overview"),
     path('<uuid:id>/', views.authorDetail, name='author-detail'),
     path('<uuid:id>/', views.authorUpdate, name='author-update'),
-    # path('', views.authorHome, name='authorHome'),
+    path('authors/', views.authorsList, name='authors-list'),
+    path('', views.authorHome, name='authorHome'),
     # path('<int:author_id>/', views.author, name='author'),
 ]

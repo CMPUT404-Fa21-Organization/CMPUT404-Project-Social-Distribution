@@ -20,10 +20,14 @@ from Author.views import authorsList, authorCreate
 urlpatterns = [
     path('', views.homeView, name='home'),
     path('login/', views.loginView, name='login'),
-    path('register/', authorCreate, name='author-create'),
-    path('author/', include('Author.urls')),
-    # path('authors/', views.authorsView, name='authorsView'),
+    path('authors/', views.authorsView, name='authorsView'),
     path('posts/',  include('Posts.urls')),
-    # path('author/', include('Author.urls')),
-    path('authors/', authorsList, name='authors-list'),
+    path('author/', include('Author.urls')),
+
+
+
+    # api stuff
+    path('api/authors/', authorsList, name='authors-list'),
+    # path('api/authors/', include('Author.urls')),
+    path('api/author/', include('Author.urls')),
 ]
