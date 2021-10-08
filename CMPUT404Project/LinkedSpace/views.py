@@ -44,7 +44,7 @@ def registerView(request):
         # TODO: Create a is_valid method for Author?
         if form.is_valid():
             user = Author.objects.create_user(displayName=form.cleaned_data.get('displayName'), email=form.cleaned_data.get('email'), password=form.cleaned_data.get('password1'))
-            return redirect('home')
+            return redirect('login')
         
 
 
