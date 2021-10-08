@@ -51,7 +51,7 @@ class Post(models.Model):
                     )
     contentType = models.CharField(max_length=20, choices=content_type, editable=False)
 
-    content = Base64Field()
+    #content = Base64Field()
 
     post_categories = (
         ('web', 'Web'),
@@ -74,14 +74,15 @@ class Post(models.Model):
             encoded_string = base64.b64encode(f.read())
             return encoded_string
 
-    def save(self, *args, **kwargs):
-        if self.author_id:
-            self.author = serializers.serialize('json', Author.objects.filter(email=self.author_id))
-            # save the contentType to the content of the file that user uploads
-            self.contentType= "text/plain"
-            with open("dog.jpg", "r") as f:
-                content = f
-            super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     # if self.author_id:
+    #         self.author = serializers.serialize('json', Author.objects.filter(email=self.author_id))
+    #         # save the contentType to the content of the file that user uploads
+    #         self.contentType= "text/plain"
+    #         self.content="Null"
+    #         #with open("dog.jpg", "r") as f:
+    #             #content = f
+    #         super().save(*args, **kwargs)
 '''
 INSERT INTO Posts_post VALUES ("gbeuihfoewh",{"http://127.0.0.1:8000/author/85441b95489243e98b6e87a3d574b072","http://127.0.0.1:8000/","http://127.0.0.1:8000/author/85441b95489243e98b6e87a3d574b072","belton",""}
 ,"hjhifuhfiishf","post","test","","","","jpeg","dog.jnp", "", "234", "24","comment", "public")

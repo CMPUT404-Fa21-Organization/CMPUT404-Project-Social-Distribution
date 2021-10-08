@@ -19,5 +19,6 @@ from . import views
 urlpatterns = [
     path('', views.HomeView, name='postsHome'),
     path('<int:post_id>/', views.post, name='post'),
-    path('api/postData/', views.postList)
+    path('api/postData/', views.postList),
+    path('add_post/', views.add_Post, name='add_post'),
 ]
