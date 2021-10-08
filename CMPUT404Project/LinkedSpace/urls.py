@@ -15,7 +15,8 @@ Including another URLconf
 """
 from django.urls import include, path
 from . import views
-from Author.views import authorsList, authorCreate
+from Author.views import AuthorListView
+
 
 urlpatterns = [
     path('', views.homeView, name='home'),
@@ -23,11 +24,13 @@ urlpatterns = [
     path('authors/', views.authorsView, name='authorsView'),
     path('posts/',  include('Posts.urls')),
     path('author/', include('Author.urls')),
+    path('register/', views.registerView, name='register'),
+    path('logout/', views.logoutView, name='logout'),
 
 
 
     # api stuff
-    path('api/authors/', authorsList, name='authors-list'),
-    # path('api/authors/', include('Author.urls')),
-    path('api/author/', include('Author.urls')),
+    # path('api/authors/', authorsList, name='authors-list'),
+    path('api/authors/', AuthorListView.as_view()),
+    path('api/author/', include('Author.urls')), 
 ]
