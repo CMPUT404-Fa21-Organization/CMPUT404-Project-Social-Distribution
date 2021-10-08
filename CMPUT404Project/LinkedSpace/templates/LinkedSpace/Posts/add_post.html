@@ -2,7 +2,7 @@
     {% csrf_token %}
     <label for="author_id">author_id: </label><br>
     <label for="Title">title: </label><br>
-    <input id="title" type="text" name="text"> <br>
+    <input id="title" type="text" name="title"> <br>
     <label for="source">source: </label><br>
     <input id="source" type="text" name="source"> <br>
     <label for="Origin">origin: </label><br>
@@ -15,7 +15,10 @@
     <input id="size" type="number" name="size"><br>
     <label for="Visibility">visibility: </label><br>
     <input id="visibility" type="text" name="visibility"><br>
+
     <label for="Unlisted">unlisted: </label><br>
-    <input id="unlisted" type="checkbox" name="unlisted"><br>
+    <!--<input id="unlisted" type="text" name="unlisted"><br>-->
+
+    <input id="unlisted" type="checkbox" name="unlisted" value=True><br>
     <input type="submit" value="OK">
 </form>

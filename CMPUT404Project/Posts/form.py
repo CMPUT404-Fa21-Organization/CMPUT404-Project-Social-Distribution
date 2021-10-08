@@ -35,7 +35,7 @@ class PostCreationForm(forms.ModelForm):
             data['content'] = content.data_base64
             self.data = data
 
-class PostForm(forms.Form):
+class PostFormTest(forms.Form):
     r_uid = uuid.uuid4().hex
     uid = re.sub('-', '', r_uid)
     uri = 'post/' + uid
@@ -72,3 +72,11 @@ class PostForm(forms.Form):
             'size',
             'visibility',
             'unlisted',]
+
+
+from django.forms import ModelForm
+
+class PostForm(ModelForm):
+    class Meta:
+        model = Post
+        exclude = ('author_id','author', 'type', 'contentType', 'catergories', 'comments_id', 'comments', 'pulished',)
