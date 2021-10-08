@@ -1,7 +1,7 @@
 from django.shortcuts import HttpResponse, render
 from Posts.models import *
-from .serializers import AuthorSerializer
-from .models import Author
+from .serializers import AuthorSerializer, InboxSerializer
+from .models import Author, Inbox
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -50,6 +50,24 @@ def authorUpdate(request, id):
 
     author = Author.objects.get(id=id)
     serializer = AuthorSerializer(instance=author, data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def authorInbox(request, id):
+    author = Inbox.objects.get(author=id)
+    serializer = InboxSerializer(author, many=False)
+
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def authorInboxUpdate(request, id):
+
+    author = Inbox.objects.get(author=id)
+    serializer = InboxSerializer(instance=author, data=request.data)
 
     if serializer.is_valid():
         serializer.save()

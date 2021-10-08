@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.conf import settings
+from django.db.models.deletion import CASCADE
+from Posts.models import Post
 
 import uuid
 import re
@@ -82,4 +84,9 @@ class Author(AbstractBaseUser, PermissionsMixin):
     #     return True
 
 # Foreign keys: use settings.AUTH_USER_MODEL to refer to the default user model (Author)
+
+class Inbox(models.Model):
+  author = models.ForeignKey(settings.AUTH_USER_MODEL, default=uuid.uuid4, on_delete=CASCADE, primary_key=True)
+  type = models.CharField(max_length=30, default='inbox', editable=False)
+  items = models.ManyToManyField(Post, default=list)
 
