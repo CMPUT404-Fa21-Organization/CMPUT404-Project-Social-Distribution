@@ -1,11 +1,12 @@
 from django import forms
+from django.db.models import manager
 from django.shortcuts import redirect, render
 from django.contrib.auth.forms import UserCreationForm
 from Author.forms import CreateAuthorForm
 
 from django.contrib.auth import authenticate, login, logout
 from .models import *
-
+from Author.models import AuthorManager, Author
 
 # Create your views here.
 def homeView(request):
@@ -38,9 +39,12 @@ def registerView(request):
 
     if request.method == 'POST':
         form = CreateAuthorForm(request.POST)
+        
+
+        # TODO: Create a is_valid method for Author?
         if form.is_valid():
-            form.save()
-            return redirect('login')
+            user = Author.objects.create_user(displayName=form.cleaned_data.get('displayName'), email=form.cleaned_data.get('email'), password=form.cleaned_data.get('password1'))
+            return redirect('home')
         
 
 
