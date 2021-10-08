@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'Posts.apps.PostsConfig',
 
     'rest_framework',
+    'rest_framework.authtoken',
 
 
     'django.contrib.admin',

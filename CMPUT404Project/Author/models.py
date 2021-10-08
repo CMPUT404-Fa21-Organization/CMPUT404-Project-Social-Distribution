@@ -5,7 +5,7 @@ from django.conf import settings
 import uuid
 import re
 
-HOST = f"{settings.SERVER_URL}"
+HOST = f"{settings.SERVER_URL}/"
 
 # https://docs.djangoproject.com/en/3.2/topics/auth/customizing/#substituting-a-custom-user-model
 
@@ -28,40 +28,40 @@ class AuthorManager(BaseUserManager):
 
         other_kwargs.setdefault('is_staff', True)
         other_kwargs.setdefault('is_superuser', True)
+        other_kwargs.setdefault('is_admin_approved', True)
 
         if other_kwargs.get('is_staff') is not True:
             raise ValueError("Superuser must be assigned to is_staff=True.")
         if other_kwargs.get('is_superuser') is not True:
             raise ValueError("Superuser must be assigned to is_superuser=True.")
+        if other_kwargs.get('is_admin_approved') is not True:
+            raise ValueError("Superuser must be assigned to is_admin_approved=True.")
 
         return self.create_user(email, displayName, password, **other_kwargs)
 
 
 # Create your models here.
 class Author(AbstractBaseUser, PermissionsMixin):
-    # uid = uuid.uuid4().hex
-    # urn = HOST + '/author/' + uid
-    # auth_pk = models.UUIDField(primary_key=True, max_length=100, default=uid, editable=False)
-    # id = models.CharField(max_length=200, default=urn, editable=False)
-    # id = models.CharField(primary_key=True, max_length=200, default=urn, editable=False)
-    # url = models.CharField(max_length=200, default=urn, editable=False)
+    # generate uuid string ...
+    r_uid = uuid.uuid4().hex
+    uid = re.sub('-', '', r_uid)
+    uri = HOST + 'author/' + uid
 
+    auth_pk = models.CharField(primary_key=True, max_length=100, default=uid, editable=False)
     email = models.EmailField(verbose_name='email', max_length=60, unique=True)
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=200, default=uri, blank=False, editable=False)
     type = models.CharField(max_length=30, default='author', editable=False)
     host = models.CharField(max_length=200, default=HOST)
     displayName = models.CharField(max_length=50, editable=True)
-    url = models.CharField(max_length=200, default=HOST, blank=True)
+    url = models.CharField(max_length=200, default=uri, blank=False, editable=False)
     github = models.CharField(max_length=200, default='', blank=True)
+    is_admin_approved = models.BooleanField(default=False)
 
     # Required for extending AbstractUser ...
     username = None
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    # date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
-    # last_login = models.DateTimeField(verbose_name='last login', auto_now_add=True)
-    # is_admin = models.BooleanField(default=False)
-    # is_superuser = models.BooleanField(default=False)
+    date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['displayName']
@@ -72,14 +72,4 @@ class Author(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     def get_author_url(self):
-        return f'{HOST}/author/{str(self.id)}'
-    
-    # required functions, don't need to explicitly state these since Perm mixins will fill them in
-    # def has_perm(self, perm, obj=None):
-    #     return self.is_admin
-    
-    # def has_module_perms(self, app_label):
-    #     return True
-
-# Foreign keys: use settings.AUTH_USER_MODEL to refer to the default user model (Author)
-
+        return f'{HOST}/author/{str(self.auth_pk)}'
