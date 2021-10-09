@@ -5,19 +5,19 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = (
-            'post_pk',
-            'author_id',
-            'author',
             'type',
             'title',
+            'id',
             'source',
             'origin',
             'description',
             'contentType',
             # 'content',
+            'author',
             'categories',
             'count',
             'size',
+            'comments_id',
             'comments',
             'published',
             'visibility',

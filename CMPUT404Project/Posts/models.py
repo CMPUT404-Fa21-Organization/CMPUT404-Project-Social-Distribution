@@ -4,6 +4,7 @@ import re
 from django.core import serializers
 from django.db import models
 from django.db.models.deletion import CASCADE
+from django.http import request
 from django.utils.html import escape
 import json
 from Author.models import Author
@@ -31,13 +32,12 @@ class Post(models.Model):
     author_id = models.ForeignKey(Author, on_delete=CASCADE)
     author = models.JSONField(editable=False)
 
-    uri = 'post/' + uid
+    uri = 'posts/' + uid
 
     id = models.CharField(max_length=200, editable=False)
 
     type = models.CharField(max_length=30, default='post', editable=False)
     title = models.CharField(max_length=200, editable=True)
-
     source = models.CharField(max_length=200, blank=True)
     origin = models.CharField(max_length=200, blank=True)
     description = models.CharField(max_length=500, blank=True)
@@ -51,7 +51,7 @@ class Post(models.Model):
                     )
     contentType = models.CharField(max_length=20, choices=content_type, editable=False)
 
-    #content = Base64Field()
+    # content = Base64Field()
 
     post_categories = (
         ('web', 'Web'),
@@ -62,8 +62,8 @@ class Post(models.Model):
     count = models.PositiveBigIntegerField()
     size = models.PositiveBigIntegerField()
 
-    comments_id = str(id) + '/comments'
-    comments = models.JSONField(default="null")
+    comments_id = models.CharField(max_length=200, default="", editable=False)
+    comments = models.JSONField(default=dict)
 
     published = models.DateTimeField(auto_now_add=True)
     visibility = models.CharField(max_length=20, blank=False, editable=True)
