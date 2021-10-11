@@ -104,11 +104,11 @@ class AuthorDetailView(generics.RetrieveAPIView):
     #         raise ValidationError({str(e): status.HTTP_404_NOT_FOUND})
 
 
-class AuthorInboxView(generics.RetrieveAPIView):
+class AuthorInboxView(generics.RetrieveDestroyAPIView):
     serializer_class = InboxSerializer
     queryset = Inbox.objects.all()
     lookup_field = 'auth_pk'
-    http_method_names = ["get"]
+    http_method_names = ["get", "delete"]
 
 # @api_view(['GET'])
 # def authorInbox(request, id):
