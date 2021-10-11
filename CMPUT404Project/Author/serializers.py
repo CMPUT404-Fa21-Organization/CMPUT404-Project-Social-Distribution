@@ -83,6 +83,7 @@ class AuthorLoginSerializer(serializers.ModelSerializer):
 
 class InboxSerializer(serializers.ModelSerializer):
     items = PostSerializer(read_only=True, many=True)
+    author = serializers.CharField(source='get_author')
     class Meta:
         model = Inbox
         fields = (
@@ -90,4 +91,9 @@ class InboxSerializer(serializers.ModelSerializer):
             'type',
             'items',
         )
+
+    
+        
+
+        
 

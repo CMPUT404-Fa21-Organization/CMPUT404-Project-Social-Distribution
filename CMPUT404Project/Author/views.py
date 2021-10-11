@@ -107,9 +107,7 @@ class AuthorDetailView(generics.RetrieveAPIView):
 class AuthorInboxView(generics.RetrieveAPIView):
     serializer_class = InboxSerializer
     queryset = Inbox.objects.all()
-    lookup_field = 'author'
-    # authenticate_classes = (authentication.TokenAuthentication,)
-    # permission_classes = (permissions.IsAuthenticated,)
+    lookup_field = 'auth_pk'
     http_method_names = ["get"]
 
 # @api_view(['GET'])
