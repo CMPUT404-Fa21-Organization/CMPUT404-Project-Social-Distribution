@@ -9,6 +9,7 @@ from rest_framework import generics, authentication, permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.mixins import DestroyModelMixin
 
 
 # Create your views here.
@@ -103,8 +104,16 @@ class AuthorDetailView(generics.RetrieveAPIView):
     #     except Exception as e:
     #         raise ValidationError({str(e): status.HTTP_404_NOT_FOUND})
 
+class DeleteInboxMixin(DestroyModelMixin):
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response()
 
-class AuthorInboxView(generics.RetrieveDestroyAPIView):
+    def perform_destroy(self, instance):
+        instance.items.set([None])
+
+class AuthorInboxView(DeleteInboxMixin ,generics.RetrieveDestroyAPIView):
     serializer_class = InboxSerializer
     queryset = Inbox.objects.all()
     lookup_field = 'auth_pk'
