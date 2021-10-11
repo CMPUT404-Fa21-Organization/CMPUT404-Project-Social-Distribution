@@ -1,12 +1,9 @@
 from django.shortcuts import HttpResponse, render
-<<<<<<< HEAD
+
 from .serializers import *
-from .models import Author
-=======
 from Posts.models import *
-from .serializers import AuthorSerializer, InboxSerializer
 from .models import Author, Inbox
->>>>>>> inbox
+
 
 from rest_framework import generics, authentication, permissions
 from rest_framework.authtoken.models import Token
@@ -124,4 +121,4 @@ def authorInboxUpdate(request, id):
         serializer.save()
 
     return Response(serializer.data)
->>>>>>> inbox
+
