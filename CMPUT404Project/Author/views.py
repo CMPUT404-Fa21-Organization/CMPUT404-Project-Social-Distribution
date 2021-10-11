@@ -1,6 +1,12 @@
 from django.shortcuts import HttpResponse, render
+<<<<<<< HEAD
 from .serializers import *
 from .models import Author
+=======
+from Posts.models import *
+from .serializers import AuthorSerializer, InboxSerializer
+from .models import Author, Inbox
+>>>>>>> inbox
 
 from rest_framework import generics, authentication, permissions
 from rest_framework.authtoken.models import Token
@@ -99,3 +105,23 @@ class AuthorDetailView(generics.RetrieveAPIView):
     #         return get_object_or_404(Author.objects, id=id)
     #     except Exception as e:
     #         raise ValidationError({str(e): status.HTTP_404_NOT_FOUND})
+
+
+@api_view(['GET'])
+def authorInbox(request, id):
+    author = Inbox.objects.get(author=id)
+    serializer = InboxSerializer(author, many=False)
+
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def authorInboxUpdate(request, id):
+
+    author = Inbox.objects.get(author=id)
+    serializer = InboxSerializer(instance=author, data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+
+    return Response(serializer.data)
+>>>>>>> inbox
