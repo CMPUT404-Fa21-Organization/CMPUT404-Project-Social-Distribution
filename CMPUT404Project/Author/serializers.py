@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.views import exception_handler
 from django.contrib.auth import authenticate
 from .models import Author, Inbox
+from Posts.serializer import PostSerializer
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -81,6 +82,7 @@ class AuthorLoginSerializer(serializers.ModelSerializer):
         return attributes
 
 class InboxSerializer(serializers.ModelSerializer):
+    items = PostSerializer(read_only=True, many=True)
     class Meta:
         model = Inbox
         fields = (

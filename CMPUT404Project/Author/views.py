@@ -104,21 +104,29 @@ class AuthorDetailView(generics.RetrieveAPIView):
     #         raise ValidationError({str(e): status.HTTP_404_NOT_FOUND})
 
 
-@api_view(['GET'])
-def authorInbox(request, id):
-    author = Inbox.objects.get(author=id)
-    serializer = InboxSerializer(author, many=False)
+class AuthorInboxView(generics.RetrieveAPIView):
+    serializer_class = InboxSerializer
+    queryset = Inbox.objects.all()
+    lookup_field = 'author'
+    # authenticate_classes = (authentication.TokenAuthentication,)
+    # permission_classes = (permissions.IsAuthenticated,)
+    http_method_names = ["get"]
 
-    return Response(serializer.data)
+# @api_view(['GET'])
+# def authorInbox(request, id):
+#     author = Inbox.objects.get(author=id)
+#     serializer = InboxSerializer(author, many=False)
 
-@api_view(['POST'])
-def authorInboxUpdate(request, id):
+#     return Response(serializer.data)
 
-    author = Inbox.objects.get(author=id)
-    serializer = InboxSerializer(instance=author, data=request.data)
+# @api_view(['POST'])
+# def authorInboxUpdate(request, id):
 
-    if serializer.is_valid():
-        serializer.save()
+#     author = Inbox.objects.get(author=id)
+#     serializer = InboxSerializer(instance=author, data=request.data)
 
-    return Response(serializer.data)
+#     if serializer.is_valid():
+#         serializer.save()
+
+#     return Response(serializer.data)
 

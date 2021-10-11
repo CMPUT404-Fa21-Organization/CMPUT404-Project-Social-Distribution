@@ -77,7 +77,10 @@ class Author(AbstractBaseUser, PermissionsMixin):
         return f'{HOST}/author/{str(self.auth_pk)}'
 
 class Inbox(models.Model):
-  author = models.ForeignKey(settings.AUTH_USER_MODEL, default=uuid.uuid4, on_delete=CASCADE, primary_key=True)
-  type = models.CharField(max_length=30, default='inbox', editable=False)
-  items = models.ManyToManyField(Post, default=list)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, primary_key=True)
+    type = models.CharField(max_length=30, default='inbox', editable=False)
+    items = models.ManyToManyField(Post, default=list)
+
+    def __str__(self):
+        return self.author
 
