@@ -1,27 +1,23 @@
 import base64
 import uuid
 import re
-from django.core import serializers
 from django.db import models
 from django.db.models.deletion import CASCADE
-from django.http import request
-from django.utils.html import escape
-import json
 from Author.models import Author
 
 class Base64Field(models.TextField):
     # https://djangosnippets.org/snippets/1669/
-    def contribute_to_class(self, cls, name):
-        if self.db_column is None:
-            self.db_column = name
-        self.field_name = name
-        super(Base64Field, self).contribute_to_class(cls, self.field_name)
-        setattr(cls, name, property(self.get_data, self.set_data))
+    _data = models.TextField(
+            db_column='data',
+            blank=True)
 
-    def get_data(self, obj):
-        return base64.decodestring(getattr(obj, self.field_name))
-    def set_data(self, obj, data):
-        setattr(obj, self.field_name, base64.encodestring(data))
+    def set_data(self, data):
+        self._data = base64.b64encode(data)
+
+    def get_data(self):
+        return self._data.decode('utf-8')
+
+    data = property(get_data, set_data)
 
 # Create your models here.
 class Post(models.Model):
@@ -51,7 +47,7 @@ class Post(models.Model):
                     )
     contentType = models.CharField(max_length=20, choices=content_type, editable=False)
 
-    # content = Base64Field()
+    content = Base64Field()
 
     post_categories = (
         ('web', 'Web'),
@@ -62,28 +58,14 @@ class Post(models.Model):
     count = models.PositiveBigIntegerField()
     size = models.PositiveBigIntegerField()
 
-    comments_id = models.CharField(max_length=200, default="", editable=False)
-    comments = models.JSONField(default=dict)
+    comments = models.CharField(max_length=200, default="", editable=False)
 
     published = models.DateTimeField(auto_now_add=True)
     visibility = models.CharField(max_length=20, blank=False, editable=True)
     unlisted = models.BooleanField(blank=False, default=False)
 
-    def image_to_b64(imagine_file):
-        with open(imagine_file.path, "rb") as f:
-            encoded_string = base64.b64encode(f.read())
-            return encoded_string
-
-    # def save(self, *args, **kwargs):
-    #     # if self.author_id:
-    #         self.author = serializers.serialize('json', Author.objects.filter(email=self.author_id))
-    #         # save the contentType to the content of the file that user uploads
-    #         self.contentType= "text/plain"
-    #         self.content="Null"
-    #         #with open("dog.jpg", "r") as f:
-    #             #content = f
-    #         super().save(*args, **kwargs)
 '''
 INSERT INTO Posts_post VALUES ("gbeuihfoewh",{"http://127.0.0.1:8000/author/85441b95489243e98b6e87a3d574b072","http://127.0.0.1:8000/","http://127.0.0.1:8000/author/85441b95489243e98b6e87a3d574b072","belton",""}
 ,"hjhifuhfiishf","post","test","","","","jpeg","dog.jnp", "", "234", "24","comment", "public")
+Þā wæs on burgum Bēowulf Scyldinga, lēof lēod-cyning, longe þrāge folcum gefrǣge (fæder ellor hwearf, aldor of earde), oð þæt him eft onwōc hēah Healfdene; hēold þenden lifde, gamol and gūð-rēow, glæde Scyldingas. Þǣm fēower bearn forð-gerīmed in worold wōcun, weoroda rǣswan, Heorogār and Hrōðgār and Hālga til; hȳrde ic, þat Elan cwēn Ongenþēowes wæs Heaðoscilfinges heals-gebedde. Þā wæs Hrōðgāre here-spēd gyfen, wīges weorð-mynd, þæt him his wine-māgas georne hȳrdon, oð þæt sēo geogoð gewēox, mago-driht micel. Him on mōd bearn, þæt heal-reced hātan wolde, medo-ærn micel men gewyrcean, þone yldo bearn ǣfre gefrūnon, and þǣr on innan eall gedǣlan geongum and ealdum, swylc him god sealde, būton folc-scare and feorum gumena. Þā ic wīde gefrægn weorc gebannan manigre mǣgðe geond þisne middan-geard, folc-stede frætwan. Him on fyrste gelomp ǣdre mid yldum, þæt hit wearð eal gearo, heal-ærna mǣst; scōp him Heort naman, sē þe his wordes geweald wīde hæfde. Hē bēot ne ālēh, bēagas dǣlde, sinc æt symle. Sele hlīfade hēah and horn-gēap: heaðo-wylma bād, lāðan līges; ne wæs hit lenge þā gēn þæt se ecg-hete āðum-swerian 85 æfter wæl-nīðe wæcnan scolde. Þā se ellen-gǣst earfoðlīce þrāge geþolode, sē þe in þȳstrum bād, þæt hē dōgora gehwām drēam gehȳrde hlūdne in healle; þǣr wæs hearpan swēg, swutol sang scopes. Sægde sē þe cūðe frum-sceaft fīra feorran reccan
 '''

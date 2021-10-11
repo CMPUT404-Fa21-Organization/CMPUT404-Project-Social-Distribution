@@ -1,26 +1,35 @@
-<form action='' method="post">
-    {% csrf_token %}
-    <label for="author_id">author_id: </label><br>
-    <label for="Title">title: </label><br>
-    <input id="title" type="text" name="title"> <br>
-    <label for="source">source: </label><br>
-    <input id="source" type="text" name="source"> <br>
-    <label for="Origin">origin: </label><br>
-    <input id="origin" type="text" name="origin"><br>
-    <label for="Description">description: </label><br>
-    <input id="description" type="text" name="description"><br>
-    <label for="content">content: </label><br>
-    <input type="file" name="file" id=""><br>
-    <label for="Count">count: </label><br>
-    <input id="count" type="number" name="count"><br>
-    <label for="Size">size: </label><br>
-    <input id="size" type="number" name="size"><br>
-    <label for="Visibility">visibility: </label><br>
-    <input id="visibility" type="text" name="visibility"><br>
+{% extends '../base.html' %}
 
-    <label for="Unlisted">unlisted: </label><br>
-    <!--<input id="unlisted" type="text" name="unlisted"><br>-->
+{% block title %}
+    Add Post
+{% endblock %}
 
-    <input id="unlisted" type="checkbox" name="unlisted" value=True><br>
-    <input type="submit" value="OK">
-</form>
+{% block content %}
+    <h1>Welcome to Linked Space Add Post</h1>
+    <form action='' method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="author_id">author_id: {{ user }}</label><br>
+        <label for="Title">Title: </label><br>
+        <input id="title" type="text" name="title"> <br>
+        <label for="source">Source: </label><br>
+        <input id="source" type="text" name="source"> <br>
+        <label for="Origin">origin: </label><br>
+        <input id="origin" type="text" name="origin"><br>
+        <label for="Description">description: </label><br>
+        <input id="description" type="text" name="description"><br>
+        <label for="file">File: </label><br>
+        <input type="file" name="file" id="file"><br>
+        <label for="Count">count: </label><br>
+        <input id="count" type="number" name="count"><br>
+        <label for="Size">size: </label><br>
+        <input id="size" type="number" name="size"><br>
+        <label for="Visibility">visibility: </label><br>
+        <input id="visibility" type="text" name="visibility"><br>
+
+        <label for="Unlisted">unlisted: </label><br>
+        <!--<input id="unlisted" type="text" name="unlisted"><br>-->
+
+        <input id="unlisted" type="checkbox" name="unlisted" value=True><br>
+        <input type="submit" value="OK">
+    </form>
+{% endblock %}
