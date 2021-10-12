@@ -59,15 +59,16 @@ class AuthorAPITest(TestCase):
 
     def test_author_login_endpoint(self):
         Author.objects.all().delete()
-        Author.objects.create(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
+        Author.objects.create_user(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
         request = self.client.post('/login/', self.test_author, format='json')
+        print(request)
         self.assertTrue(request.status_code == 200)
 
-    # def test_login_invalid_credentials(self):
-    #     Author.objects.all().delete()
-    #     Author.objects.create(email='testauthor@email.com', displayName='Test Author', password='testwrongpassw0rd')
-    #     request = self.client.post('/login/', self.test_author, format='json')
-        # self.assertTrue(request.status_code == 401)
+    def test_login_invalid_credentials(self):
+        Author.objects.all().delete()
+        Author.objects.create_user(email='testauthor@email.com', displayName='Test Author', password='testwrongpassw0rd')
+        request = self.client.post('/login/', self.test_author, format='json')
+        self.assertTrue(request.status_code == 401)
 
     # def test_author_token_not_recycled(self):
     #     return
