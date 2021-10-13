@@ -26,12 +26,12 @@ class AuthorTest(TestCase):
         self.assertEqual(str(author.email), test_email)
 
     # def test_duplicate_author(self):
-        # test_email = 'duplicateauthors@email.com'
         # Author.objects.all().delete()
-        # author = Author.objects.create(email=test_email, displayName='Test Author', password='testpassw0rd')
+        # test_email = 'duplicateauthors@email.com'
+        # author = Author.objects.create(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
         # dup_author = Author.objects.create(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
         # print(Author.objects.create(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd'))
-        # self.assertRaises(IntegrityError, Author.objects.create(email=test_email, displayName='Duplicate Author', password='duplicatepassw0rd'))
+        # self.assertRaisesRegex(IntegrityError, 'UNIQUE constraint failed: Author_author.email',Author.objects.create(email='testauthor@email.com', displayName='Duplicate Author', password='duplicatepassw0rd'))
 
     # def test_create_author_invalid_password(self):
     #     return
@@ -57,11 +57,16 @@ class AuthorAPITest(TestCase):
         request = self.client.post('/register/', self.test_author, format='json')
         self.assertTrue(request.status_code == 200)
 
+    # def test_duplicate_author(self):
+    #     Author.objects.all().delete()
+    #     request = self.client.post('/register/', self.test_author, format='json')
+    #     duplicate_req = self.client.post('/register/', self.test_author, format='json')
+    #     print(duplicate_req.status_code)
+
     def test_author_login_endpoint(self):
         Author.objects.all().delete()
         Author.objects.create_user(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
         request = self.client.post('/login/', self.test_author, format='json')
-        print(request)
         self.assertTrue(request.status_code == 200)
 
     def test_login_invalid_credentials(self):
@@ -70,21 +75,14 @@ class AuthorAPITest(TestCase):
         request = self.client.post('/login/', self.test_author, format='json')
         self.assertTrue(request.status_code == 401)
 
-    # def test_author_token_not_recycled(self):
-    #     return
-
-    # def test_author_display_name_updated(self):
-    #     Author.objects.all().delete()
-    #     payload = {
-    #         'email':'testauthor@email.com',
-    #         'displayName':'Updated Test Author'
-    #     }
-    #     author = Author.objects.create(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
-    #     print(author.auth_pk)
-    #     self.client.force_authenticate(user=author)
-    #     request_update = self.client.post(f'/author/{author.auth_pk}/edit', payload)
-    #     print(request_update.status_code)
-    #     self.assertEqual(author.displayName, 'Updated Test Author')
-
-    # def test_author_email_not_updated(self):
-    #     return
+    def test_author_updated(self):
+        Author.objects.all().delete()
+        payload = {
+            'email':'updated@email.com',
+            'displayName':'Updated Test Author'
+        }
+        author = Author.objects.create(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
+        self.client.post(f'/author/{author.auth_pk}/', payload)
+        updated_author = Author.objects.get(pk=author.auth_pk)
+        self.assertNotEqual(updated_author.email, payload['email']) # author email not changed
+        self.assertEqual(updated_author.displayName, 'Updated Test Author') # author displayName changed
