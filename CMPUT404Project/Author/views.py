@@ -1,11 +1,15 @@
 from django.shortcuts import HttpResponse, render
+
 from .serializers import *
-from .models import Author
+from Posts.models import *
+from .models import Author, Inbox
+
 
 from rest_framework import generics, authentication, permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.mixins import DestroyModelMixin
 
 
 # Create your views here.
@@ -99,3 +103,37 @@ class AuthorDetailView(generics.RetrieveAPIView):
     #         return get_object_or_404(Author.objects, id=id)
     #     except Exception as e:
     #         raise ValidationError({str(e): status.HTTP_404_NOT_FOUND})
+
+class DeleteInboxMixin(DestroyModelMixin):
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response()
+
+    def perform_destroy(self, instance):
+        instance.items.set([None])
+
+class AuthorInboxView(DeleteInboxMixin ,generics.RetrieveDestroyAPIView):
+    serializer_class = InboxSerializer
+    queryset = Inbox.objects.all()
+    lookup_field = 'auth_pk'
+    http_method_names = ["get", "delete"]
+
+# @api_view(['GET'])
+# def authorInbox(request, id):
+#     author = Inbox.objects.get(author=id)
+#     serializer = InboxSerializer(author, many=False)
+
+#     return Response(serializer.data)
+
+# @api_view(['POST'])
+# def authorInboxUpdate(request, id):
+
+#     author = Inbox.objects.get(author=id)
+#     serializer = InboxSerializer(instance=author, data=request.data)
+
+#     if serializer.is_valid():
+#         serializer.save()
+
+#     return Response(serializer.data)
+

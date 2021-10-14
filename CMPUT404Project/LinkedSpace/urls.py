@@ -17,12 +17,15 @@ from django.urls import include, path
 from . import views
 from Author.views import AuthorListView
 
+
 urlpatterns = [
     path('', views.homeView, name='home'),
     path('login/', views.loginView, name='login'),
     path('authors/', views.authorsView, name='authorsView'),
     path('posts/',  include('Posts.urls')),
     path('author/', include('Author.urls')),
+    path('register/', views.registerView, name='register'),
+    path('logout/', views.logoutView, name='logout'),
 
 
 

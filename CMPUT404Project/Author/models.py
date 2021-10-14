@@ -1,6 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.conf import settings
+from django.db.models.deletion import CASCADE
+from django.db.models.fields import CharField, EmailField
+from Posts.models import Post
+from django.shortcuts import get_object_or_404
 
 import uuid
 import re
@@ -49,7 +53,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
 
     auth_pk = models.CharField(primary_key=True, max_length=100, default=uid, editable=False)
     email = models.EmailField(verbose_name='email', max_length=60, unique=True)
-    id = models.CharField(max_length=200, default=uri, blank=False, editable=False)
+    id = models.CharField(max_length=200, default=uri, blank=False, editable=False, unique=True)
     type = models.CharField(max_length=30, default='author', editable=False)
     host = models.CharField(max_length=200, default=HOST)
     displayName = models.CharField(max_length=50, editable=True)
@@ -72,4 +76,16 @@ class Author(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     def get_author_url(self):
-        return f'{HOST}/author/{str(self.auth_pk)}'
+        return f'{HOST}author/{str(self.auth_pk)}'
+
+class Inbox(models.Model):
+    r_uid = uuid.uuid4().hex
+    uid = re.sub('-', '', r_uid)
+    auth_pk= models.ForeignKey(Author, default=uid, on_delete=CASCADE, primary_key=True)
+    type = models.CharField(max_length=30, default='inbox', editable=False)
+    items = models.ManyToManyField(Post, default=list, blank=True)
+
+    def get_author(self):
+        return Author.objects.get(email=self.auth_pk).get_author_url()
+
+

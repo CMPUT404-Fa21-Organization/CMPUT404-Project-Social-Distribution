@@ -19,8 +19,10 @@ from . import views
 from .views import *
 
 urlpatterns = [
-    path('', views.authorHome, name='authorHome'),
 
+    path('', views.authorHome, name='authorHome'),
+    # inbox
+    path('<auth_pk>/inbox/', AuthorInboxView.as_view(), name='author-inbox'),
     # CBVs
     path('login/', AuthorLoginView.as_view(), name='author-login'), # needs to be moved to main app
     path('register/', AuthorCreateView.as_view(), name='author-register'), # needs to be moved to main app
