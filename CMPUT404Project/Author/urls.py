@@ -19,5 +19,7 @@ from .views import *
 urlpatterns = [
     path('', authorHome, name='authorHome'),
     path('<auth_pk>/', AuthorDetailView, name='author-detail'),
+    path('<auth_pk>/inbox/', AuthorInboxView.as_view(), name='author-inbox'),
     # path('<auth_pk>/delete', AuthorDeleteView, name='author-delete'),
+
 ]
