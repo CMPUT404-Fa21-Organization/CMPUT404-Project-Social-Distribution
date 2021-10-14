@@ -11,11 +11,30 @@ class Base64Field(models.TextField):
             db_column='data',
             blank=True)
 
-    def set_data(self, data):
+    def set_dataText(self, data):
         self._data = base64.b64encode(data)
 
-    def get_data(self):
+    def get_dataText(self):
         return self._data.decode('utf-8')
+
+    def set_dataImg(self, data):
+        self._data = base64.encodestring(data)
+
+    def get_dataImg(self, data):
+        return base64.decodestring(data)
+
+    def set_data(self, data):
+        if type(data) == str:
+            self.set_dataText(data)
+        else:
+            self.set_dataImg(data)
+
+    def get_data(self, data):
+        print(data, type(data))
+        if type(data) == str:
+            self.get_dataText(data)
+        else:
+            self.get_dataImg(data)
 
     data = property(get_data, set_data)
 
@@ -55,8 +74,8 @@ class Post(models.Model):
         ('', ''),
     )
     categories = models.CharField(max_length=20, choices=post_categories, editable=False)
-    count = models.PositiveBigIntegerField()
-    size = models.PositiveBigIntegerField()
+    count = models.PositiveBigIntegerField(default=0)
+    size = models.PositiveBigIntegerField(default=10)
 
     comments = models.CharField(max_length=200, default="", editable=False)
 

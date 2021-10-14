@@ -18,7 +18,6 @@ class PostSerializer(serializers.ModelSerializer):
             'count',
             'size',
             'comments',
-            'comments',
             'published',
             'visibility',
             'unlisted',

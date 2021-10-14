@@ -23,24 +23,22 @@ def add_Post(request):
             source = form.cleaned_data['source']
             origin = form.cleaned_data['origin']
             descirption = form.cleaned_data['description']
-            count = form.cleaned_data['count']
-            size = form.cleaned_data['size']
             visibility = form.cleaned_data['visibility']
             unlisted = form.cleaned_data['unlisted']
 
             author_id = request.user
             author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
             published = timezone.now()
-            content = request.FILES['file'].read()
+            content = request.FILES['file'].read() #Inputfile
+            # content = 'text plain'
 
-            posts = Post(author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, count=count, size=size, visibility=visibility, unlisted=unlisted, published=published, content=content)
+            posts = Post(author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, count=0, size=10, visibility=visibility, unlisted=unlisted, published=published, content=content)
 
             id = request.user.id + '/posts/'
             posts.id = id + posts.pk
             comments_id = posts.id + "/comments"
-            posts.comments_id = comments_id
-            comments = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
             posts.comments = comments_id
+            comments = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
             posts.save()
 
             return redirect(postListView)

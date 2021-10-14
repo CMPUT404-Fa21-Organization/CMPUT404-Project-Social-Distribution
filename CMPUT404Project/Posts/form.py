@@ -9,10 +9,9 @@ class PostForm(forms.Form):
     source = forms.CharField(max_length=200, required=False)
     origin = forms.CharField(max_length=200, required=False)
     description = forms.CharField(max_length=500, required=False)
-    file = forms.FileField(required=False)
 
-    count = forms.IntegerField(min_value=0)
-    size = forms.IntegerField(min_value=0)
+    text = forms.CharField(required=False)
+    file = forms.FileField(required=False)
 
     visibility = forms.CharField(max_length=20, required=True)
     unlisted = forms.BooleanField(required=False)
