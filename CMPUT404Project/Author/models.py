@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.conf import settings
 from django.db.models.deletion import CASCADE
 from django.db.models.fields import CharField, EmailField
-from Posts.models import Post
 from django.shortcuts import get_object_or_404
 
 import uuid
@@ -83,7 +82,7 @@ class Inbox(models.Model):
     uid = re.sub('-', '', r_uid)
     auth_pk= models.ForeignKey(Author, default=uid, on_delete=CASCADE, primary_key=True)
     type = models.CharField(max_length=30, default='inbox', editable=False)
-    items = models.ManyToManyField(Post, default=list, blank=True)
+    items = models.ManyToManyField("Posts.Post", default=list, blank=True)
 
     def get_author(self):
         return Author.objects.get(email=self.auth_pk).get_author_url()

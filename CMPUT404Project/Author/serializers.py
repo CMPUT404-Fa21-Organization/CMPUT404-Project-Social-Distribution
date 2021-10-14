@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.views import exception_handler
 from django.contrib.auth import authenticate
 from .models import Author, Inbox
-from Posts.serializer import PostSerializer
+from Posts.serializers import PostSerializer
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
