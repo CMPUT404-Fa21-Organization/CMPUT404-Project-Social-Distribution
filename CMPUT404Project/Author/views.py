@@ -91,25 +91,31 @@ def AuthorInboxView(request, auth_pk):
         return Response(serializer.data)
 
     if request.method == "POST":
-        serializerPost = PostSerializer(data=request.data)
+        if(request.data["type"] == "post"):
+            serializerPost = PostSerializer(data=request.data)
+            
+            if serializerPost.is_valid():
+                # This stuff maybe should be done in Posts backend?
+                serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
+                serializerPost.validated_data["author_id"] = Author.objects.get(id=request.user.id)
+                r_uid = uuid.uuid4().hex
+                uid = re.sub('-', '', r_uid)
+                serializerPost.validated_data["post_pk"] = uid
+                serializerPost.validated_data["id"] = request.user.id + '/posts/' + uid
+
+                serializerPost.save()
+
+                post = Post.objects.get(pk= uid)
+                inbox.items.add(post)
+                serializer = InboxSerializer(inbox, many=False)
+                return Response(serializer.data)
+
+            return Response(serializerPost.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        if serializerPost.is_valid():
-            # This stuff maybe should be done in Posts backend?
-            serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
-            serializerPost.validated_data["author_id"] = Author.objects.get(id=request.user.id)
-            r_uid = uuid.uuid4().hex
-            uid = re.sub('-', '', r_uid)
-            serializerPost.validated_data["post_pk"] = uid
-
-            serializerPost.save()
-
-            post = Post.objects.get(pk= uid)
-            post.id = request.user.id + '/posts/' + post.pk
-            inbox.items.add(post)
-            serializer = InboxSerializer(inbox, many=False)
-            return Response(serializer.data)
-
-        return Response(serializerPost.errors, status=status.HTTP_400_BAD_REQUEST)
+        if(request.data["type"] == "follow"):
+            pass
+        if(request.data["type"] == "like"):
+            pass
 
 # DEPRECATED INBOX VIEW
 # class DeleteInboxMixin(DestroyModelMixin):
