@@ -92,6 +92,19 @@ class InboxSerializer(serializers.ModelSerializer):
             'items',
         )
 
+# class InboxPostSerializer(serializers.ModelSerializer):
+#     items = PostSerializer()
+#     class Meta:
+#         model = Inbox
+#         fields = (
+#             'author',
+#             'type',
+#             'items',
+#         )
+#         extra_kwargs = { # items is the only writeable field
+#             'author': {'read_only': True},
+#             'type': {'read_only': True}
+#         }
     
         
 

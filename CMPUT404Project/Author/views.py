@@ -3,11 +3,16 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import *
+import json
+import uuid
+import re
 
 from django.shortcuts import HttpResponse, render
 
 from Posts.models import *
 from .models import Author, Inbox
+
+import django.core
 
 
 from rest_framework import generics, authentication, permissions
@@ -67,36 +72,58 @@ def AuthorDetailView(request, auth_pk):
     #     except Exception as e:
     #         raise ValidationError({str(e): status.HTTP_404_NOT_FOUND})
 
-class DeleteInboxMixin(DestroyModelMixin):
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response()
 
-    def perform_destroy(self, instance):
-        instance.items.set([None])
+@api_view(['GET', 'POST', 'DELETE'])
+def AuthorInboxView(request, auth_pk):
+    try:
+        author = Author.objects.get(pk=auth_pk)
+        inbox =  Inbox.objects.get(pk=auth_pk)
+    except Author.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
-class AuthorInboxView(DeleteInboxMixin ,generics.RetrieveDestroyAPIView):
-    serializer_class = InboxSerializer
-    queryset = Inbox.objects.all()
-    lookup_field = 'auth_pk'
-    http_method_names = ["get", "delete"]
+    if request.method == "GET":
+        serializer = InboxSerializer(inbox, many=False)
+        return Response(serializer.data)
 
-# @api_view(['GET'])
-# def authorInbox(request, id):
-#     author = Inbox.objects.get(author=id)
-#     serializer = InboxSerializer(author, many=False)
+    if request.method == "DELETE":
+        inbox.items.set([None])
+        serializer = InboxSerializer(inbox, many=False)
+        return Response(serializer.data)
 
-#     return Response(serializer.data)
+    if request.method == "POST":
+        serializerPost = PostSerializer(data=request.data)
+        
+        if serializerPost.is_valid():
+            # This stuff maybe should be done in Posts backend?
+            serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
+            serializerPost.validated_data["author_id"] = Author.objects.get(id=request.user.id)
+            r_uid = uuid.uuid4().hex
+            uid = re.sub('-', '', r_uid)
+            serializerPost.validated_data["post_pk"] = uid
 
-# @api_view(['POST'])
-# def authorInboxUpdate(request, id):
+            serializerPost.save()
 
-#     author = Inbox.objects.get(author=id)
-#     serializer = InboxSerializer(instance=author, data=request.data)
+            post = Post.objects.get(pk= uid)
+            post.id = request.user.id + '/posts/' + post.pk
+            inbox.items.add(post)
+            serializer = InboxSerializer(inbox, many=False)
+            return Response(serializer.data)
 
-#     if serializer.is_valid():
-#         serializer.save()
+        return Response(serializerPost.errors, status=status.HTTP_400_BAD_REQUEST)
 
-#     return Response(serializer.data)
+# DEPRECATED INBOX VIEW
+# class DeleteInboxMixin(DestroyModelMixin):
+#     def destroy(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         self.perform_destroy(instance)
+#         return Response()
+
+#     def perform_destroy(self, instance):
+#         instance.items.set([None])
+
+# class AuthorInboxView(DeleteInboxMixin ,generics.RetrieveDestroyAPIView):
+#     serializer_class = InboxSerializer
+#     queryset = Inbox.objects.all()
+#     lookup_field = 'auth_pk'
+#     http_method_names = ["get", "delete"]
 

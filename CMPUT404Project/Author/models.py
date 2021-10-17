@@ -87,4 +87,10 @@ class Inbox(models.Model):
     def get_author(self):
         return Author.objects.get(email=self.auth_pk).get_author_url()
 
+# class Like(models.Model):
+#   like_id = models.PositiveIntegerField(primary_key=True, blank=True, null=False)
+#   from_user = models.TextField()
+#   to_user = models.TextField(max_length=500,blank=True)
+#   object = models.TextField()
+
 
