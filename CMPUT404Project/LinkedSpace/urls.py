@@ -15,19 +15,16 @@ Including another URLconf
 """
 from django.urls import include, path
 from . import views
-from Author.views import AuthorListView
+from Author.views import AuthorsListView
+
 
 urlpatterns = [
     path('', views.homeView, name='home'),
     path('login/', views.loginView, name='login'),
-    path('authors/', views.authorsView, name='authorsView'),
-    path('posts/',  include('Posts.urls')),
+    path('register/', views.registerView, name='register'),
+    path('logout/', views.logoutView, name='logout'),
+    path('authors/', AuthorsListView, name='authorsView'),
+
     path('author/', include('Author.urls')),
-
-
-
-    # api stuff
-    # path('api/authors/', authorsList, name='authors-list'),
-    path('api/authors/', AuthorListView.as_view()),
-    path('api/author/', include('Author.urls')), 
+    path('posts/',  include('Posts.urls')),
 ]
