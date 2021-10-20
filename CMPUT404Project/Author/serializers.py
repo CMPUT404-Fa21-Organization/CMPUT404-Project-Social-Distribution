@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from rest_framework.views import exception_handler
 from django.contrib.auth import authenticate
-from .models import Author
+from .models import Author, Inbox
+from Posts.serializers import PostSerializer
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -79,3 +80,33 @@ class AuthorLoginSerializer(serializers.ModelSerializer):
         attributes['user'] = author
         
         return attributes
+
+class InboxSerializer(serializers.ModelSerializer):
+    items = PostSerializer(read_only=True, many=True)
+    author = serializers.CharField(source='get_author')
+    class Meta:
+        model = Inbox
+        fields = (
+            'author',
+            'type',
+            'items',
+        )
+
+# class InboxPostSerializer(serializers.ModelSerializer):
+#     items = PostSerializer()
+#     class Meta:
+#         model = Inbox
+#         fields = (
+#             'author',
+#             'type',
+#             'items',
+#         )
+#         extra_kwargs = { # items is the only writeable field
+#             'author': {'read_only': True},
+#             'type': {'read_only': True}
+#         }
+    
+        
+
+        
+
