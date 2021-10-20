@@ -1,9 +1,10 @@
 from django import forms
 from django.db.models import manager
-from django.shortcuts import redirect, render, HttpResponse
+from django.shortcuts import redirect, render, HttpResponse, HttpResponseRedirect
 from django.contrib.auth.forms import UserCreationForm
 from Author.forms import CreateAuthorForm
 from Author.serializers import *
+from django.urls import reverse
 
 from Author.serializers import *
 
@@ -43,7 +44,8 @@ def loginView(request):
 
 def logoutView(request):
     logout(request)
-    return HttpResponse(render(request,'LinkedSpace/login.html'),status=200)
+    return HttpResponseRedirect(reverse('home'))
+    # return HttpResponse(render(request,'LinkedSpace/login.html'),status=200)
 
 def registerView(request):
     
