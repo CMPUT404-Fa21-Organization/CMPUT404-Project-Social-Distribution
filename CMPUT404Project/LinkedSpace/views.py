@@ -5,6 +5,7 @@ from django.contrib.auth.forms import UserCreationForm
 from Author.forms import CreateAuthorForm
 from Author.serializers import *
 from django.urls import reverse
+from django.contrib import messages
 
 from Author.serializers import *
 
@@ -37,6 +38,7 @@ def loginView(request):
             return HttpResponse(render(request, 'LinkedSpace/home.html'),status=200)
 
         else:
+            messages.error(request, 'Please enter a valid email and password. Note that both fields are case sensitive.')
             return HttpResponse(render(request, 'LinkedSpace/login.html'),status=401)
         
 
