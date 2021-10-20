@@ -77,20 +77,30 @@ class Author(AbstractBaseUser, PermissionsMixin):
     def get_author_url(self):
         return f'{HOST}author/{str(self.auth_pk)}'
 
+class Likes(models.Model):
+  r_uid = uuid.uuid4().hex
+  uid = re.sub('-', '', r_uid)
+  cont = models.CharField(max_length=200)
+  like_id = models.CharField(max_length=200, default=uid, editable=False, primary_key=True)
+  summary = models.CharField(max_length=200)
+  type = models.CharField(max_length=30, default='like', editable=False)
+  auth_pk= models.ForeignKey(Author, on_delete=CASCADE)
+  object = models.CharField(max_length=200)
+
+  def get_author(self):
+        return Author.objects.get(email=self.auth_pk).get_author_url()
+
 class Inbox(models.Model):
     r_uid = uuid.uuid4().hex
     uid = re.sub('-', '', r_uid)
     auth_pk= models.ForeignKey(Author, default=uid, on_delete=CASCADE, primary_key=True)
     type = models.CharField(max_length=30, default='inbox', editable=False)
-    items = models.ManyToManyField("Posts.Post", default=list, blank=True)
+    iPosts = models.ManyToManyField("Posts.Post", default=list, blank=True)
+    iLikes = models.ManyToManyField(Likes, default=list, blank=True)
+    items = models.JSONField(blank=True, default=list)
 
     def get_author(self):
         return Author.objects.get(email=self.auth_pk).get_author_url()
 
-# class Like(models.Model):
-#   like_id = models.PositiveIntegerField(primary_key=True, blank=True, null=False)
-#   from_user = models.TextField()
-#   to_user = models.TextField(max_length=500,blank=True)
-#   object = models.TextField()
 
 

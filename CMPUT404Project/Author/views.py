@@ -7,6 +7,7 @@ import json
 import uuid
 import re
 
+
 from django.shortcuts import HttpResponse, render
 
 from Posts.models import *
@@ -83,12 +84,62 @@ def AuthorInboxView(request, auth_pk):
 
     if request.method == "GET":
         serializer = InboxSerializer(inbox, many=False)
-        return Response(serializer.data)
+        
+
+        iPosts = serializer.data.pop("iPosts")
+        iLikes = serializer.data.pop("iLikes")
+
+        data = {}
+        likes = []
+        for key in serializer.data:
+            if(key != "iPosts" and key != "iLikes"):
+                data[key] = serializer.data[key]
+
+        for l in iLikes:
+            like = {}
+            for key in l:
+                if(key != "cont"):
+                    like[key] = l[key]
+            like["@context"] = l["cont"]
+            like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
+            likes.append(like)
+
+        
+        for item in iPosts:
+            data["items"].append(item)
+        for item in likes:
+            data["items"].append(item)
+        return Response(data)
 
     if request.method == "DELETE":
-        inbox.items.set([None])
+        inbox.iPosts.set([None])
+        inbox.iLikes.set([None])
         serializer = InboxSerializer(inbox, many=False)
-        return Response(serializer.data)
+
+        iPosts = serializer.data.pop("iPosts")
+        iLikes = serializer.data.pop("iLikes")
+
+        data = {}
+        likes = []
+        for key in serializer.data:
+            if(key != "iPosts" and key != "iLikes"):
+                data[key] = serializer.data[key]
+
+        for l in iLikes:
+            like = {}
+            for key in l:
+                if(key != "cont"):
+                    like[key] = l[key]
+            like["@context"] = l["cont"]
+            like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
+            likes.append(like)
+
+        
+        for item in iPosts:
+            data["items"].append(item)
+        for item in likes:
+            data["items"].append(item)
+        return Response(data)
 
     if request.method == "POST":
         if(request.data["type"] == "post"):
@@ -106,9 +157,32 @@ def AuthorInboxView(request, auth_pk):
                 serializerPost.save()
 
                 post = Post.objects.get(pk= uid)
-                inbox.items.add(post)
+                inbox.iPosts.add(post)
                 serializer = InboxSerializer(inbox, many=False)
-                return Response(serializer.data)
+                iPosts = serializer.data.pop("iPosts")
+                iLikes = serializer.data.pop("iLikes")
+
+                data = {}
+                likes = []
+                for key in serializer.data:
+                    if(key != "iPosts" and key != "iLikes"):
+                        data[key] = serializer.data[key]
+
+                for l in iLikes:
+                    like = {}
+                    for key in l:
+                        if(key != "cont"):
+                            like[key] = l[key]
+                    like["@context"] = l["cont"]
+                    like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
+                    likes.append(like)
+
+                
+                for item in iPosts:
+                    data["items"].append(item)
+                for item in likes:
+                    data["items"].append(item)
+                return Response(data)
 
             return Response(serializerPost.errors, status=status.HTTP_400_BAD_REQUEST)
         
