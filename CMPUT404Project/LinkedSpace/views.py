@@ -44,7 +44,7 @@ def loginView(request):
 
 def logoutView(request):
     logout(request)
-    return HttpResponseRedirect(reverse('home'))
+    return HttpResponseRedirect(reverse('login'))
     # return HttpResponse(render(request,'LinkedSpace/login.html'),status=200)
 
 def registerView(request):
