@@ -93,7 +93,7 @@ class Likes(models.Model):
 class Inbox(models.Model):
     r_uid = uuid.uuid4().hex
     uid = re.sub('-', '', r_uid)
-    auth_pk= models.ForeignKey(Author, default=uid, on_delete=CASCADE, primary_key=True)
+    auth_pk= models.OneToOneField(Author, default=uid, on_delete=CASCADE, primary_key=True)
     type = models.CharField(max_length=30, default='inbox', editable=False)
     iPosts = models.ManyToManyField("Posts.Post", default=list, blank=True)
     iLikes = models.ManyToManyField(Likes, default=list, blank=True)

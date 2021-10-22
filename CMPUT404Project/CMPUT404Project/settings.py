@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-w0e_@#r2^_-v-27lx#eodb-a(k0_-d(52uo3mw^*n@maoh7gba'
+SECRET_KEY = 'django-insecure-w0e@#r2^-v-27lx#eodb-a(k0-d(52uo3mw^*n@maoh7gba'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'Author.apps.AuthorConfig',
     'Posts.apps.PostsConfig',
 
+    'crispy_forms',
     'rest_framework',
     'rest_framework.authtoken',
 
@@ -90,7 +91,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
@@ -136,3 +136,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'),]
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+LOGOUT_REDIRECT_URL = 'login'
