@@ -21,9 +21,15 @@ def homeView(request):
 def profileView(request):
     template_name = 'LinkedSpace/profile.html'
 
-    user = Author.objects.get(email = request.user.email)
-    context = {'user':user}
-    return HttpResponse(render(request, template_name, context),status=200)
+    if request.user.is_authenticated:
+
+        user = Author.objects.get(email = request.user.email)
+        context = {'user':user}
+        return HttpResponse(render(request, template_name, context),status=200)
+
+    else:
+        return HttpResponse(render(request, 'LinkedSpace/login.html'),status=200)
+
 
 def loginView(request):
     template_name = 'LinkedSpace/login.html'
