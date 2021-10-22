@@ -5,13 +5,38 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Register Page</h1>
+    
+    <div class="card">
+        <div class="card-body">
+            <h2>Join LinkedSpace</h2>
+            <form method="POST" action="">
+                {%csrf_token%}
+                <div class="form-group">
+                <label for="exampleInputEmail1">{{form.displayName.label}}</label><br/>
+                {{form.displayName}}
+                </div>
+                <div class="form-group">
+                <label for="exampleInputEmail1">{{form.email.label}}</label><br/>
+                {{form.email}}
+                </div>
+                <div class="form-group">
+                <label for="exampleInputEmail1">Password</label><br/>
+                {{form.password1}}
+                </div>
+                <div class="form-group">
+                <label for="exampleInputEmail1">Retype password</label><br/>
+                {{form.password2}}
+                </div>
 
-    <form method="POST" action="">
-        {%csrf_token%}
-        {{form}}
-        {{form.errors}}
+                <div class="form-group">
+                <label for="exampleInputEmail1">Github</label><br/>
+                {{form.github}}
+                </div>
 
-        <input type="submit" name = "Create Author">
-    </form>
+                {{form.errors}}
+        
+                <input type="submit" name = "Create Author" class = "btn btn-primary">
+            </form>
+        </div>
+    </div>
 {% endblock %}
