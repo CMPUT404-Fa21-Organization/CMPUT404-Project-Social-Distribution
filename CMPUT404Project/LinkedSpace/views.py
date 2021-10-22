@@ -18,6 +18,19 @@ def homeView(request):
     template_name = 'LinkedSpace/home.html'
     return render(request, template_name)
 
+def profileView(request):
+    template_name = 'LinkedSpace/profile.html'
+
+    if request.user.is_authenticated:
+
+        user = Author.objects.get(email = request.user.email)
+        context = {'user':user}
+        return HttpResponse(render(request, template_name, context),status=200)
+
+    else:
+        return HttpResponse(render(request, 'LinkedSpace/login.html'),status=200)
+
+
 def loginView(request):
     template_name = 'LinkedSpace/login.html'
     serializer_class = AuthorLoginSerializer
@@ -60,7 +73,7 @@ def registerView(request):
         form = CreateAuthorForm(request.POST)
         
         if form.is_valid():
-            user = Author.objects.create_user(displayName=form.cleaned_data.get('displayName'), email=form.cleaned_data.get('email'), password=form.cleaned_data.get('password1'))
+            user = Author.objects.create_user(displayName=form.cleaned_data.get('displayName'), email=form.cleaned_data.get('email'), password=form.cleaned_data.get('password1'), github=form.cleaned_data.get('github'))
             return HttpResponse(render(request, 'LinkedSpace/login.html'),status=200)
         
         
