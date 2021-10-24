@@ -1,21 +1,28 @@
 from django.core import serializers
 from django.utils import timezone
-from django.shortcuts import HttpResponse, redirect, render
-from rest_framework import generics
+from django.shortcuts import redirect, render
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from .serializers import PostSerializer
 from .models import Post, Author
 from .form import PostForm
 import json
 
 # Create your views here.
-def HomeView(request):
-    template_name = 'LinkedSpace/Posts/posts.html'
-    return render(request, template_name)
+@api_view(['GET',])
+def HomeView(request, auth_pk):
+    post = Post.objects.filter(author_id=auth_pk)
+    serializer = PostSerializer(post, many=True)
 
-def post(request, post_id):
-    return HttpResponse("You're looking at post %s." % post_id)
+    return Response(serializer.data)
 
-def add_Post(request):
+@api_view(['GET',])
+def post(request, auth_pk, post_pk):
+    post = Post.objects.get(pk=post_pk)
+    serializer = PostSerializer(post, many=False)
+    return Response(serializer.data)
+
+def add_Post(request, auth_pk):
     if request.method == "POST":
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
@@ -49,9 +56,16 @@ def add_Post(request):
         form = PostForm()
     return render(request, "LinkedSpace/Posts/add_post.html", {'form': form, 'user':request.user.id})
 
-class postList(generics.ListCreateAPIView):
-    queryset = Post.objects.all()
-    http_method_names = ['get']
-    serializer_class = PostSerializer
+@api_view(['GET',])
+def postListView(request):
+    post = Post.objects.all()
+    serializer = PostSerializer(post, many=True)
 
-postListView = postList.as_view()
+    return Response(serializer.data)
+
+# class postList(generics.ListCreateAPIView):
+#     queryset = Post.objects.all()
+#     http_method_names = ['get']
+#     serializer_class = PostSerializer
+
+# postListView = postList.as_view()

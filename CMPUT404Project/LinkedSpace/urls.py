@@ -26,5 +26,5 @@ urlpatterns = [
     path('authors/', AuthorsListView, name='authorsView'),
 
     path('author/', include('Author.urls')),
-    path('posts/',  include('Posts.urls')),
+    # path('posts/',  include('Posts.urls')),
 ]

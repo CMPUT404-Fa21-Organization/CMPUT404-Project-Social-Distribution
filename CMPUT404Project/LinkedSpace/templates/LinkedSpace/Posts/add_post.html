@@ -22,17 +22,19 @@
         <label for="Description">Description:</label><br>
         <input id="description" type="text" name="description"><br>
 
+        <label for="Visibility">Visibility:</label><br>
+        <input id="visibility" type="text" name="visibility"
+                widget=forms.Select(choices=FRUIT_CHOICES))>
+        <br>
+
+        <label for="Unlisted">Unlisted:</label><br>
+        <input id="unlisted" type="checkbox" name="unlisted" value=True><br>
+
         <label for="Text">Text:</label><br>
         <input id="text" type="text" name="text"><br>
 
         <label for="file">File:</label><br>
         <input type="file" name="file" id="file"><br>
-
-        <label for="Visibility">Visibility:</label><br>
-        <input id="visibility" type="text" name="visibility"><br>
-
-        <label for="Unlisted">Unlisted:</label><br>
-        <input id="unlisted" type="checkbox" name="unlisted" value=True><br>
 
         <input type="submit" value="OK">
     </form>
