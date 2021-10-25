@@ -20,8 +20,14 @@ import glob
 # Non API view, Displays the users posts and github activity
 def MyStreamView(request):
     # TODO Add Github API stuff here
-    author = request.user
-    postsObjects = Post.objects.filter(author_id=author.pk)
+    
+    if(request.user.is_authenticated):
+        author = request.user
+        postsObjects = Post.objects.filter(author_id=author.pk)
+
+    else:
+        author = None
+        postsObjects = Post.objects.all()
 
     posts = PostSerializer(postsObjects, many=True)
     
@@ -34,26 +40,6 @@ def MyStreamView(request):
             
 
     context = {'posts':posts.data, 'user':author}
-
-    template_name = 'LinkedSpace/Posts/posts.html'
-    return HttpResponse(render(request, template_name, context),status=200)
-
-# Non API view
-def PublicStreamView(request):
-    # TODO Get only Public Posts
-    postsObjects = Post.objects.all()
-
-    posts = PostSerializer(postsObjects, many=True)
-    
-    for post in posts.data:
-        post["isImage"] = False
-        if(post["content"][:2] == "b'"):
-            post["isImage"] = True
-            imgdata = post["content"][2:-1]
-            post["image"] = imgdata
-            
-
-    context = {'posts':posts.data}
 
     template_name = 'LinkedSpace/Posts/posts.html'
     return HttpResponse(render(request, template_name, context),status=200)
