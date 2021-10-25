@@ -45,7 +45,7 @@ class Post(models.Model):
                     ("jpeg", "image/jpeg;base64"),
                     ("html", "HTML"),
                     )
-    contentType = models.CharField(max_length=20, choices=content_type, editable=False)
+    contentType = models.CharField(max_length=20, choices=content_type)
 
     content = Base64Field()
 

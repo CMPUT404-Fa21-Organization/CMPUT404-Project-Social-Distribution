@@ -10,19 +10,23 @@ import json
 
 # Create your views here.
 @api_view(['GET',])
-def HomeView(request, auth_pk):
-    post = Post.objects.filter(author_id=auth_pk)
+def PostsList(request, auth_pk=None):
+    if auth_pk != None:
+        post = Post.objects.filter(author_id=auth_pk)
+    else:
+        post = Post.objects.all()
     serializer = PostSerializer(post, many=True)
 
     return Response(serializer.data)
 
 @api_view(['GET',])
-def post(request, auth_pk, post_pk):
-    post = Post.objects.get(pk=post_pk)
-    serializer = PostSerializer(post, many=False)
+def PostDetail(request, post_pk, auth_pk=None):
+    post = Post.objects.filter(post_pk=post_pk)
+    serializer = PostSerializer(post, many=True)
+
     return Response(serializer.data)
 
-def add_Post(request, auth_pk):
+def add_Post(request, auth_pk=None):
     if request.method == "POST":
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
@@ -32,36 +36,32 @@ def add_Post(request, auth_pk):
             descirption = form.cleaned_data['description']
             visibility = form.cleaned_data['visibility']
             unlisted = form.cleaned_data['unlisted']
+            contentType = form.cleaned_data['contentType']
+            print(contentType)
+            if contentType in ["app", "png", "jpeg", "html"]: 
+                content = request.FILES['file'].read() #Inputfile
+            else:
+                content = form.cleaned_data["text"]
 
             author_id = request.user
             author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
             published = timezone.now()
-            content = request.FILES['file'].read() #Inputfile
-            # content = 'text plain'
 
-            posts = Post(author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, count=0, size=10, visibility=visibility, unlisted=unlisted, published=published, content=content)
+            posts = Post(author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, visibility=visibility, unlisted=unlisted, published=published, content=content)
 
             id = request.user.id + '/posts/'
             posts.id = id + posts.pk
             comments_id = posts.id + "/comments"
             posts.comments = comments_id
-            comments = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
+            # comments = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
             posts.save()
 
-            return redirect(postListView)
+            redirect(PostsList, request.user.pk)
         else:
-            print(form.as_table, '\n')
             print(form.errors)
     else:
         form = PostForm()
-    return render(request, "LinkedSpace/Posts/add_post.html", {'form': form, 'user':request.user.id})
-
-@api_view(['GET',])
-def postListView(request):
-    post = Post.objects.all()
-    serializer = PostSerializer(post, many=True)
-
-    return Response(serializer.data)
+    return render(request, "LinkedSpace/Posts/add_post.html", {'form': form, 'user':request.user})
 
 # class postList(generics.ListCreateAPIView):
 #     queryset = Post.objects.all()
