@@ -1,4 +1,5 @@
 from django.core import serializers
+from django.http.response import HttpResponse
 from django.utils import timezone
 from django.shortcuts import redirect, render
 from rest_framework.decorators import api_view
@@ -7,8 +8,55 @@ from .serializers import PostSerializer
 from .models import Post, Author
 from .form import PostForm
 import json
+import base64
+import uuid
+import re
+from django.conf import settings
+import os
+import glob
 
 # Create your views here.
+
+# Non API view, Displays the users posts and github activity
+def MyStreamView(request):
+    
+    # # Temporary Images are stored in Posts/images 
+    # # Empty the directory
+    # for f in os.listdir(settings.STATIC_ROOT + "images/"):
+    #     os.remove(os.path.join(settings.STATIC_ROOT + "images/", f))
+
+    author = request.user
+    postsObjects = Post.objects.filter(author_id=author.pk)
+
+    posts = PostSerializer(postsObjects, many=True)
+    
+    # if the post is an image store it in Posts/images
+    for post in posts.data:
+        post["isImage"] = False
+        if(post["content"][:2] == "b'"):
+            post["isImage"] = True
+            imgdata = post["content"][2:-1]
+            post["image"] = imgdata
+
+            # r_uid = uuid.uuid4().hex
+            # uid = re.sub('-', '', r_uid)
+
+            # filename = uid + ".png"
+            # post["filename"] = filename
+            # with open(settings.STATIC_ROOT + "images/"+ filename, 'wb') as f:
+            #     f.write(base64.b64decode(imgdata))
+            
+
+    context = {'posts':posts.data, 'user':author}
+
+    template_name = 'LinkedSpace/Posts/posts.html'
+    return HttpResponse(render(request, template_name, context),status=200)
+
+# Non API view
+def PublicStreamView(request):
+    pass
+
+
 @api_view(['GET',])
 def HomeView(request, auth_pk):
     post = Post.objects.filter(author_id=auth_pk)
@@ -36,7 +84,7 @@ def add_Post(request, auth_pk):
             author_id = request.user
             author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
             published = timezone.now()
-            content = request.FILES['file'].read() #Inputfile
+            content = base64.b64encode(request.FILES['file'].read())  #Inputfile
             # content = 'text plain'
 
             posts = Post(author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, count=0, size=10, visibility=visibility, unlisted=unlisted, published=published, content=content)
@@ -48,7 +96,7 @@ def add_Post(request, auth_pk):
             comments = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
             posts.save()
 
-            return redirect(postListView)
+            return redirect(HomeView, request.user.pk)
         else:
             print(form.as_table, '\n')
             print(form.errors)
