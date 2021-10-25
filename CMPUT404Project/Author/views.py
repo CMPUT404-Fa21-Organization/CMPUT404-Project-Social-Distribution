@@ -114,7 +114,7 @@ def AuthorInboxView(request, auth_pk):
 
         # if not the inbox of logged in user then redirect to login page
         # TODO is this what we want?
-        if(request.user.id != author.id):
+        if(request.user.id != author.id or not request.user.is_authenticated):
             return HttpResponseRedirect(reverse('login'))
 
         inbox =  Inbox.objects.get(pk=auth_pk)
