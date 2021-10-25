@@ -56,7 +56,7 @@ def add_Post(request, auth_pk=None):
             # comments = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
             posts.save()
 
-            redirect(PostsList, request.user.pk)
+            return redirect(PostsList, request.user.pk)
         else:
             print(form.errors)
     else:
