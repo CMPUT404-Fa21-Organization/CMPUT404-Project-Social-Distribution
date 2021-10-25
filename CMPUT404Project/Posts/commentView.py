@@ -27,14 +27,13 @@ def add_Comment(request, auth_pk, post_pk):
     if request.method == "POST":
         form = CommentForm(request.POST, request.FILES)
         if form.is_valid():
-            size = form.cleaned_data['size']
             published = timezone.now()
             content = request.FILES['file'].read()
             
             author_id = request.user
             author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
 
-            comments = Comments(author_id=author_id, author=author, size=size, published=published, content=content)
+            comments = Comments(author_id=author_id, author=author, size=10, published=published, content=content)
             comment_id = Post.comments_id + '/' + Comments.pk 
             comments.save()
 
