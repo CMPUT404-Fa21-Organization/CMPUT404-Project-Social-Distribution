@@ -15,11 +15,12 @@ Including another URLconf
 """
 from django.urls import include, path
 from . import views
+from commentView import *
 
 urlpatterns = [
     path('', views.HomeView, name='postsHome'),
     path('add_post/', views.add_Post, name='add_post'),
     path('<post_pk>/', views.post, name='post'),
-    path('add_post/add_comment/', views.add_Comment, name='add_comment'),
-    path('<post_pk>/comment/', views.comment, name='comment')
+    #path('add_post/add_comment/', views.add_Comment, name='add_comment'),
+    #path('<post_pk>/comment/', views.Comment, name='comment')
 ]

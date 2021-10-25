@@ -9,6 +9,7 @@ from .models import Post, Author, Comments
 from .form import PostForm, CommentForm
 import json
 from commentModel import *
+from commentForm import *
 
 # Create your views here.
 @api_view(['GET',])
