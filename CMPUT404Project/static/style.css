@@ -15,6 +15,10 @@ body {
     padding: 14px 16px;
     text-decoration: none;
   }
+
+  .navbar-right {
+    float: right;
+  }
   
   .dropdown {
     float: left;

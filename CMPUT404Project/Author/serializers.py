@@ -1,8 +1,9 @@
+from decimal import Context
 from rest_framework import serializers
 from rest_framework.views import exception_handler
 from django.contrib.auth import authenticate
-from .models import Author, Inbox
-from Posts.serializer import PostSerializer
+from .models import Author, Inbox, Like
+from Posts.serializers import PostSerializer
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -81,19 +82,45 @@ class AuthorLoginSerializer(serializers.ModelSerializer):
         
         return attributes
 
+class LikeSerializer(serializers.ModelSerializer):
+    author = serializers.CharField(source='get_author')
+    class Meta:
+        model = Like
+        fields = (
+            'context',
+            'summary',
+            'type',
+            'author',
+            'object',
+        )
+    def create(self, validated_data):
+        print(validated_data)
+        return Like.objects.create(**validated_data)
+
 class InboxSerializer(serializers.ModelSerializer):
-    items = PostSerializer(read_only=True, many=True)
+    iPosts = PostSerializer(read_only=True, many=True)
+    iLikes = LikeSerializer(read_only=True, many=True)
     author = serializers.CharField(source='get_author')
     class Meta:
         model = Inbox
         fields = (
             'author',
             'type',
-            'items',
+            'iPosts',
+            'iLikes',
+            'items'
         )
-
-    
         
-
-        
-
+# class InboxPostSerializer(serializers.ModelSerializer):
+#     items = PostSerializer()
+#     class Meta:
+#         model = Inbox
+#         fields = (
+#             'author',
+#             'type',
+#             'items',
+#         )
+#         extra_kwargs = { # items is the only writeable field
+#             'author': {'read_only': True},
+#             'type': {'read_only': True}
+#         }

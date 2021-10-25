@@ -1,9 +1,11 @@
 from django import forms
 from django.db.models import manager
-from django.shortcuts import redirect, render, HttpResponse
+from django.shortcuts import redirect, render, HttpResponse, HttpResponseRedirect
 from django.contrib.auth.forms import UserCreationForm
 from Author.forms import CreateAuthorForm
 from Author.serializers import *
+from django.urls import reverse
+from django.contrib import messages
 
 from Author.serializers import *
 
@@ -15,6 +17,19 @@ from Author.models import AuthorManager, Author
 def homeView(request):
     template_name = 'LinkedSpace/home.html'
     return render(request, template_name)
+
+def profileView(request):
+    template_name = 'LinkedSpace/profile.html'
+
+    if request.user.is_authenticated:
+
+        user = Author.objects.get(email = request.user.email)
+        context = {'user':user}
+        return HttpResponse(render(request, template_name, context),status=200)
+
+    else:
+        return HttpResponse(render(request, 'LinkedSpace/login.html'),status=200)
+
 
 def loginView(request):
     template_name = 'LinkedSpace/login.html'
@@ -36,6 +51,7 @@ def loginView(request):
             return HttpResponse(render(request, 'LinkedSpace/home.html'),status=200)
 
         else:
+            messages.error(request, 'Please enter a valid email and password. Note that both fields are case sensitive.')
             return HttpResponse(render(request, 'LinkedSpace/login.html'),status=401)
         
 
@@ -43,7 +59,8 @@ def loginView(request):
 
 def logoutView(request):
     logout(request)
-    return HttpResponse(render(request,'LinkedSpace/login.html'),status=200)
+    return HttpResponseRedirect(reverse('login'))
+    # return HttpResponse(render(request,'LinkedSpace/login.html'),status=200)
 
 def registerView(request):
     
@@ -56,7 +73,7 @@ def registerView(request):
         form = CreateAuthorForm(request.POST)
         
         if form.is_valid():
-            user = Author.objects.create_user(displayName=form.cleaned_data.get('displayName'), email=form.cleaned_data.get('email'), password=form.cleaned_data.get('password1'))
+            user = Author.objects.create_user(displayName=form.cleaned_data.get('displayName'), email=form.cleaned_data.get('email'), password=form.cleaned_data.get('password1'), github=form.cleaned_data.get('github'))
             return HttpResponse(render(request, 'LinkedSpace/login.html'),status=200)
         
         
