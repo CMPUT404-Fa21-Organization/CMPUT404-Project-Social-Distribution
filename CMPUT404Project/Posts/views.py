@@ -20,6 +20,7 @@ import glob
 # Non API view, Displays the users posts and github activity
 def MyStreamView(request):
     # TODO Add Github API stuff here
+    # TODO only display public posts if user not authenticated
     
     if(request.user.is_authenticated):
         author = request.user
