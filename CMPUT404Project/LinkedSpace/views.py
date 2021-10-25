@@ -11,7 +11,7 @@ from Author.serializers import *
 
 from django.contrib.auth import authenticate, login, logout
 from .models import *
-from Author.models import AuthorManager, Author
+from Author.models import AuthorManager, Author, Inbox
 
 # Create your views here.
 def homeView(request):
@@ -74,6 +74,8 @@ def registerView(request):
         
         if form.is_valid():
             user = Author.objects.create_user(displayName=form.cleaned_data.get('displayName'), email=form.cleaned_data.get('email'), password=form.cleaned_data.get('password1'), github=form.cleaned_data.get('github'))
+            inbox = Inbox(auth_pk = user)
+            inbox.save()
             return HttpResponse(render(request, 'LinkedSpace/login.html'),status=200)
         
         
