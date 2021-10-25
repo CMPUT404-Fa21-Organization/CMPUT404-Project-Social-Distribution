@@ -33,6 +33,7 @@ class PostFormTest(ModelForm):
         fields = ['title', 'source', 'origin', 'description', 'count', 'size', 'visibility', 'unlisted',]
         # exclude = ('author_id','author', 'type', 'contentType', 'content', 'catergories', 'comments_id', 'comments', 'pulished',)
 
+'''
 # comment form
 class CommentForm(forms.ModelForm):
     text = forms.CharField(required=False)
@@ -45,6 +46,7 @@ class CommentForm(forms.ModelForm):
         'file',
         'unlisted'
     ]
+'''
 
 # for the future post form
 class PostCreationForm(forms.ModelForm):
