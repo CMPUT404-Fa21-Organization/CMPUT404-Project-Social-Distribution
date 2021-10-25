@@ -1,5 +1,6 @@
+from django.db.models import fields
 from rest_framework import serializers
-from .models import Post
+from .models import Post, Comments
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,4 +22,17 @@ class PostSerializer(serializers.ModelSerializer):
             'published',
             'visibility',
             'unlisted',
+        )
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comments
+        fields = (
+            'type',
+            'id',
+            'contentType',
+            'content',
+            'author'
+            'size'
+            'unlisted'
         )
