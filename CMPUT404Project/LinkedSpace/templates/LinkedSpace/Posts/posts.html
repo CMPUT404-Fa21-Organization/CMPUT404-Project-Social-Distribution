@@ -13,7 +13,7 @@
             <p class = "postDesc">{{ post.description }}</p>
             <div class = "postContent">
                 {% if post.isImage %}
-                    <img src="data:image/png;base64, {{ post.image }}" width="500" height="600"/>
+                    <img src="data:image/png;base64, {{ post.image }}" />
                 {% else %}
                     <p>post.content</p>
                 {% endif %}
