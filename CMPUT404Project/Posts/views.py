@@ -37,7 +37,7 @@ def add_Post(request, auth_pk=None):
             visibility = form.cleaned_data['visibility']
             unlisted = form.cleaned_data['unlisted']
             contentType = form.cleaned_data['contentType']
-            print(contentType)
+
             if contentType in ["app", "png", "jpeg", "html"]: 
                 content = request.FILES['file'].read() #Inputfile
             else:
