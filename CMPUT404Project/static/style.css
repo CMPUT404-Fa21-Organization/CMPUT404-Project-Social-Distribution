@@ -1,4 +1,10 @@
-body {
+.postContent img{
+  max-width: 500pt;;
+  max-height: 200pt;
+}
+
+
+/* body {
     font-family: Arial, Helvetica, sans-serif;
   }
   
@@ -63,4 +69,5 @@ body {
   
   .dropdown:hover .dropdown-content {
     display: block;
-  }
+  } */
+
