@@ -1,11 +1,15 @@
+from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+
+from LinkedSpace.views import loginView
 from .serializers import *
 import json
 import uuid
 import re
+from django.urls import reverse
 
 
 from django.shortcuts import HttpResponse, render
@@ -107,6 +111,12 @@ def AuthorDetailView(request, auth_pk):
 def AuthorInboxView(request, auth_pk):
     try:
         author = Author.objects.get(pk=auth_pk)
+
+        # if not the inbox of logged in user then redirect to login page
+        # TODO is this what we want?
+        if(request.user.id != author.id):
+            return HttpResponseRedirect(reverse('login'))
+
         inbox =  Inbox.objects.get(pk=auth_pk)
     except Author.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
