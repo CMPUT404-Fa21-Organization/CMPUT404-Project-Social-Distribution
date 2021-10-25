@@ -36,7 +36,6 @@ INSTALLED_APPS = [
     'LinkedSpace',
     'Author.apps.AuthorConfig',
     'Posts.apps.PostsConfig',
-    'Posts.apps.CommentsConfig',
     'rest_framework',
     'rest_framework.authtoken',
 
