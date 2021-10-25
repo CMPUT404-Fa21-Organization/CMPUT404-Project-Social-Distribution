@@ -16,35 +16,21 @@ import os
 import glob
 
 # Create your views here.
-
+# TODO Better CSS for Stream
 # Non API view, Displays the users posts and github activity
 def MyStreamView(request):
-    
-    # # Temporary Images are stored in Posts/images 
-    # # Empty the directory
-    # for f in os.listdir(settings.STATIC_ROOT + "images/"):
-    #     os.remove(os.path.join(settings.STATIC_ROOT + "images/", f))
-
+    # TODO Add Github API stuff here
     author = request.user
     postsObjects = Post.objects.filter(author_id=author.pk)
 
     posts = PostSerializer(postsObjects, many=True)
     
-    # if the post is an image store it in Posts/images
     for post in posts.data:
         post["isImage"] = False
         if(post["content"][:2] == "b'"):
             post["isImage"] = True
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
-
-            # r_uid = uuid.uuid4().hex
-            # uid = re.sub('-', '', r_uid)
-
-            # filename = uid + ".png"
-            # post["filename"] = filename
-            # with open(settings.STATIC_ROOT + "images/"+ filename, 'wb') as f:
-            #     f.write(base64.b64decode(imgdata))
             
 
     context = {'posts':posts.data, 'user':author}
@@ -54,7 +40,23 @@ def MyStreamView(request):
 
 # Non API view
 def PublicStreamView(request):
-    pass
+    # TODO Get only Public Posts
+    postsObjects = Post.objects.all()
+
+    posts = PostSerializer(postsObjects, many=True)
+    
+    for post in posts.data:
+        post["isImage"] = False
+        if(post["content"][:2] == "b'"):
+            post["isImage"] = True
+            imgdata = post["content"][2:-1]
+            post["image"] = imgdata
+            
+
+    context = {'posts':posts.data}
+
+    template_name = 'LinkedSpace/Posts/posts.html'
+    return HttpResponse(render(request, template_name, context),status=200)
 
 
 @api_view(['GET',])
