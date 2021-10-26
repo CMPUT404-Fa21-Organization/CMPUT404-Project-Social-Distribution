@@ -50,6 +50,21 @@ class PostFormTest(ModelForm):
         fields = ['title', 'source', 'origin', 'description', 'count', 'size', 'visibility', 'unlisted',]
         # exclude = ('author_id','author', 'type', 'contentType', 'content', 'catergories', 'comments_id', 'comments', 'pulished',)
 
+'''
+# comment form
+class CommentForm(forms.ModelForm):
+    text = forms.CharField(required=False)
+    file = forms.FileField(required=False)
+    unlisted = forms.BooleanField(required=False)
+    
+    fields = [
+        #'page'
+        #'size',
+        'file',
+        'unlisted'
+    ]
+'''
+
 # for the future post form
 class PostCreationForm(forms.ModelForm):
     class Meta:
@@ -78,3 +93,4 @@ class PostCreationForm(forms.ModelForm):
                 content = f
             data['content'] = content.data_base64
             self.data = data
+
