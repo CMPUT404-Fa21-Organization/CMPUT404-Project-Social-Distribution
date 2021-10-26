@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'LinkedSpace',
     'Author.apps.AuthorConfig',
     'Posts.apps.PostsConfig',
+    'GitEvents.apps.GiteventsConfig',
 
     'crispy_forms',
     'rest_framework',
@@ -88,6 +89,17 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "linkeddb",
+        "USER": "postgres",
+        "PASSWORD": "linked404",
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
 

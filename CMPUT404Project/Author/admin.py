@@ -6,7 +6,7 @@ from .models import Author, Inbox, Like
 class AuthorAdmin(UserAdmin):
     # display fields
     fieldsets = (
-        (None, {'fields': ('email', 'displayName','password')}),
+        (None, {'fields': ('email', 'displayName','github')}),
         (('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser',
                                        'groups', 'user_permissions')}),
     )

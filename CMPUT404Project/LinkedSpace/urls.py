@@ -30,5 +30,6 @@ urlpatterns = [
     path('profile/', views.profileView, name='author-detail'),
     path('stream/', MyStreamView, name='user-stream-view'),
     path('author/', include('Author.urls')),
+    path('git/', include('GitEvents.urls')),
     # path('posts/',  include('Posts.urls')),
 ]
