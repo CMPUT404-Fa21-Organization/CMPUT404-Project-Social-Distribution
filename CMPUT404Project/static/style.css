@@ -3,6 +3,11 @@
   max-height: 200pt;
 }
 
+.card {
+  padding: 50px;
+  margin: 20px;
+}
+
 
 /* body {
     font-family: Arial, Helvetica, sans-serif;

@@ -77,7 +77,7 @@ def add_Post(request, auth_pk):
             # content = 'text plain'
 
             posts = Post(author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, count=0, size=10, visibility=visibility, unlisted=unlisted, published=published, content=content)
-
+            print(posts.pk)
             id = request.user.id + '/posts/'
             posts.id = id + posts.pk
             comments_id = posts.id + "/comments"
