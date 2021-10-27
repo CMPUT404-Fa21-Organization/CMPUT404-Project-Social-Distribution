@@ -25,7 +25,7 @@ class Comments(models.Model):
     uid = re.sub('-', '', r_uid)
     comment_pk = models.CharField(primary_key=True, max_length=100, default=uid, editable=False)
 
-    Post_pk = models.ForeignKey(Post, on_delete=CASCADE)
+    Post_pk = models.ForeignKey(Post, on_delete=CASCADE, related_name ='+')
     author = models.JSONField(editable=False)
     
     uri = 'comments/' + uid

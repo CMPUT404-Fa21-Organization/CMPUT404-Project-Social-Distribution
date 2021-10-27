@@ -9,17 +9,14 @@ from .serializers import PostSerializer
 from .models import Post, Author
 from .form import PostForm
 import json
-<<<<<<< HEAD
 import uuid
 import re
-=======
 import base64
 import uuid
 import re
 from django.conf import settings
 import os
 import glob
->>>>>>> frontend-stream
 
 # Create your views here.
 # TODO Better CSS for Stream
@@ -97,7 +94,6 @@ def add_Post(request, auth_pk=None):
             author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
             published = timezone.now()
 
-            content = base64.b64encode(request.FILES['file'].read())  #Inputfile
             # content = 'text plain'
 
             r_uid = uuid.uuid4().hex
