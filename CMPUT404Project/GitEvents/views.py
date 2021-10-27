@@ -62,7 +62,7 @@ def GithubEventsView(request):
 
             # django REST framework API view
             # return Response(context, status=status.HTTP_200_OK)
-            print(context)
+            # print(context)
 
             # context needs to be json()
             return render(request, 'LinkedSpace/GitHub/github.html', context, status=status.HTTP_200_OK)
