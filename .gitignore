@@ -1,0 +1,17 @@
+# Environments
+.env
+.venv
+env/
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# pycache
+__pycache__/
+
+# misc
+.DS_Store
+.vscode/
+CMPUT404Project/.nfs000000000005129a00000204

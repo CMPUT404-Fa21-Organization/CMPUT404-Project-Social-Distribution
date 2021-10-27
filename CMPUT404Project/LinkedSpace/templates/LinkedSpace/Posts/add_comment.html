@@ -1,0 +1,28 @@
+{% extends '../base.html' %}
+
+{% block title %}
+    Add Comment
+{% endblock %}
+
+{% block content %}
+    <h1>Welcome to Linked Space Add Comment</h1>
+    {% if user.is_authenticated %}
+        <form action='' method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="author_id">author_id: {{ user }}</label><br>
+
+            <label for="Content Type">Content Type: </label><br>
+            {{ form.contentType }}<br>
+            
+            <label for="Text">Text:</label><br>
+            <input id="text" type="text" name="text"><br>
+
+            <label for="file">File:</label><br>
+            <input type="file" name="file" id="file"><br>
+
+            <input type="submit" value="OK">
+        </form>
+    {% else %}
+        <h3><a href={% url 'login' %} >Login</a></h3>
+    {% endif %}
+{% endblock %}
