@@ -96,6 +96,26 @@ class Like(models.Model):
   def get_author(self):
         return Author.objects.get(email=self.auth_pk).get_author_url()
 
+class Liked(models.Model):
+    type = models.CharField(max_length=30, default='liked', editable=False)
+    items = models.ManyToManyField(Like, default=list, blank=True)
+    
+
+class FriendRequest(models.Model):
+    r_uid = uuid.uuid4().hex
+    uid = re.sub('-', '', r_uid)
+    fr_id = models.CharField(max_length=200, default=uid, editable=False, primary_key=True)
+    type = models.CharField(max_length=30, default='follow', editable=False)
+    summary = models.CharField(max_length=200)
+    actor = models.OneToOneField(Author, on_delete=CASCADE, related_name="actor")
+    object = models.OneToOneField(Author, on_delete=CASCADE, related_name="object")
+
+
+class Followers(models.Model):
+    type = models.CharField(max_length=30, default='followers', editable=False)
+    items = models.ManyToManyField(FriendRequest, default=list, blank=True)
+
+
 class Inbox(models.Model):
     r_uid = uuid.uuid4().hex
     uid = re.sub('-', '', r_uid)
@@ -107,6 +127,7 @@ class Inbox(models.Model):
 
     def get_author(self):
         return Author.objects.get(email=self.auth_pk).get_author_url()
+
 
 
 
