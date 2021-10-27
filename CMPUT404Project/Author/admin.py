@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Author, Inbox, Like
+from .models import *
 
 # Register your models here.
 class AuthorAdmin(UserAdmin):
@@ -26,3 +26,6 @@ class AuthorAdmin(UserAdmin):
 admin.site.register(Author, AuthorAdmin)
 admin.site.register(Inbox)
 admin.site.register(Like)
+admin.site.register(Liked)
+admin.site.register(FriendRequest)
+admin.site.register(Followers)

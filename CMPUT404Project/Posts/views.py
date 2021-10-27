@@ -1,4 +1,5 @@
 from django.core import serializers
+from django.http.response import HttpResponse
 from django.utils import timezone
 from django.shortcuts import redirect, render
 import Posts
@@ -8,10 +9,49 @@ from .serializers import PostSerializer
 from .models import Post, Author
 from .form import PostForm
 import json
+<<<<<<< HEAD
 import uuid
 import re
+=======
+import base64
+import uuid
+import re
+from django.conf import settings
+import os
+import glob
+>>>>>>> frontend-stream
 
 # Create your views here.
+# TODO Better CSS for Stream
+# Non API view, Displays the users posts and github activity
+def MyStreamView(request):
+    # TODO Add Github API stuff here
+    # TODO only display public posts if user not authenticated
+    
+    if(request.user.is_authenticated):
+        author = request.user
+        postsObjects = Post.objects.filter(author_id=author.pk)
+
+    else:
+        author = None
+        postsObjects = Post.objects.all()
+
+    posts = PostSerializer(postsObjects, many=True)
+    
+    for post in posts.data:
+        post["isImage"] = False
+        if(post["content"][:2] == "b'"):
+            post["isImage"] = True
+            imgdata = post["content"][2:-1]
+            post["image"] = imgdata
+            
+
+    context = {'posts':posts.data, 'user':author}
+
+    template_name = 'LinkedSpace/Posts/posts.html'
+    return HttpResponse(render(request, template_name, context),status=200)
+
+
 @api_view(['GET',])
 def PostsList(request, auth_pk=None):
     if auth_pk != None:
@@ -57,6 +97,9 @@ def add_Post(request, auth_pk=None):
             author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
             published = timezone.now()
 
+            content = base64.b64encode(request.FILES['file'].read())  #Inputfile
+            # content = 'text plain'
+
             r_uid = uuid.uuid4().hex
             uid = re.sub('-', '', r_uid)
 
@@ -68,6 +111,7 @@ def add_Post(request, auth_pk=None):
             posts.save()
 
             return redirect(PostsList, request.user.pk)
+
         else:
             print(form.errors)
     else:
