@@ -84,10 +84,10 @@ class Author(AbstractBaseUser, PermissionsMixin):
         return f'{HOST}author/{str(self.auth_pk)}'
 
 class Like(models.Model):
-  r_uid = uuid.uuid4().hex
-  uid = re.sub('-', '', r_uid)
+#   r_uid = uuid.uuid4().hex
+#   uid = re.sub('-', '', r_uid)
+#   like_id = models.CharField(max_length=200, default=uid, editable=False, primary_key=True)
   context = models.CharField(max_length=200)
-  like_id = models.CharField(max_length=200, default=uid, editable=False, primary_key=True)
   summary = models.CharField(max_length=200)
   type = models.CharField(max_length=30, default='like', editable=False)
   auth_pk = models.ForeignKey(Author, on_delete=CASCADE)
@@ -102,14 +102,16 @@ class Liked(models.Model):
     
 
 class FriendRequest(models.Model):
-    r_uid = uuid.uuid4().hex
-    uid = re.sub('-', '', r_uid)
-    fr_id = models.CharField(max_length=200, default=uid, editable=False, primary_key=True)
     type = models.CharField(max_length=30, default='follow', editable=False)
     summary = models.CharField(max_length=200)
     actor = models.OneToOneField(Author, on_delete=CASCADE, related_name="actor")
     object = models.OneToOneField(Author, on_delete=CASCADE, related_name="object")
 
+    def get_actor(self):
+        return Author.objects.get(email=self.actor).get_author_url()
+        
+    def get_object(self):
+        return Author.objects.get(email=self.object).get_author_url()
 
 class Followers(models.Model):
     type = models.CharField(max_length=30, default='followers', editable=False)
@@ -123,6 +125,7 @@ class Inbox(models.Model):
     type = models.CharField(max_length=30, default='inbox', editable=False)
     iPosts = models.ManyToManyField("Posts.Post", default=list, blank=True)
     iLikes = models.ManyToManyField(Like, default=list, blank=True)
+    iFollows = models.ManyToManyField(FriendRequest, default=list, blank=True)
     items = models.JSONField(blank=True, default=list)
 
     def get_author(self):

@@ -97,9 +97,23 @@ class LikeSerializer(serializers.ModelSerializer):
         print(validated_data)
         return Like.objects.create(**validated_data)
 
+
+class FriendRequestSerializer(serializers.ModelSerializer):
+    actor = serializers.CharField(source='get_actor')
+    object = serializers.CharField(source='get_object')
+    class Meta:
+        model = Like
+        fields = (
+            'summary',
+            'type',
+            'actor',
+            'object',
+        )
+
 class InboxSerializer(serializers.ModelSerializer):
     iPosts = PostSerializer(read_only=True, many=True)
     iLikes = LikeSerializer(read_only=True, many=True)
+    iFollows = FriendRequestSerializer(read_only=True, many=True)
     author = serializers.CharField(source='get_author')
     class Meta:
         model = Inbox
@@ -108,6 +122,7 @@ class InboxSerializer(serializers.ModelSerializer):
             'type',
             'iPosts',
             'iLikes',
+            'iFollows',
             'items'
         )
         

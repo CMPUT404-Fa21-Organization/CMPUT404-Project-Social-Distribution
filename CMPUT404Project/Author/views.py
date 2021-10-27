@@ -29,11 +29,12 @@ from .models import Author
 def getInboxData(serializer):
         iPosts = serializer.data.pop("iPosts")
         iLikes = serializer.data.pop("iLikes")
+        iFollows = serializer.data.pop("iFollows")
 
         data = {}
         likes = []
         for key in serializer.data:
-            if(key != "iPosts" and key != "iLikes"):
+            if(key != "iPosts" and key != "iLikes" and key != "iFollows"):
                 data[key] = serializer.data[key]
 
         for l in iLikes:
@@ -45,10 +46,15 @@ def getInboxData(serializer):
             like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
             likes.append(like)
 
-        
+        for f in iFollows:
+            f["actor"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=f["actor"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
+            f["object"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=f["object"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
+
         for item in iPosts:
             data["items"].append(item)
         for item in likes:
+            data["items"].append(item)
+        for item in iFollows:
             data["items"].append(item)
         
         return data
@@ -130,6 +136,7 @@ def AuthorInboxView(request, auth_pk):
     if request.method == "DELETE":
         inbox.iPosts.set([None])
         inbox.iLikes.set([None])
+        inbox.iFollows.set([None])
         
         serializer = InboxSerializer(inbox, many=False)
         data = getInboxData(serializer)
@@ -165,15 +172,15 @@ def AuthorInboxView(request, auth_pk):
             serializerLike = LikeSerializer(data=request.data)
 
             if serializerLike.is_valid():
-                r_uid = uuid.uuid4().hex
-                uid = re.sub('-', '', r_uid)
-                serializerLike.validated_data["like_id"] = uid
+                # r_uid = uuid.uuid4().hex
+                # uid = re.sub('-', '', r_uid)
+                # serializerLike.validated_data["like_id"] = uid
                 serializerLike.validated_data["auth_pk"] = Author.objects.get(id=request.data["author"])
                 serializerLike.validated_data.pop("get_author")
 
                 serializerLike.save()
 
-                like = Like.objects.get(pk= uid)
+                like = Like.objects.get(auth_pk = Author.objects.get(id=request.data["author"]), object = request.data["object"])
 
                 inbox.iLikes.add(like)
                 
