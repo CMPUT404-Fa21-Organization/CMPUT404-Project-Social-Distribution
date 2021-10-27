@@ -7,6 +7,8 @@ from .serializers import PostSerializer
 from .models import Post, Author
 from .form import PostForm
 import json
+import uuid
+import re
 
 # Create your views here.
 @api_view(['GET',])
@@ -47,12 +49,13 @@ def add_Post(request, auth_pk=None):
             author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
             published = timezone.now()
 
-            posts = Post(author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, visibility=visibility, unlisted=unlisted, published=published, content=content)
+            r_uid = uuid.uuid4().hex
+            uid = re.sub('-', '', r_uid)
 
-            id = request.user.id + '/posts/'
-            posts.id = id + posts.pk
-            comments_id = posts.id + "/comments"
-            posts.comments = comments_id
+            id = request.user.id + '/posts/' + uid
+            comments_id = id + "/comments"
+
+            posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
             # comments = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
             posts.save()
 

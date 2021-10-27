@@ -1,6 +1,4 @@
 import base64
-import uuid
-import re
 from django.db import models
 from django.db.models.deletion import CASCADE
 from Author.models import Author
@@ -21,14 +19,10 @@ class Base64Field(models.TextField):
 
 # Create your models here.
 class Post(models.Model):
-    r_uid = uuid.uuid4().hex
-    uid = re.sub('-', '', r_uid)
-    post_pk = models.CharField(primary_key=True, max_length=100, default=uid, editable=False)
+    post_pk = models.CharField(primary_key=True, max_length=100, editable=False)
 
     author_id = models.ForeignKey(Author, on_delete=CASCADE)
     author = models.JSONField(editable=False)
-
-    uri = 'posts/' + uid
 
     id = models.CharField(max_length=200, editable=False)
 
@@ -58,7 +52,7 @@ class Post(models.Model):
     count = models.PositiveBigIntegerField(default=0)
     size = models.PositiveBigIntegerField(default=10)
 
-    comments = models.CharField(max_length=200, default="", editable=False)
+    comments = models.CharField(max_length=200, editable=False)
 
     published = models.DateTimeField(auto_now_add=True)
     visibility = models.CharField(max_length=20, blank=False, editable=True)
