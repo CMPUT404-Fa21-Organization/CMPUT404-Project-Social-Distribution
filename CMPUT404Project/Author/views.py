@@ -147,17 +147,24 @@ def AuthorInboxView(request, auth_pk):
             serializerPost = PostSerializer(data=request.data)
             
             if serializerPost.is_valid():
-                serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
-                serializerPost.validated_data["author_id"] = Author.objects.get(id=request.user.id)
-                r_uid = uuid.uuid4().hex
-                uid = re.sub('-', '', r_uid)
-                serializerPost.validated_data["post_pk"] = uid
-                serializerPost.validated_data["id"] = request.user.id + '/posts/' + uid
+                if(not "id" in serializerPost.validated_data):
 
-                serializerPost.save()
+                    serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
+                    serializerPost.validated_data["author_id"] = Author.objects.get(id=request.user.id)
+                    r_uid = uuid.uuid4().hex
+                    uid = re.sub('-', '', r_uid)
+                    serializerPost.validated_data["post_pk"] = uid
+                    serializerPost.validated_data["id"] = request.user.id + '/posts/' + uid
 
-                post = Post.objects.get(pk= uid)
-                inbox.iPosts.add(post)
+                    serializerPost.save()
+                    post = Post.objects.get(pk= uid)
+                    inbox.iPosts.add(post)
+                
+                else:
+                    post = Post.objects.get(id= serializerPost.validated_data["id"])
+                    inbox.iPosts.add(post)
+
+                
 
                 serializer = InboxSerializer(inbox, many=False)
                 data = getInboxData(serializer)
@@ -178,7 +185,8 @@ def AuthorInboxView(request, auth_pk):
                 serializerLike.validated_data["auth_pk"] = Author.objects.get(id=request.data["author"])
                 serializerLike.validated_data.pop("get_author")
 
-                serializerLike.save()
+                if(Like.objects.filter(auth_pk = Author.objects.get(id=request.data["author"]), object = request.data["object"]).count() == 0):
+                    serializerLike.save()
 
                 like = Like.objects.get(auth_pk = Author.objects.get(id=request.data["author"]), object = request.data["object"])
 
@@ -200,8 +208,9 @@ def AuthorInboxView(request, auth_pk):
                 serializerFollow.validated_data["object"] = Author.objects.get(id=request.data["object"])
                 serializerFollow.validated_data.pop("get_actor")
                 serializerFollow.validated_data.pop("get_object")
-
-                serializerFollow.save()
+                
+                if(FriendRequest.objects.filter(actor = Author.objects.get(id=request.data["actor"]) , object = Author.objects.get(id=request.data["object"])).count() == 0):
+                    serializerFollow.save()
 
                 follow = FriendRequest.objects.get(actor = Author.objects.get(id=request.data["actor"]) , object = Author.objects.get(id=request.data["object"]))
 
