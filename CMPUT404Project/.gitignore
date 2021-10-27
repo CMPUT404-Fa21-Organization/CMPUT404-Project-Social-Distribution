@@ -14,3 +14,7 @@ __pycache__/
 # misc
 .DS_Store
 .vscode/
+
+db.sqlite3
+migrations/
+.nfs*
