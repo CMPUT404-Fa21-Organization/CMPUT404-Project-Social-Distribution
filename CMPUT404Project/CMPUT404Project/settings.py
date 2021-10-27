@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'LinkedSpace',
     'Author.apps.AuthorConfig',
     'Posts.apps.PostsConfig',
+    'GitEvents.apps.GiteventsConfig',
 
     'crispy_forms',
     'rest_framework',
@@ -90,6 +91,17 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql_psycopg2",
+#         "NAME": "linkeddb",
+#         "USER": "postgres",
+#         "PASSWORD": "linked404",
+#         "HOST": "localhost",
+#         "PORT": "5432",
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
