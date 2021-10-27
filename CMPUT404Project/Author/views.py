@@ -15,7 +15,7 @@ from django.urls import reverse
 from django.shortcuts import HttpResponse, render
 
 from Posts.models import *
-from .models import Author, Inbox, Like
+from .models import Author, FriendRequest, Inbox, Like
 
 import django.core
 
@@ -29,11 +29,12 @@ from .models import Author
 def getInboxData(serializer):
         iPosts = serializer.data.pop("iPosts")
         iLikes = serializer.data.pop("iLikes")
+        iFollows = serializer.data.pop("iFollows")
 
         data = {}
         likes = []
         for key in serializer.data:
-            if(key != "iPosts" and key != "iLikes"):
+            if(key != "iPosts" and key != "iLikes" and key != "iFollows"):
                 data[key] = serializer.data[key]
 
         for l in iLikes:
@@ -45,10 +46,15 @@ def getInboxData(serializer):
             like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
             likes.append(like)
 
-        
+        for f in iFollows:
+            f["actor"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=f["actor"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
+            f["object"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=f["object"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
+
         for item in iPosts:
             data["items"].append(item)
         for item in likes:
+            data["items"].append(item)
+        for item in iFollows:
             data["items"].append(item)
         
         return data
@@ -130,6 +136,7 @@ def AuthorInboxView(request, auth_pk):
     if request.method == "DELETE":
         inbox.iPosts.set([None])
         inbox.iLikes.set([None])
+        inbox.iFollows.set([None])
         
         serializer = InboxSerializer(inbox, many=False)
         data = getInboxData(serializer)
@@ -140,17 +147,24 @@ def AuthorInboxView(request, auth_pk):
             serializerPost = PostSerializer(data=request.data)
             
             if serializerPost.is_valid():
-                serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
-                serializerPost.validated_data["author_id"] = Author.objects.get(id=request.user.id)
-                r_uid = uuid.uuid4().hex
-                uid = re.sub('-', '', r_uid)
-                serializerPost.validated_data["post_pk"] = uid
-                serializerPost.validated_data["id"] = request.user.id + '/posts/' + uid
+                if(not "id" in serializerPost.validated_data):
 
-                serializerPost.save()
+                    serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
+                    serializerPost.validated_data["author_id"] = Author.objects.get(id=request.user.id)
+                    r_uid = uuid.uuid4().hex
+                    uid = re.sub('-', '', r_uid)
+                    serializerPost.validated_data["post_pk"] = uid
+                    serializerPost.validated_data["id"] = request.user.id + '/posts/' + uid
 
-                post = Post.objects.get(pk= uid)
-                inbox.iPosts.add(post)
+                    serializerPost.save()
+                    post = Post.objects.get(pk= uid)
+                    inbox.iPosts.add(post)
+                
+                else:
+                    post = Post.objects.get(id= serializerPost.validated_data["id"])
+                    inbox.iPosts.add(post)
+
+                
 
                 serializer = InboxSerializer(inbox, many=False)
                 data = getInboxData(serializer)
@@ -165,15 +179,16 @@ def AuthorInboxView(request, auth_pk):
             serializerLike = LikeSerializer(data=request.data)
 
             if serializerLike.is_valid():
-                r_uid = uuid.uuid4().hex
-                uid = re.sub('-', '', r_uid)
-                serializerLike.validated_data["like_id"] = uid
+                # r_uid = uuid.uuid4().hex
+                # uid = re.sub('-', '', r_uid)
+                # serializerLike.validated_data["like_id"] = uid
                 serializerLike.validated_data["auth_pk"] = Author.objects.get(id=request.data["author"])
                 serializerLike.validated_data.pop("get_author")
 
-                serializerLike.save()
+                if(Like.objects.filter(auth_pk = Author.objects.get(id=request.data["author"]), object = request.data["object"]).count() == 0):
+                    serializerLike.save()
 
-                like = Like.objects.get(pk= uid)
+                like = Like.objects.get(auth_pk = Author.objects.get(id=request.data["author"]), object = request.data["object"])
 
                 inbox.iLikes.add(like)
                 
@@ -184,7 +199,29 @@ def AuthorInboxView(request, auth_pk):
             return Response(serializerLike.errors, status=status.HTTP_400_BAD_REQUEST)
 
         if(request.data["type"] == "follow"):
-            pass
+            request.data["actor"] = request.data["actor"]["id"]
+            request.data["object"] = request.data["object"]["id"]
+            serializerFollow = FriendRequestSerializer(data=request.data)
+
+            if serializerFollow.is_valid():
+                serializerFollow.validated_data["actor"] = Author.objects.get(id=request.data["actor"])
+                serializerFollow.validated_data["object"] = Author.objects.get(id=request.data["object"])
+                serializerFollow.validated_data.pop("get_actor")
+                serializerFollow.validated_data.pop("get_object")
+                
+                if(FriendRequest.objects.filter(actor = Author.objects.get(id=request.data["actor"]) , object = Author.objects.get(id=request.data["object"])).count() == 0):
+                    serializerFollow.save()
+
+                follow = FriendRequest.objects.get(actor = Author.objects.get(id=request.data["actor"]) , object = Author.objects.get(id=request.data["object"]))
+
+                inbox.iFollows.add(follow)
+
+                serializer = InboxSerializer(inbox, many=False)
+                data = getInboxData(serializer)
+                return Response(data)
+            
+            return Response(serializerFollow.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # DEPRECATED INBOX VIEW
 # class DeleteInboxMixin(DestroyModelMixin):

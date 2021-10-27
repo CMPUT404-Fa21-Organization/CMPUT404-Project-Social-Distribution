@@ -28,6 +28,7 @@ urlpatterns = [
     path('logout/', views.logoutView, name='logout'),
     path('authors/', AuthorsListView, name='authorsView'),
     path('profile/', views.profileView, name='author-detail'),
+    path('posts/',  include('Posts.urls')),
     path('stream/', MyStreamView, name='user-stream-view'),
     path('author/', include('Author.urls')),
     path('git/', include('GitEvents.urls')),
