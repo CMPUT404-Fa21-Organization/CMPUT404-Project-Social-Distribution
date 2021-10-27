@@ -6,34 +6,42 @@
 
 {% block content %}
     <h1>Welcome to Linked Space Add Post</h1>
-    <form action='' method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <label for="author_id">author_id: {{ user }}</label><br>
+    {% if user.is_authenticated %}
+        <form action='' method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="author_id">author_id: {{ user }}</label><br>
 
-        <label for="Title">Title:</label><br>
-        <input id="title" type="text" name="title"> <br>
+            <label for="Title">Title:</label><br>
+            <input id="title" type="text" name="title"> <br>
 
-        <label for="source">Source:</label><br>
-        <input id="source" type="text" name="source"> <br>
+            <label for="source">Source:</label><br>
+            <input id="source" type="text" name="source"> <br>
 
-        <label for="Origin">Origin:</label><br>
-        <input id="origin" type="text" name="origin"><br>
+            <label for="Origin">Origin:</label><br>
+            <input id="origin" type="text" name="origin"><br>
 
-        <label for="Description">Description:</label><br>
-        <input id="description" type="text" name="description"><br>
+            <label for="Description">Description:</label><br>
+            <input id="description" type="text" name="description"><br>
 
-        <label for="Text">Text:</label><br>
-        <input id="text" type="text" name="text"><br>
+            <label for="Visibility">Visibility:</label><br>
+            <!-- <input id="visibility" type="text" name="visibility"><br> -->
+            {{ form.visibility }}<br>
 
-        <label for="file">File:</label><br>
-        <input type="file" name="file" id="file"><br>
+            <label for="Unlisted">Unlisted:</label><br>
+            <input id="unlisted" type="checkbox" name="unlisted" value=True><br>
 
-        <label for="Visibility">Visibility:</label><br>
-        <input id="visibility" type="text" name="visibility"><br>
+            <label for="ContentType">Content Type:</label><br>
+            {{ form.contentType }}<br>
 
-        <label for="Unlisted">Unlisted:</label><br>
-        <input id="unlisted" type="checkbox" name="unlisted" value=True><br>
+            <label for="Text">Text:</label><br>
+            <input id="text" type="text" name="text"><br>
 
-        <input type="submit" value="OK">
-    </form>
+            <label for="file">File:</label><br>
+            <input type="file" name="file" id="file"><br>
+
+            <input type="submit" value="OK">
+        </form>
+    {% else %}
+        <h3><a href={% url 'login' %} >Login</a></h3>
+    {% endif %}
 {% endblock %}
