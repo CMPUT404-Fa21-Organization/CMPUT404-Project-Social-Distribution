@@ -2,7 +2,7 @@ from decimal import Context
 from rest_framework import serializers
 from rest_framework.views import exception_handler
 from django.contrib.auth import authenticate
-from .models import Author, Inbox, Like
+from .models import Author, FriendRequest, Inbox, Like
 from Posts.serializers import PostSerializer
 
 class AuthorSerializer(serializers.ModelSerializer):
@@ -94,7 +94,6 @@ class LikeSerializer(serializers.ModelSerializer):
             'object',
         )
     def create(self, validated_data):
-        print(validated_data)
         return Like.objects.create(**validated_data)
 
 
@@ -102,13 +101,17 @@ class FriendRequestSerializer(serializers.ModelSerializer):
     actor = serializers.CharField(source='get_actor')
     object = serializers.CharField(source='get_object')
     class Meta:
-        model = Like
+        model = FriendRequest
         fields = (
             'summary',
             'type',
             'actor',
             'object',
         )
+
+    def create(self, validated_data):
+        return FriendRequest.objects.create(**validated_data)
+
 
 class InboxSerializer(serializers.ModelSerializer):
     iPosts = PostSerializer(read_only=True, many=True)

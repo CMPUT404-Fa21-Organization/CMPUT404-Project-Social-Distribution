@@ -15,7 +15,7 @@ from django.urls import reverse
 from django.shortcuts import HttpResponse, render
 
 from Posts.models import *
-from .models import Author, Inbox, Like
+from .models import Author, FriendRequest, Inbox, Like
 
 import django.core
 
@@ -191,7 +191,28 @@ def AuthorInboxView(request, auth_pk):
             return Response(serializerLike.errors, status=status.HTTP_400_BAD_REQUEST)
 
         if(request.data["type"] == "follow"):
-            pass
+            request.data["actor"] = request.data["actor"]["id"]
+            request.data["object"] = request.data["object"]["id"]
+            serializerFollow = FriendRequestSerializer(data=request.data)
+
+            if serializerFollow.is_valid():
+                serializerFollow.validated_data["actor"] = Author.objects.get(id=request.data["actor"])
+                serializerFollow.validated_data["object"] = Author.objects.get(id=request.data["object"])
+                serializerFollow.validated_data.pop("get_actor")
+                serializerFollow.validated_data.pop("get_object")
+
+                serializerFollow.save()
+
+                follow = FriendRequest.objects.get(actor = Author.objects.get(id=request.data["actor"]) , object = Author.objects.get(id=request.data["object"]))
+
+                inbox.iFollows.add(follow)
+
+                serializer = InboxSerializer(inbox, many=False)
+                data = getInboxData(serializer)
+                return Response(data)
+            
+            return Response(serializerFollow.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # DEPRECATED INBOX VIEW
 # class DeleteInboxMixin(DestroyModelMixin):
