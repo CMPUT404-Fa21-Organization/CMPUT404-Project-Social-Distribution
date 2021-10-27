@@ -1,4 +1,6 @@
 from django.http import JsonResponse, HttpResponse
+from django.views.generic.list import ListView
+from django.shortcuts import render
 from rest_framework.response import Response
 import requests
 import json
@@ -15,7 +17,7 @@ from .serializers import ActivitySerializer
 @login_required
 @api_view(['GET'])
 def GithubEventsView(request):
-    # template_name = 'LinkedSpace/GitHub/github.html'
+    template_name = 'LinkedSpace/GitHub/github.html'
 
     try:
         if request.user.is_authenticated:
@@ -44,6 +46,7 @@ def GithubEventsView(request):
                     event_id = event['id']
                     event_type = event['type']
                     repo = repo_dict['name']
+                    url = repo_dict['url']
 
                     event_object = {
                         "actor": github_actor,
@@ -54,8 +57,15 @@ def GithubEventsView(request):
                     }
                     activities.append(event_object)
 
-            results = ActivitySerializer(activities, many=True).data
-            return Response(results, status=status.HTTP_200_OK)
+            serializer = ActivitySerializer(activities, many=True)
+            context = {'activities': serializer.data}
+
+            # django REST framework API view
+            # return Response(context, status=status.HTTP_200_OK)
+            print(context)
+
+            # context needs to be json()
+            return render(request, 'LinkedSpace/GitHub/github.html', context, status=status.HTTP_200_OK)
 
             # pretty_json = json.dumps(response.json(), indent=4, sort_keys=True)
             # save_fp = 'pretty.json'
