@@ -15,7 +15,7 @@
                 {% if post.isImage %}
                     <img src="data:image/png;base64, {{ post.image }}"/>
                 {% else %}
-                    <p>post.content</p>
+                    <p> {{post.content}}</p>
                 {% endif %}
             </div>
             <div class = "postComments">

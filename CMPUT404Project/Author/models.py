@@ -84,10 +84,10 @@ class Author(AbstractBaseUser, PermissionsMixin):
         return f'{HOST}author/{str(self.auth_pk)}'
 
 class Like(models.Model):
-  r_uid = uuid.uuid4().hex
-  uid = re.sub('-', '', r_uid)
+#   r_uid = uuid.uuid4().hex
+#   uid = re.sub('-', '', r_uid)
+#   like_id = models.CharField(max_length=200, default=uid, editable=False, primary_key=True)
   context = models.CharField(max_length=200)
-  like_id = models.CharField(max_length=200, default=uid, editable=False, primary_key=True)
   summary = models.CharField(max_length=200)
   type = models.CharField(max_length=30, default='like', editable=False)
   auth_pk = models.ForeignKey(Author, on_delete=CASCADE)
@@ -96,6 +96,28 @@ class Like(models.Model):
   def get_author(self):
         return Author.objects.get(email=self.auth_pk).get_author_url()
 
+class Liked(models.Model):
+    type = models.CharField(max_length=30, default='liked', editable=False)
+    items = models.ManyToManyField(Like, default=list, blank=True)
+    
+
+class FriendRequest(models.Model):
+    type = models.CharField(max_length=30, default='follow', editable=False)
+    summary = models.CharField(max_length=200)
+    actor = models.OneToOneField(Author, on_delete=CASCADE, related_name="actor")
+    object = models.OneToOneField(Author, on_delete=CASCADE, related_name="object")
+
+    def get_actor(self):
+        return Author.objects.get(email=self.actor).get_author_url()
+        
+    def get_object(self):
+        return Author.objects.get(email=self.object).get_author_url()
+
+class Followers(models.Model):
+    type = models.CharField(max_length=30, default='followers', editable=False)
+    items = models.ManyToManyField(FriendRequest, default=list, blank=True)
+
+
 class Inbox(models.Model):
     r_uid = uuid.uuid4().hex
     uid = re.sub('-', '', r_uid)
@@ -103,10 +125,12 @@ class Inbox(models.Model):
     type = models.CharField(max_length=30, default='inbox', editable=False)
     iPosts = models.ManyToManyField("Posts.Post", default=list, blank=True)
     iLikes = models.ManyToManyField(Like, default=list, blank=True)
+    iFollows = models.ManyToManyField(FriendRequest, default=list, blank=True)
     items = models.JSONField(blank=True, default=list)
 
     def get_author(self):
         return Author.objects.get(email=self.auth_pk).get_author_url()
+
 
 
 
