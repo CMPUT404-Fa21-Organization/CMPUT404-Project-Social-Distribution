@@ -78,5 +78,7 @@ def GithubEventsView(request):
             # return HttpResponse(activities, status=status.HTTP_200_OK)
             # return JsonResponse(context, safe=False, status=status.HTTP_200_OK)
     except Exception as e:
-        raise NotFound(e)
+        # raise NotFound(e)
+        return render(request, 'LinkedSpace/GitHub/github_404.html', status=status.HTTP_404_NOT_FOUND)
+
     
