@@ -73,7 +73,9 @@ def registerView(request):
         form = CreateAuthorForm(request.POST)
         
         if form.is_valid():
-            user = Author.objects.create_user(displayName=form.cleaned_data.get('displayName'), email=form.cleaned_data.get('email'), password=form.cleaned_data.get('password1'), github=form.cleaned_data.get('github'))
+            git_user = form.cleaned_data.get('github')
+            github_url = f'http://github.com/{git_user}'
+            user = Author.objects.create_user(displayName=form.cleaned_data.get('displayName'), email=form.cleaned_data.get('email'), password=form.cleaned_data.get('password1'), github=github_url)
             inbox = Inbox(auth_pk = user)
             inbox.save()
             return HttpResponse(render(request, 'LinkedSpace/login.html'),status=200)

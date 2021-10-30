@@ -21,7 +21,8 @@ def GithubEventsView(request):
 
     try:
         if request.user.is_authenticated:
-            git_username = request.user.github
+            git_url = request.user.github
+            git_username = git_url.replace("http://github.com/", "")
             response = requests.get(f'https://api.github.com/users/{git_username}/events/public')
 
             activities = []
