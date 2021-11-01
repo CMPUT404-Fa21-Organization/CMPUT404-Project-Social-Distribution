@@ -7,24 +7,20 @@
 {% block content %}
     <h1>Welcome to Linked Space Add Post</h1>
     {% if user.is_authenticated %}
-        <form action='' method="post" enctype="multipart/form-data">
+         <form action={{ path }} method= {{ method }} enctype="multipart/form-data">
             {% csrf_token %}
-            <label for="author_id">author_id: {{ user }}</label><br>
+            <label for="author">author: {{ name }}</label><br>
+            <label for="path">path: {{ path }}</label><br>
+            <label for="path">method: {{ method }}</label><br>
+
 
             <label for="Title">Title:</label><br>
             <input id="title" type="text" name="title"> <br>
-
-            <label for="source">Source:</label><br>
-            <input id="source" type="text" name="source"> <br>
-
-            <label for="Origin">Origin:</label><br>
-            <input id="origin" type="text" name="origin"><br>
 
             <label for="Description">Description:</label><br>
             <input id="description" type="text" name="description"><br>
 
             <label for="Visibility">Visibility:</label><br>
-            <!-- <input id="visibility" type="text" name="visibility"><br> -->
             {{ form.visibility }}<br>
 
             <label for="Unlisted">Unlisted:</label><br>
@@ -45,3 +41,4 @@
         <h3><a href={% url 'login' %} >Login</a></h3>
     {% endif %}
 {% endblock %}
+<!--{% url 'post' user.pk %} -->
