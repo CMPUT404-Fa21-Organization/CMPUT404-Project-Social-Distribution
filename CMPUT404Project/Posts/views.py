@@ -62,6 +62,8 @@ def newPost(request, func, uid=None):
         source = ""
         origin = ""
         author_id = request.user
+        print(json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',))))
+        print("========================")
         author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
         published = timezone.now()
 
