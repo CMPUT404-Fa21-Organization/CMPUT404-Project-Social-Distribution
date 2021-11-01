@@ -75,7 +75,6 @@ def newPost(request, func, uid=None):
         posts.save()
         print(request.data)
         print(func)
-        input()
 
         if func == PostsList:
             print('PostsList')
