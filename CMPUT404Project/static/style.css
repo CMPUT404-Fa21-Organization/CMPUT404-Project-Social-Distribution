@@ -3,6 +3,23 @@
   max-height: 200pt;
 }
 
+.post {
+  width:90%;
+  margin:20px auto;
+  display:block;
+  padding: 20px;
+}
+
+.postContent{
+  background-color: #f7f7f7;
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.dropdown-item {
+  width: 30%;
+}
+
 
 /* body {
     font-family: Arial, Helvetica, sans-serif;
