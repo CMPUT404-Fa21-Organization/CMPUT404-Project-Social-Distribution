@@ -1,8 +1,8 @@
 from django.core import serializers
-from django.http.response import Http404, HttpResponse, HttpResponseRedirect
+from django.http.response import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 from django.utils import timezone
-from django.shortcuts import redirect, render
-from django.views.generic.base import RedirectView
+from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import PostSerializer
@@ -69,20 +69,22 @@ def newPost(request, func, uid=None):
             r_uid = uuid.uuid4().hex
             uid = re.sub('-', '', r_uid)
         id = request.user.id + '/posts/' + uid
-        comments_id = id + "/comments"
+        comments_id = id + "/comment/"
 
         posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
         posts.save()
-        print(request.data)
-        print(func)
+        path = request.get_full_path().split('/')
 
         if func == PostsList:
-            print('PostsList')
-            return redirect(func)
+            if len(path) > 4:
+                return HttpResponseRedirect(reverse("postsHome", args=[path[2]]))
+            else:
+                return HttpResponseRedirect(reverse("postsHome"))
         else:
-            print('PostDetail')
-            return redirect(func, request.user.pk, uid)
-
+            if len(path) > 4:
+                return HttpResponseRedirect(reverse("post", args=[uid, path[2],]))
+            else:
+                return HttpResponseRedirect(reverse("post", args=[uid,]))
     else:
         print(form.errors)
         form = PostForm()
@@ -90,10 +92,17 @@ def newPost(request, func, uid=None):
         return render(request, "LinkedSpace/Posts/add_post.html", context)
 
 
+def deletePost(request, auth_pk, post_pk):
+    post = Post.objects.get(pk=post_pk)
+    if post.author_id_id == request.user.pk:
+        post.delete()
+    request.method = 'GET'
+    return HttpResponseRedirect(reverse("postsHome", args=[auth_pk,]))
+
+
 @api_view(['GET', 'POST',])
 def PostsList(request, auth_pk=None):
     if request.method == 'GET':
-        print('PostsList GET')
         if request.get_full_path().split(' ')[0].split('/')[-2] == 'add_post':
             form = PostForm()
             path =  request.get_full_path()[:-9]
@@ -108,7 +117,6 @@ def PostsList(request, auth_pk=None):
 
             return Response(serializer.data)
     elif request.method == 'POST':
-        print('PostsList POST')
         return newPost(request, PostsList)
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE', ])
@@ -126,16 +134,21 @@ def PostDetail(request, post_pk=None, auth_pk=None):
             return Response(serializer.data)
 
     elif request.method == 'PUT':
-        print(request.get_full_path().split(' ')[0].split('/')[-3])
+        print(request.get_full_path().split(' ')[0].split('/'))
         uid = request.get_full_path().split(' ')[0].split('/')[-3]
-        # return redirect(PostDetail, request.user.pk, uid)
         return newPost(request, PostDetail, uid)
 
     elif request.method == 'DELETE':
         post = Post.objects.get(pk=post_pk)
         if post.author_id_id == request.user.pk:
             post.delete()
-        return redirect('delete_post', post_pk)
+        if auth_pk != None:
+            post = Post.objects.filter(author_id=auth_pk)
+        else:
+            post = Post.objects.all()
+        serializer = PostSerializer(post, many=True)
+        return Response(serializer.data)
 
     elif request.method == 'POST':
-        pass
+        uid = request.get_full_path().split(' ')[0].split('/')[-3]
+        return newPost(request, PostDetail, uid)
