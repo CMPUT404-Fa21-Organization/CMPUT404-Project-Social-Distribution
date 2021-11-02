@@ -8,14 +8,19 @@
     <h1>Welcome to posts stream {{ user.displayName }}</h1>
 
     {% for post in posts %}
-        <div class = "post">
-            <h3 class = "postTitle">{{ post.title }}</h3>
+        <div class = "post card">
+            <h2 class = "postTitle">{{ post.title }}</h3>
+            <hr/>
             <p class = "postDesc">{{ post.description }}</p>
             <div class = "postContent">
                 {% if post.isImage %}
                     <img src="data:image/png;base64, {{ post.image }}"/>
-                {% else %}
+                {% elif post.contentType == "text/plain" %}
                     <p> {{post.content}}</p>
+                {% elif post.contentType == "text/markdown"%}
+
+                    {% load markdownify %}
+                    <p>{{ post.content |markdownify }}</p>
                 {% endif %}
             </div>
             <div class = "postComments">

@@ -35,12 +35,12 @@ class Comments(models.Model):
     type = models.CharField(max_length=30, default='comment', editable=False)
     size = models.PositiveBigIntegerField(default=10)
 
-    content_type = (("markdown", "text/markdown"),
-                    ("plain", "text/plain"),
-                    ("app", "application/base64"),
-                    ("png", "image/png;base64"),
-                    ("jpeg", "image/jpeg;base64"),
-                    ("html", "HTML"),
+    content_type = (("text/markdown", "text/markdown"),
+                    ("text/plain", "text/plain"),
+                    ("application/app", "application/base64"),
+                    ("image/png", "image/png;base64"),
+                    ("image/jpeg", "image/jpeg;base64"),
+                    ("HTML", "HTML"),
                     )
 
     contentType = models.CharField(max_length=20, choices=content_type, editable=False)
