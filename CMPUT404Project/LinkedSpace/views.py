@@ -76,7 +76,10 @@ def registerView(request):
             user = Author.objects.create_user(displayName=form.cleaned_data.get('displayName'), email=form.cleaned_data.get('email'), password=form.cleaned_data.get('password1'), github=form.cleaned_data.get('github'))
             inbox = Inbox(auth_pk = user)
             inbox.save()
-            return HttpResponse(render(request, 'LinkedSpace/login.html'),status=200)
+            
+            return HttpResponseRedirect('/login')
+            
+            # return render(request,"my_blog/post_create.html",context)
         
         
 
