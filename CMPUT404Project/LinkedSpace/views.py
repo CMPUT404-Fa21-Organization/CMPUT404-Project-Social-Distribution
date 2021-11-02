@@ -24,7 +24,8 @@ def profileView(request):
     if request.user.is_authenticated:
 
         user = Author.objects.get(email = request.user.email)
-        context = {'user':user}
+        git_username = user.github.replace("http://github.com/", "")
+        context = {'user':user, 'git_username':git_username}
         return HttpResponse(render(request, template_name, context),status=200)
 
     else:
