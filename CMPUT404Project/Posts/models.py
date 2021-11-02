@@ -48,7 +48,7 @@ class Post(models.Model):
         ('Tutorial', 'Tutorial'),
         ('', ''),
     )
-    categories = models.CharField(max_length=20, choices=post_categories, editable=False)
+    categories = models.CharField(max_length=20, choices=post_categories, editable=True)
     count = models.PositiveBigIntegerField(default=0)
     size = models.PositiveBigIntegerField(default=10)
 

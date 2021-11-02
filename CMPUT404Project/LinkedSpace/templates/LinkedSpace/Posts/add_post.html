@@ -1,5 +1,7 @@
 {% extends '../base.html' %}
 
+{% load crispy_forms_filters %}
+
 {% block title %}
     Add Post
 {% endblock %}
@@ -15,27 +17,30 @@
 
 
             <label for="Title">Title:</label><br>
-            <input id="title" type="text" name="title"> <br>
+            <input id="title" type="text" name="title" class="form-control"> <br>
 
             <label for="Description">Description:</label><br>
-            <input id="description" type="text" name="description"><br>
+            <input id="description" type="text" name="description" class="form-control"><br>
+
+            <label for="Categories">Categories:</label><br>
+            {{ form.categories }}<br>
 
             <label for="Visibility">Visibility:</label><br>
             {{ form.visibility }}<br>
 
-            <label for="Unlisted">Unlisted:</label><br>
+            <label for="Unlisted">Unlisted:</label>
             <input id="unlisted" type="checkbox" name="unlisted" value=True><br>
 
             <label for="ContentType">Content Type:</label><br>
             {{ form.contentType }}<br>
 
             <label for="Text">Text:</label><br>
-            <input id="text" type="text" name="text"><br>
+            <input id="text" type="text" name="text" class="form-control"><br>
 
             <label for="file">File:</label><br>
-            <input type="file" name="file" id="file"><br>
+            <input type="file" name="file" id="file"><br/><br/>
 
-            <input type="submit" value="OK">
+            <input type="submit" value="OK" class="btn btn-primary">
         </form>
     {% else %}
         <h3><a href={% url 'login' %} >Login</a></h3>

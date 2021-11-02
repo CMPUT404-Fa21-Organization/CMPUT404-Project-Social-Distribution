@@ -50,6 +50,7 @@ def newPost(request, func, uid=None):
     if form.is_valid():
         title = form.cleaned_data['title']
         descirption = form.cleaned_data['description']
+        categories = form.cleaned_data['categories']
         visibility = form.cleaned_data['visibility']
         unlisted = form.cleaned_data['unlisted']
         contentType = form.cleaned_data['contentType']
@@ -64,7 +65,7 @@ def newPost(request, func, uid=None):
         author_id = request.user
         print(json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',))))
         print("========================")
-        author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
+        author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
         published = timezone.now()
 
         if uid == None:
@@ -73,7 +74,7 @@ def newPost(request, func, uid=None):
         id = request.user.id + '/posts/' + uid
         comments_id = id + "/comment/"
 
-        posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
+        posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, categories=categories,visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
         posts.save()
         path = request.get_full_path().split('/')
 
@@ -154,3 +155,11 @@ def PostDetail(request, post_pk=None, auth_pk=None):
     elif request.method == 'POST':
         uid = request.get_full_path().split(' ')[0].split('/')[-3]
         return newPost(request, PostDetail, uid)
+
+
+@api_view(['GET',])
+def ManagePostsList(request):
+    posts = Post.objects.filter(author_id=request.user).order_by('-published')
+    # posts = Post.objects.all().order_by('-published')
+    
+    return render(request, "LinkedSpace/Posts/manage_posts.html", {'posts': posts})
