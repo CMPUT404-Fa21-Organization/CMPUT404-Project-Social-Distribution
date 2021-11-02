@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Post History</h1>
+    <h1>My Post History</h1>
 
     {% for post in posts %}
       <div class="container">
@@ -15,8 +15,8 @@
           <div class="mt-3">
               <div class="card" style="width: 50rem;">
                 <div class="card-header text-black" style="background-color: #a2afe23b;">
-                  <a href="#" class="btn btn-danger btn-sm float-right">Delete</a>
-                  <a href="#" class="btn btn-outline-primary btn-sm float-right mr-2">Edit</a>
+                  <a href="#" class="btn btn-outline-danger btn-sm float-right">Delete</a>
+                  <a href="#" class="btn btn-primary btn-sm float-right mr-2">Edit</a>
                   <h4 class="card-title">{{ post.title }}<span style="font-size:medium"> by <a href="#">{{ post.author.displayName }}</a></span>
                 </h4>
                 </div>

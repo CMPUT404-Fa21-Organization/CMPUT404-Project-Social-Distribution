@@ -147,7 +147,7 @@ def PostDetail(request, post_pk=None, auth_pk=None):
 @api_view(['GET',])
 def ManagePostsList(request):
 
-    posts = Post.objects.all().order_by('-published')
+    posts = Post.objects.filter(author_id=request.user).order_by('-published')
+    # posts = Post.objects.all().order_by('-published')
     
-
     return render(request, "LinkedSpace/Posts/manage_posts.html", {'posts': posts})
