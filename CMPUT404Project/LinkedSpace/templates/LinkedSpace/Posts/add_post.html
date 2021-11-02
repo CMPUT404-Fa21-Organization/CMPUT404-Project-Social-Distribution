@@ -9,7 +9,7 @@
 {% block content %}
     <h1>Welcome to Linked Space Add Post</h1>
     {% if user.is_authenticated %}
-         <form action={{ path }} method= {{ method }} enctype="multipart/form-data">
+         <form action='' method= 'POST' enctype="multipart/form-data">
             {% csrf_token %}
             <label for="author">author: {{ name }}</label><br>
             <label for="path">path: {{ path }}</label><br>
