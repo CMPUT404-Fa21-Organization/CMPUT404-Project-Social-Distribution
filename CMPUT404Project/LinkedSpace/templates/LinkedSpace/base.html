@@ -67,7 +67,7 @@
                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href={% url 'author-detail' %}>My Profile</a>
                         <a class="dropdown-item" href={% url 'git-events' %}>GitHub Activity</a>
-                        <a class="dropdown-item" href="#">Manage Posts</a>
+                        <a class="dropdown-item" href={% url 'posts-manage' %}>Manage Posts</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="{% url 'logout'%}?next=/">Logout</a>
                     </div>

@@ -1,5 +1,7 @@
 {% extends '../base.html' %}
 
+{% load crispy_forms_filters %}
+
 {% block title %}
     Add Post
 {% endblock %}
@@ -19,6 +21,9 @@
 
             <label for="Description">Description:</label><br>
             <input id="description" type="text" name="description" class="form-control"><br>
+
+            <label for="Categories">Categories:</label><br>
+            {{ form.categories }}<br>
 
             <label for="Visibility">Visibility:</label><br>
             {{ form.visibility }}<br>

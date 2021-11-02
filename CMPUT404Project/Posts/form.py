@@ -21,6 +21,14 @@ class PostForm(forms.Form):
     file = forms.FileField(required=False)
 
 
+    categories_list = (
+        ('Web', 'Web'),
+        ('Tutorial', 'Tutorial'),
+    )
+
+    categories = forms.CharField(max_length=20, required=True,
+        widget=forms.Select(choices=categories_list, attrs={'class':'dropdown-item', 'style':'width:20%; background-color:#ededed;'}))
+
     visible = (
             ('PUBLIC', 'Public'),
             ('FRIENDS', 'Friends'),

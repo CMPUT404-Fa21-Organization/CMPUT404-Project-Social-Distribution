@@ -18,6 +18,7 @@ from django.urls import include, path
 
 from Posts.views import MyStreamView
 from . import views
+from Posts.views import ManagePostsList
 from Author.views import AuthorsListView
 
 
