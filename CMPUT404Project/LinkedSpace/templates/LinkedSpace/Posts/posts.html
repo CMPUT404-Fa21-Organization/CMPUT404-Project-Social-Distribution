@@ -14,8 +14,8 @@
             <p class = "postDesc">{{ post.description }}</p>
             <div class = "postContent">
                 {% if post.isImage %}
-                    <img src="data:image/png;base64, {{ post.image }}"/>
-                {% elif post.contentType == "text/plain" %}
+                    <img src="data:{{ post.contentType }};base64, {{ post.image }}"/>
+                {% else %}
                     <p> {{post.content}}</p>
                 {% elif post.contentType == "text/markdown"%}
 

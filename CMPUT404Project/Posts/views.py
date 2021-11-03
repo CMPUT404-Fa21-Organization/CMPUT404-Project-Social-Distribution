@@ -13,6 +13,7 @@ import uuid
 import re
 import uuid
 import re
+import base64
 
 # Create your views here.
 # TODO Better CSS for Stream
@@ -23,17 +24,20 @@ def MyStreamView(request):
     
     if(request.user.is_authenticated):
         author = request.user
-        postsObjects = Post.objects.filter(author_id=author.pk)
+        postsObjects = Post.objects.filter(author_id=author.pk) | Post.objects.filter(visibility = "Public")
 
     else:
         author = None
-        postsObjects = Post.objects.all()
+        postsObjects = Post.objects.filter(visibility = "Public")
+    
+    postsObjects = postsObjects.order_by('-published')
 
     posts = PostSerializer(postsObjects, many=True)
     
+    # If Content is image
     for post in posts.data:
         post["isImage"] = False
-        if(post["content"][:2] == "b'"):
+        if(post["contentType"] == "image/png" or post["contentType"] == "image/jpg"):
             post["isImage"] = True
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
@@ -55,8 +59,10 @@ def newPost(request, func, uid=None):
         unlisted = form.cleaned_data['unlisted']
         contentType = form.cleaned_data['contentType']
 
-        if contentType in ["application/app", "image/png", "image/jpeg",]: 
+        if contentType == "application/app": 
             content = request.FILES['file'].read() #Inputfile
+        elif contentType in ["image/png", "image/jpeg",]:
+            content = base64.b64encode(request.FILES['file'].read()) #Inputfile
         else:
             content = form.cleaned_data["text"]
 
