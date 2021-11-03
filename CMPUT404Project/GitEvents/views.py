@@ -21,7 +21,8 @@ def GithubEventsView(request):
 
     try:
         if request.user.is_authenticated:
-            git_username = request.user.github
+            git_url = request.user.github
+            git_username = git_url.replace("http://github.com/", "")
             response = requests.get(f'https://api.github.com/users/{git_username}/events/public')
 
             activities = []
@@ -77,5 +78,7 @@ def GithubEventsView(request):
             # return HttpResponse(activities, status=status.HTTP_200_OK)
             # return JsonResponse(context, safe=False, status=status.HTTP_200_OK)
     except Exception as e:
-        raise NotFound(e)
+        # raise NotFound(e)
+        return render(request, 'LinkedSpace/GitHub/github_404.html', status=status.HTTP_404_NOT_FOUND)
+
     

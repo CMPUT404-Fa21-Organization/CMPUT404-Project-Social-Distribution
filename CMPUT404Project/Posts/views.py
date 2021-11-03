@@ -1,8 +1,8 @@
 from django.core import serializers
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 from django.utils import timezone
-from django.shortcuts import redirect, render
-import Posts
+from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import PostSerializer
@@ -11,12 +11,9 @@ from .form import PostForm
 import json
 import uuid
 import re
-import base64
 import uuid
 import re
-from django.conf import settings
-import os
-import glob
+import base64
 
 # Create your views here.
 # TODO Better CSS for Stream
@@ -40,7 +37,7 @@ def MyStreamView(request):
     # If Content is image
     for post in posts.data:
         post["isImage"] = False
-        if(post["contentType"] == "png" or post["contentType"] == "jpeg"):
+        if(post["contentType"] == "image/png" or post["contentType"] == "image/jpg"):
             post["isImage"] = True
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
@@ -52,107 +49,123 @@ def MyStreamView(request):
     return HttpResponse(render(request, template_name, context),status=200)
 
 
-@api_view(['GET',])
-def PostsList(request, auth_pk=None):
-    if auth_pk != None:
-        post = Post.objects.filter(author_id=auth_pk)
-    else:
-        post = Post.objects.all()
-    serializer = PostSerializer(post, many=True)
+def newPost(request, func, uid=None):
+    form = PostForm(request.POST, request.FILES)
+    if form.is_valid():
+        title = form.cleaned_data['title']
+        descirption = form.cleaned_data['description']
+        categories = form.cleaned_data['categories']
+        visibility = form.cleaned_data['visibility']
+        unlisted = form.cleaned_data['unlisted']
+        contentType = form.cleaned_data['contentType']
 
-    return Response(serializer.data)
+        if contentType == "application/app": 
+            content = request.FILES['file'].read() #Inputfile
+        elif contentType in ["image/png", "image/jpeg",]:
+            content = base64.b64encode(request.FILES['file'].read()) #Inputfile
+        else:
+            content = form.cleaned_data["text"]
 
-@api_view(['GET',])
-def PostDetail(request, post_pk, auth_pk=None):
-    post = Post.objects.filter(post_pk=post_pk)
-    serializer = PostSerializer(post, many=True)
+        source = ""
+        origin = ""
+        author_id = request.user
+        print(json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',))))
+        print("========================")
+        author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
+        published = timezone.now()
 
-    return Response(serializer.data)
-'''
-@api_view(['GET',])
-def comment(request, auth_pk, post_pk, comment_pk):
-    comment = Comments.objects.get(pk=comment_pk)
-    serializer = CommentSerializer(post, many=False)
-    return Response(serializer.data)
-'''
-
-def add_Post(request, auth_pk=None):
-    if request.method == "POST":
-        form = PostForm(request.POST, request.FILES)
-        if form.is_valid():
-            title = form.cleaned_data['title']
-            source = form.cleaned_data['source']
-            origin = form.cleaned_data['origin']
-            descirption = form.cleaned_data['description']
-            visibility = form.cleaned_data['visibility']
-            unlisted = form.cleaned_data['unlisted']
-            contentType = form.cleaned_data['contentType']
-
-            if contentType in ["app", "html"]: 
-                content = request.FILES['file'].read() #Inputfile
-            elif contentType in ["png", "jpeg"]:
-                content = base64.b64encode(request.FILES['file'].read()) #Inputfile
-            else:
-                content = form.cleaned_data["text"]
-
-            author_id = request.user
-            author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
-            published = timezone.now()
-
-            # content = 'text plain'
-
+        if uid == None:
             r_uid = uuid.uuid4().hex
             uid = re.sub('-', '', r_uid)
+        id = request.user.id + '/posts/' + uid
+        comments_id = id + "/comment/"
 
-            id = request.user.id + '/posts/' + uid
-            comments_id = id + "/comments"
+        posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, categories=categories,visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
+        posts.save()
+        path = request.get_full_path().split('/')
 
-            posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
-            # comments = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
-            posts.save()
-
-            return redirect(PostsList, request.user.pk)
-
+        if func == PostsList:
+            if len(path) > 4:
+                return HttpResponseRedirect(reverse("postsHome", args=[path[2]]))
+            else:
+                return HttpResponseRedirect(reverse("postsHome"))
         else:
-            print(form.errors)
+            if len(path) > 4:
+                return HttpResponseRedirect(reverse("post", args=[uid, path[2],]))
+            else:
+                return HttpResponseRedirect(reverse("post", args=[uid,]))
     else:
+        print(form.errors)
         form = PostForm()
-    return render(request, "LinkedSpace/Posts/add_post.html", {'form': form, 'user':request.user})
+        context = {'form': form, 'user':request.user, 'method':'PUT'}
+        return render(request, "LinkedSpace/Posts/add_post.html", context)
 
-'''
-@api_view(['GET',])
-def commentListView(request):
-    comment = Comments.objects.all()
-    serializer = PostSerializer(comment, many=True)
 
-def add_Comment(request, auth_pk, post_pk):
-    if request.method == "POST":
-        form = CommentForm(request.POST, request.FILES)
-        if form.is_valid():
-            size = form.cleaned_data['size']
-            unlisted = form.cleaned_data['unlisted']
-            published = timezone.now()
-            content = request.FILES['file'].read()
-            
-            author_id = request.user
-            author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
+def deletePost(request, auth_pk, post_pk):
+    post = Post.objects.get(pk=post_pk)
+    if post.author_id_id == request.user.pk:
+        post.delete()
+    request.method = 'GET'
+    return HttpResponseRedirect(reverse("postsHome", args=[auth_pk,]))
 
-            comments = Comments(author_id=author_id, author=author, size = 10, unlisted=unlisted)
-            comment_id = Posts.comments_id + '/' + Comments.pk 
-            comments.save()
 
-            return redirect(commentListView)
+@api_view(['GET', 'POST',])
+def PostsList(request, auth_pk=None):
+    if request.method == 'GET':
+        if request.get_full_path().split(' ')[0].split('/')[-2] == 'add_post':
+            form = PostForm()
+            path =  request.get_full_path()[:-9]
+            context = {'form': form, 'name':request.user.displayName, 'method':'POST', 'path':path}
+            return render(request, "LinkedSpace/Posts/add_post.html", context)
         else:
-            print(form.as_table, '\n')
-            print(form.errors)
-    else:
-        form = CommentForm()
-    return render(request, "LinkedSpace/Posts/add_comment.html", {'form': form, 'user':request.user.id})
-'''
+            if auth_pk != None:
+                post = Post.objects.filter(author_id=auth_pk)
+            else:
+                post = Post.objects.all()
+            serializer = PostSerializer(post, many=True)
 
-# class postList(generics.ListCreateAPIView):
-#     queryset = Post.objects.all()
-#     http_method_names = ['get']
-#     serializer_class = PostSerializer
+            return Response(serializer.data)
+    elif request.method == 'POST':
+        return newPost(request, PostsList)
 
-# postListView = postList.as_view()
+@api_view(['GET', 'POST', 'PUT', 'DELETE', ])
+def PostDetail(request, post_pk=None, auth_pk=None):
+    if request.method == 'GET':
+        if request.get_full_path().split(' ')[0].split('/')[-2] == 'add_post':
+            form = PostForm()
+            path = request.get_full_path()[:-9]
+            context = {'form': form, 'name':request.user.displayName, 'method':'PUT', 'path':path}
+            return render(request, "LinkedSpace/Posts/add_post.html", context)
+        else:
+            post = Post.objects.filter(post_pk=post_pk)
+            serializer = PostSerializer(post, many=True)
+
+            return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        print(request.get_full_path().split(' ')[0].split('/'))
+        uid = request.get_full_path().split(' ')[0].split('/')[-3]
+        return newPost(request, PostDetail, uid)
+
+    elif request.method == 'DELETE':
+        post = Post.objects.get(pk=post_pk)
+        if post.author_id_id == request.user.pk:
+            post.delete()
+        if auth_pk != None:
+            post = Post.objects.filter(author_id=auth_pk)
+        else:
+            post = Post.objects.all()
+        serializer = PostSerializer(post, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        uid = request.get_full_path().split(' ')[0].split('/')[-3]
+        return newPost(request, PostDetail, uid)
+
+
+@api_view(['GET',])
+def ManagePostsList(request):
+    posts = Post.objects.filter(author_id=request.user).order_by('-published')
+    # posts = Post.objects.all().order_by('-published')
+    
+    return render(request, "LinkedSpace/Posts/manage_posts.html", {'posts': posts})

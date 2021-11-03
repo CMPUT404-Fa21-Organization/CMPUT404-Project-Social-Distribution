@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'Author.apps.AuthorConfig',
     'Posts.apps.PostsConfig',
     'GitEvents.apps.GiteventsConfig',
+    'markdownify.apps.MarkdownifyConfig',
 
     'crispy_forms',
     'rest_framework',
@@ -152,3 +153,24 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 LOGOUT_REDIRECT_URL = 'login'
+
+
+MARKDOWNIFY = {
+   "default": {
+      "WHITELIST_TAGS": ["a", "p", "h1", "h2", "h3", "h4", "h5", "h6",'abbr',
+            'acronym',
+            'b',
+            'blockquote',
+            'em',
+            'i',
+            'li',
+            'ol',
+            'p',
+            'strong',
+            'ul',
+            'br',
+            'code',
+            'hr',
+            ]
+   }
+}
