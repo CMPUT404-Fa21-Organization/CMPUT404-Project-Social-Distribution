@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from .serializers import PostSerializer
 from .models import Post, Author
 from .form import PostForm
+from Author.serializers import *
+from Author.models import *
 import json
 import uuid
 import re
@@ -27,21 +29,23 @@ def MyStreamView(request):
     
     if(request.user.is_authenticated):
         author = request.user
-        postsObjects = Post.objects.filter(author_id=author.pk)
+        postsObjects = Post.objects.filter(author_id=author.pk) | Post.objects.filter(visibility = "Public")
 
     else:
         author = None
-        postsObjects = Post.objects.all()
+        postsObjects = Post.objects.filter(visibility = "Public")
+    
+    postsObjects = postsObjects.order_by('-published')
 
     posts = PostSerializer(postsObjects, many=True)
     
+    # If Content is image
     for post in posts.data:
         post["isImage"] = False
-        if(post["content"][:2] == "b'"):
+        if(post["contentType"] == "png" or post["contentType"] == "jpeg"):
             post["isImage"] = True
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
-            
 
     context = {'posts':posts.data, 'user':author}
 
@@ -85,8 +89,10 @@ def add_Post(request, auth_pk=None):
             unlisted = form.cleaned_data['unlisted']
             contentType = form.cleaned_data['contentType']
 
-            if contentType in ["app", "png", "jpeg", "html"]: 
+            if contentType in ["app", "html"]: 
                 content = request.FILES['file'].read() #Inputfile
+            elif contentType in ["png", "jpeg"]:
+                content = base64.b64encode(request.FILES['file'].read()) #Inputfile
             else:
                 content = form.cleaned_data["text"]
 
