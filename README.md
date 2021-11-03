@@ -29,7 +29,7 @@ We also won’t be adding much in the way of encryption or security to this plat
 
 * https://www.youtube.com/watch?v=tUqUdu0Sjyc - Login and authentication
 * https://realpython.com/django-redirects/ - Redirects
-* https://www.w3docs.com/snippets/html/how-to-display-base64-images-in-html.html
+* https://www.w3docs.com/snippets/html/how-to-display-base64-images-in-html.html - Displaying base64 images
 
 ## Technical sources
 
