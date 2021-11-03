@@ -43,6 +43,7 @@ We also won’t be adding much in the way of encryption or security to this plat
 * https://www.w3docs.com/snippets/html/how-to-display-base64-images-in-html.html - Displaying base64 images
 * https://openclassrooms.com/en/courses/7107341-intermediate-django/7265468-create-many-to-many-relationships - Many to many relationships
 * https://stackoverflow.com/questions/63135702/django-automatic-logout-and-and-after-login-it-stays-on-same-page
+* https://stackoverflow.com/questions/53594745/what-is-the-use-of-cleaned-data-in-django
 
 ## Technical sources
 
