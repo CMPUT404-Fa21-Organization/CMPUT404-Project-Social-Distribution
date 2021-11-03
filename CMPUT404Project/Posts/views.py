@@ -8,8 +8,6 @@ from rest_framework.response import Response
 from .serializers import PostSerializer
 from .models import Post, Author
 from .form import PostForm
-from Author.serializers import *
-from Author.models import *
 import json
 import uuid
 import re
@@ -46,6 +44,7 @@ def MyStreamView(request):
             post["isImage"] = True
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
+            
 
     context = {'posts':posts.data, 'user':author}
 
