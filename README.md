@@ -23,15 +23,31 @@ We also won’t be adding much in the way of encryption or security to this plat
 
 ## Model Names
 
+* Author
+* Like
+* Liked
+* Followers
+* Inbox
+* Post
+
 ## Architecture
+
+* Backend: SQLite3 and Django
+* Frontend: Bootstrapped CSS & HTML
 
 ## References
 
 * https://www.youtube.com/watch?v=tUqUdu0Sjyc - Login and authentication
 * https://realpython.com/django-redirects/ - Redirects
 * https://www.w3docs.com/snippets/html/how-to-display-base64-images-in-html.html - Displaying base64 images
+* https://openclassrooms.com/en/courses/7107341-intermediate-django/7265468-create-many-to-many-relationships - Many to many relationships
+* https://stackoverflow.com/questions/63135702/django-automatic-logout-and-and-after-login-it-stays-on-same-page
 
 ## Technical sources
 
 * https://docs.djangoproject.com
 * https://www.django-rest-framework.org/
+* https://getbootstrap.com/docs/5.0/getting-started/introduction/
+* https://docs.github.com/en/rest/reference/activity
+* https://docs.github.com/en/developers/webhooks-and-events/events/github-event-types
+* https://django-markdownify.readthedocs.io/en/latest/index.html
