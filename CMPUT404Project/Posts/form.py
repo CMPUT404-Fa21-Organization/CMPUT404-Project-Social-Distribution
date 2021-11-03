@@ -2,33 +2,38 @@ from django import forms
 from django.forms import ModelForm
 from .models import Post, Author
 from django.core import serializers
-from django.db.models.deletion import CASCADE
 
 class PostForm(forms.Form):
     title = forms.CharField(max_length=200)
-    source = forms.CharField(max_length=200, required=False)
-    origin = forms.CharField(max_length=200, required=False)
     description = forms.CharField(max_length=500, required=False)
 
-    content_type = (("markdown", "text/markdown"),
-                    ("plain", "text/plain"),
-                    ("app", "application/base64"),
-                    ("png", "image/png;base64"),
-                    ("jpeg", "image/jpeg;base64"),
-                    ("html", "HTML"),
+    content_type = (("text/markdown", "text/markdown"),
+                    ("text/plain", "text/plain"),
+                    ("application/app", "application/base64"),
+                    ("image/png", "image/png;base64"),
+                    ("image/jpeg", "image/jpeg;base64"),
+                    ("HTML", "HTML"),
                     )
     contentType = forms.CharField(max_length=20, required=True,
-            widget=forms.Select(choices=content_type))
-    text = forms.CharField(required=False)
+            widget=forms.Select(choices=content_type, attrs={'class':'dropdown-item', 'style':'width:20%; background-color:#ededed;'}))
+    text = forms.CharField(required=False, widget= forms.Textarea)
     file = forms.FileField(required=False)
 
+
+    categories_list = (
+        ('Web', 'Web'),
+        ('Tutorial', 'Tutorial'),
+    )
+
+    categories = forms.CharField(max_length=20, required=True,
+        widget=forms.Select(choices=categories_list, attrs={'class':'dropdown-item', 'style':'width:20%; background-color:#ededed;'}))
 
     visible = (
             ('PUBLIC', 'Public'),
             ('FRIENDS', 'Friends'),
     )
     visibility = forms.CharField(max_length=20, required=True,
-            widget=forms.Select(choices=visible))
+            widget=forms.Select(choices=visible, attrs={'class':'dropdown-item', 'style':'width:20%; background-color:#ededed;'}))
     unlisted = forms.BooleanField(required=False)
 
     fields = [
