@@ -26,40 +26,6 @@ from rest_framework.mixins import DestroyModelMixin
 
 from .models import Author
 
-def getInboxData(serializer):
-        iPosts = serializer.data.pop("iPosts")
-        iLikes = serializer.data.pop("iLikes")
-        iFollows = serializer.data.pop("iFollows")
-
-        data = {}
-        likes = []
-        for key in serializer.data:
-            if(key != "iPosts" and key != "iLikes" and key != "iFollows"):
-                data[key] = serializer.data[key]
-
-        for l in iLikes:
-            like = {}
-            for key in l:
-                if(key != "context"):
-                    like[key] = l[key]
-            like["@context"] = l["context"]
-            like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
-            likes.append(like)
-
-        for f in iFollows:
-            f["actor"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=f["actor"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
-            f["object"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=f["object"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
-
-        for item in iPosts:
-            data["items"].append(item)
-        for item in likes:
-            data["items"].append(item)
-        for item in iFollows:
-            data["items"].append(item)
-        
-        return data
-
-
 # Create your views here.
 def authorHome(request):
     template_name = 'LinkedSpace/Author/author.html'
@@ -113,6 +79,40 @@ def AuthorDetailView(request, auth_pk):
     #         raise ValidationError({str(e): status.HTTP_404_NOT_FOUND})
 
 
+# Auxillary Function for Inbox
+def getInboxData(serializer):
+        iPosts = serializer.data.pop("iPosts")
+        iLikes = serializer.data.pop("iLikes")
+        iFollows = serializer.data.pop("iFollows")
+
+        data = {}
+        likes = []
+        for key in serializer.data:
+            if(key != "iPosts" and key != "iLikes" and key != "iFollows"):
+                data[key] = serializer.data[key]
+
+        for l in iLikes:
+            like = {}
+            for key in l:
+                if(key != "context"):
+                    like[key] = l[key]
+            like["@context"] = l["context"]
+            like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
+            likes.append(like)
+
+        for f in iFollows:
+            f["actor"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=f["actor"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
+            f["object"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=f["object"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
+
+        for item in iPosts:
+            data["items"].append(item)
+        for item in likes:
+            data["items"].append(item)
+        for item in iFollows:
+            data["items"].append(item)
+        
+        return data
+
 @api_view(['GET', 'POST', 'DELETE'])
 def AuthorInboxView(request, auth_pk):
     try:
@@ -120,8 +120,8 @@ def AuthorInboxView(request, auth_pk):
 
         # if not the inbox of logged in user then redirect to login page
         # TODO is this what we want?
-        if(request.user.id != author.id or not request.user.is_authenticated):
-            return HttpResponseRedirect(reverse('login'))
+        # if(request.user.id != author.id or not request.user.is_authenticated):
+        #     return HttpResponseRedirect(reverse('login'))
 
         inbox =  Inbox.objects.get(pk=auth_pk)
     except Author.DoesNotExist:
@@ -238,4 +238,6 @@ def AuthorInboxView(request, auth_pk):
 #     queryset = Inbox.objects.all()
 #     lookup_field = 'auth_pk'
 #     http_method_names = ["get", "delete"]
+
+
 
