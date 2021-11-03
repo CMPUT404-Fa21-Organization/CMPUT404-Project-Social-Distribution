@@ -27,6 +27,7 @@ We also won’t be adding much in the way of encryption or security to this plat
 * Like
 * Liked
 * Followers
+* FriendRequest
 * Inbox
 * Post
 
