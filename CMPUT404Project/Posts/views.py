@@ -37,7 +37,7 @@ def MyStreamView(request):
     # If Content is image
     for post in posts.data:
         post["isImage"] = False
-        if(post["contentType"] == "image/png" or post["contentType"] == "image/jpg"):
+        if(post["contentType"] == "image/png" or post["contentType"] == "image/jpeg"):
             post["isImage"] = True
             imgdata = post["content"][2:-1]
             post["image"] = imgdata

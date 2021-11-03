@@ -15,12 +15,11 @@
             <div class = "postContent">
                 {% if post.isImage %}
                     <img src="data:{{ post.contentType }};base64, {{ post.image }}"/>
-                {% else %}
-                    <p> {{post.content}}</p>
                 {% elif post.contentType == "text/markdown"%}
-
                     {% load markdownify %}
                     <p>{{ post.content |markdownify }}</p>
+                {% else %}
+                    <p> {{post.content}}</p>
                 {% endif %}
             </div>
             <div class = "postComments">
