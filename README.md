@@ -21,6 +21,15 @@ We are going to go with an inbox model where by you share posts to your friends 
 
 We also won’t be adding much in the way of encryption or security to this platform. We’re keeping it simple and restful.
 
+## Installation and local deployment instructions:
+
+1. Clone repository `git clone https://github.com/CMPUT404-Fa21-Organization/CMPUT404-Project-Social-Distribution.git`
+2. Move to project directory with `cd CMPUT404-Project-Social-Distribution.git`
+3. Create a virtual env with `virtualenv venv --python=python3` and activate it using `source venv/bin/activate`
+4. Install requirements after `cd CMPUT404Project` with `pip install -r requirements.txt`
+5. Run `python manage.py makemigrations` and `python manage.py migrate` to make migrations.
+6. To run locally, run `python manage.py runserver` and view site on 127.0.0.1:8000/
+
 ## Model Names
 
 * Author
