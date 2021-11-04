@@ -30,6 +30,10 @@ We also won’t be adding much in the way of encryption or security to this plat
 5. Run `python manage.py makemigrations` and `python manage.py migrate` to make migrations.
 6. To run locally, run `python manage.py runserver` and view site on 127.0.0.1:8000/
 
+## API Documentation (WIP)
+
+Can be found on [Wiki -> API Documentation](https://github.com/CMPUT404-Fa21-Organization/CMPUT404-Project-Social-Distribution/wiki/API-Documentation)
+
 ## Model Names
 
 * Author
