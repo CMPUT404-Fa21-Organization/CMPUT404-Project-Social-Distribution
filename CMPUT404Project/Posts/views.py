@@ -24,11 +24,11 @@ def MyStreamView(request):
     
     if(request.user.is_authenticated):
         author = request.user
-        postsObjects = Post.objects.filter(author_id=author.pk) | Post.objects.filter(visibility = "Public")
+        postsObjects = Post.objects.filter(author_id=author.pk) | Post.objects.filter(visibility = "PUBLIC")
 
     else:
         author = None
-        postsObjects = Post.objects.filter(visibility = "Public")
+        postsObjects = Post.objects.filter(visibility = "PUBLIC")
     
     postsObjects = postsObjects.order_by('-published')
 
