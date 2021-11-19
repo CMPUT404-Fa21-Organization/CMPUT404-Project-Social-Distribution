@@ -19,7 +19,7 @@ from django.urls import include, path
 from Posts.views import MyStreamView
 from . import views
 from Posts.views import ManagePostsList
-from Author.views import AuthorsListView
+from Author.views import AuthorsListView, MyInboxView, acceptFollow
 
 
 urlpatterns = [
@@ -33,5 +33,7 @@ urlpatterns = [
     path('stream/', MyStreamView, name='user-stream-view'),
     path('author/', include('Author.urls')),
     path('git/', include('GitEvents.urls')),
+    path('inbox/', MyInboxView, name='author-inbox-frontend'),
+    path('inbox/acceptFollow/', acceptFollow, name='accept-follow')
     # path('posts/',  include('Posts.urls')),
 ]

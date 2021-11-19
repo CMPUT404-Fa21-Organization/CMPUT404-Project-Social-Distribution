@@ -10,12 +10,13 @@ import json
 import uuid
 import re
 from django.urls import reverse
+import requests
 
 
 from django.shortcuts import HttpResponse, render
 
 from Posts.models import *
-from .models import Author, FriendRequest, Inbox, Like
+from .models import Author, FriendRequest, Inbox, Like, Followers
 
 import django.core
 
@@ -30,6 +31,81 @@ from .models import Author
 def authorHome(request):
     template_name = 'LinkedSpace/Author/author.html'
     return render(request, template_name)
+
+
+def acceptFollow(request):
+    # Code to accept follow request goes here.
+
+    # print(request.POST["objectID"])
+    # print(request.POST["actorID"])
+    if(request.user.id == request.POST["objectID"]):
+        # Delete the friend request
+        try:
+            frequest = FriendRequest.objects.filter(actor = Author.objects.get(id=request.POST["actorID"]) , object = Author.objects.get(id=request.POST["objectID"]))
+            frequest.delete()
+        except:
+            pass
+
+        # Add to followers
+
+        actor = Author.objects.get(id=request.POST["actorID"])
+        object = Author.objects.get(id=request.POST["objectID"])
+
+        followersObj = Followers.objects.get(pk = object.pk)
+
+        if actor not in followersObj.items.all():
+            followersObj.items.add(actor)
+
+        # Follow is not bidirectional
+        # followersAct = Followers.objects.get(pk = actor.pk)
+
+        # if object not in followersAct.items.all():
+        #     followersAct.items.add(object)
+        
+
+    return HttpResponseRedirect(reverse('author-inbox-frontend'))
+
+def MyInboxView(request):
+    # Non API view, Displays the users posts and github activity
+    # TODO Better CSS for front-end of inbox
+    author = request.user
+    inbox =  Inbox.objects.get(pk=author.pk)
+    serializer = InboxSerializer(inbox, many=False)
+    data = getInboxData(serializer)
+    items = data["items"]
+
+    posts = [i for i in items if i["type"] == "post"]
+    posts.reverse()
+
+    likes = [i for i in items if i["type"] == "like"]
+    likes.reverse()
+
+    follows = [i for i in items if i["type"] == "follow"]
+    follows.reverse()
+    
+
+    
+    # If Content is image
+    for post in posts:
+        post["isImage"] = False
+        if(post["contentType"] == "image/png" or post["contentType"] == "image/jpeg"):
+            post["isImage"] = True
+            imgdata = post["content"][2:-1]
+            post["image"] = imgdata
+
+    
+    # # Determine if like is for post or comment
+    # for like in likes:
+    #     if "comment" in like["object"]:
+    #         like["isComment"] = True
+    #     else:
+    #         like["isComment"] = False
+
+
+    context = {'user':author, 'posts':posts, 'likes':likes, 'follows': follows}
+
+    template_name = 'LinkedSpace/Author/inbox.html'
+    return HttpResponse(render(request, template_name, context),status=200)
 
 @api_view(['GET',])
 def AuthorsListView(request):
@@ -112,6 +188,7 @@ def getInboxData(serializer):
             data["items"].append(item)
         
         return data
+
 
 @api_view(['GET', 'POST', 'DELETE'])
 def AuthorInboxView(request, auth_pk):

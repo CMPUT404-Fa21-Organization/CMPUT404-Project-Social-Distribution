@@ -1,0 +1,58 @@
+{% extends '../base.html' %}
+
+{% block title %}
+    Inbox
+{% endblock %}
+
+{% block content %}
+    <!-- TODO: BETTER CSS -->
+    <h1>Welcome to your inbox {{ user.displayName }} </h1>
+
+    {% for follow in follows %}
+        <div class = "post card">
+            <span style="display: inline;">
+                {% if user.is_authenticated %}
+                    <form action='acceptFollow/' method= 'POST' enctype="multipart/form-data">
+                     {% csrf_token %}
+                    <input type="hidden" id="actorID" name="actorID" value={{follow.actor.id}}>
+                    <input type="hidden" id="objectID" name="objectID" value={{follow.object.id}}>
+                    <input type = "submit" value="Accept" class = "acceptFollow" style="background-color: rgb(0, 217, 255);">
+                {% else %}
+                    <h3><a href={% url 'login' %} >Login</a></h3>
+                {% endif %}
+                <h3 class = "postTitle" style="display: inline;">{{ follow.summary }}</h3>
+            </span>
+            
+        </div>
+        
+    {% endfor %}
+
+    {% for like in likes %}
+        <div class = "post card">
+            <h2 class = "postTitle"><a href={{ like.object}}>{{ like.summary }}</a></h2>
+        </div>
+        
+    {% endfor %}
+
+    {% for post in posts %}
+        <div class = "post card">
+            <h2 class = "postTitle">{{ post.title }}</h2>
+            <hr/>
+            <p class = "postDesc">{{ post.description }}</p>
+            <div class = "postContent">
+                {% if post.isImage %}
+                    <img src="data:{{ post.contentType }};base64, {{ post.image }}"/>
+                {% elif post.contentType == "text/markdown"%}
+                    {% load markdownify %}
+                    <p>{{ post.content |markdownify }}</p>
+                {% else %}
+                    <p> {{post.content}}</p>
+                {% endif %}
+            </div>
+            <div class = "postComments">
+                Comments: <a href={{ post.comments }}>{{ post.comments }}</a> 
+            </div>
+        </div>
+        
+    {% endfor %}
+{% endblock %}
