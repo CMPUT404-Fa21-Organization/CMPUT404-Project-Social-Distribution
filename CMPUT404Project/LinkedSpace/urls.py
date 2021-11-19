@@ -18,7 +18,7 @@ from django.urls import include, path
 
 from Posts.views import MyStreamView
 from . import views
-from Posts.views import ManagePostsList
+from Posts.views import ManagePostsList, newLike
 from Author.views import AuthorsListView, MyInboxView, acceptFollow
 
 
@@ -34,6 +34,7 @@ urlpatterns = [
     path('author/', include('Author.urls')),
     path('git/', include('GitEvents.urls')),
     path('inbox/', MyInboxView, name='author-inbox-frontend'),
-    path('inbox/acceptFollow/', acceptFollow, name='accept-follow')
+    path('inbox/acceptFollow/', acceptFollow, name='accept-follow'),
+    path('stream/newLike/', newLike, name='add-like')
     # path('posts/',  include('Posts.urls')),
 ]

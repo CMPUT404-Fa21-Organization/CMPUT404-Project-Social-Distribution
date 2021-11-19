@@ -6,6 +6,8 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import PostSerializer
+from Author.serializers import LikeSerializer
+from Author.models import Inbox, Like, Liked
 from .models import Post, Author
 from .form import PostForm
 import json
@@ -16,11 +18,41 @@ import re
 import base64
 
 # Create your views here.
+def newLike(request):
+    # View to create a new like object after clicking the like button
+    # print(request.POST["postID"])
+
+    # TODO what is context supposed to be?
+    context = "https://www.w3.org/ns/activitystreams"
+    author = request.user
+    object = request.POST["postID"]
+    objectType = "post"
+    if "comment" in object:
+        objectType = "comment"
+    post = Post.objects.get(id = object)
+    postAuthor = Author.objects.get(email = post.author_id)
+  
+    summary = request.user.displayName + " liked " + postAuthor.displayName + "'s " + objectType
+    if(Like.objects.filter(auth_pk = author, object = object).count() == 0):
+        like = Like(context = context, auth_pk = author, object = object, summary = summary)
+        like.save()
+
+        # Send to inbox
+        if author != postAuthor:
+            inbox = Inbox.objects.get(auth_pk = postAuthor)
+            inbox.iLikes.add(like)
+    else:
+        like = Like.objects.filter(auth_pk = author, object = object)
+        like.delete()
+
+    return HttpResponseRedirect(reverse('user-stream-view'))
+
+
 # TODO Better CSS for Stream
 # Non API view, Displays the users posts and github activity
 def MyStreamView(request):
     # TODO Add Github API stuff here
-    # TODO only display public posts if user not authenticated
+    # TODO Following Posts
     
     if(request.user.is_authenticated):
         author = request.user
@@ -41,6 +73,27 @@ def MyStreamView(request):
             post["isImage"] = True
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
+
+    # Like Stuff
+    # Calculte Number of Likes for Posts
+    likeObjects = Like.objects.all()  
+    likes = LikeSerializer(likeObjects,  many=True)   
+    for post in posts.data:
+        post["userLike"] = False
+        post["numLikes"] = 0
+        for like in likes.data:
+            if post["id"] == like["object"]:
+                post["numLikes"] += 1
+    
+    # Check which posts the user has already liked
+    if(request.user.is_authenticated):
+        likeObjects = Like.objects.filter(auth_pk = author)  
+        userLikes = LikeSerializer(likeObjects,  many=True) 
+        for post in posts.data:
+            for like in userLikes.data:
+                if post["id"] == like["object"]:
+                    post["userLike"] = True
+
             
 
     context = {'posts':posts.data, 'user':author}

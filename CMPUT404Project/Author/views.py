@@ -32,7 +32,6 @@ def authorHome(request):
     template_name = 'LinkedSpace/Author/author.html'
     return render(request, template_name)
 
-
 def acceptFollow(request):
     # Code to accept follow request goes here.
 
