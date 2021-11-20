@@ -3,6 +3,7 @@ import uuid
 import re
 from django.db import models
 from django.db.models.deletion import CASCADE
+from django.utils import tree
 from Author.models import Author
 from Posts.models import Post
 
@@ -21,14 +22,10 @@ class Base64Field(models.TextField):
     data = property(get_data, set_data)
 
 class Comments(models.Model):
-    r_uid = uuid.uuid4().hex
-    uid = re.sub('-', '', r_uid)
-    comment_pk = models.CharField(primary_key=True, max_length=100, default=uid, editable=False)
+    comment_pk = models.CharField(primary_key=True, max_length=100, editable=False)
 
-    Post_pk = models.ForeignKey(Post, on_delete=CASCADE, related_name ='+')
+    Post_pk = models.ForeignKey(Post, on_delete=CASCADE, blank=True, null=True, related_name ='comment')
     author = models.JSONField(editable=False)
-    
-    uri = 'comments/' + uid
 
     id = models.CharField(max_length=200, editable=False)
 
