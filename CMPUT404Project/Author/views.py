@@ -32,6 +32,15 @@ def authorHome(request):
     template_name = 'LinkedSpace/Author/author.html'
     return render(request, template_name)
 
+def clearInbox(request):
+    if(request.user.is_authenticated):
+        inbox = Inbox.objects.get(auth_pk = request.user)
+        inbox.iPosts.set([None])
+        inbox.iLikes.set([None])
+        inbox.iFollows.set([None])
+
+    return HttpResponseRedirect(reverse('author-inbox-frontend'))
+
 def acceptFollow(request):
     # Code to accept follow request goes here.
 

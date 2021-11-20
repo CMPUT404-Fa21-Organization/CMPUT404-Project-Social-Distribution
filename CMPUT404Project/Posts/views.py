@@ -20,8 +20,7 @@ import base64
 # Create your views here.
 def newLike(request):
     # View to create a new like object after clicking the like button
-    # print(request.POST["postID"])
-
+    
     # TODO what is context supposed to be?
     context = "https://www.w3.org/ns/activitystreams"
     author = request.user
