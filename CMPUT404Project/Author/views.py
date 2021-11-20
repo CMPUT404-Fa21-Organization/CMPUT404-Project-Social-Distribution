@@ -44,8 +44,6 @@ def clearInbox(request):
 def acceptFollow(request):
     # Code to accept follow request goes here.
 
-    # print(request.POST["objectID"])
-    # print(request.POST["actorID"])
     if(request.user.id == request.POST["objectID"]):
         # Delete the friend request
         try:
