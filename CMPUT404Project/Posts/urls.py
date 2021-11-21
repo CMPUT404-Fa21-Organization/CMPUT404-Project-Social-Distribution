@@ -19,8 +19,10 @@ from .commentView import *
 
 urlpatterns = [
     path('', PostsList, name='postsHome'),
-    path('add_post/', add_Post, name='add_post'),
+    path('add_post/', PostsList, name='add_post'),
+    path('manage/', ManagePostsList, name='posts-manage'),
     path('<post_pk>/', PostDetail, name='post'),
+    path('<post_pk>/add_post/', PostDetail, name='add_post'),
     path('<post_pk>/add_comment/', add_Comment, name='add_comment'),
-    path('<post_pk>/comment/', commentListView, name='comment')
+    path('<post_pk>/comment/', commentListView, name='comment'),
 ]

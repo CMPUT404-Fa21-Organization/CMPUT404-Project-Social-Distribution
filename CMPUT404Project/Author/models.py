@@ -82,6 +82,9 @@ class Author(AbstractBaseUser, PermissionsMixin):
 
     def get_author_url(self):
         return f'{HOST}author/{str(self.auth_pk)}'
+    
+    def get_github_url(self):
+        return f'http://github.com/{str(self.github)}'
 
 class Like(models.Model):
 #   r_uid = uuid.uuid4().hex
