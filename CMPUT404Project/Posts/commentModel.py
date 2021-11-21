@@ -25,6 +25,7 @@ class Comments(models.Model):
     comment_pk = models.CharField(primary_key=True, max_length=100, editable=False)
 
     Post_pk = models.ForeignKey(Post, on_delete=CASCADE, blank=True, null=True, related_name ='comment')
+    Post_pk_str = models.CharField(max_length=300, editable=False)
     author = models.JSONField(editable=False)
 
     id = models.CharField(max_length=200, editable=False)

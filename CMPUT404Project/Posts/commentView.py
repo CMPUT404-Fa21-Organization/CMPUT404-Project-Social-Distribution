@@ -21,23 +21,32 @@ def commentDetail(request, post_pk, comment_pk, auth_pk=None):
     return Response(serializer.data)
 
 @api_view(['GET','POST'])
-def commentListView(request, post_pk, auth_pk=None):
-    if request.method == 'GET':
+def commentListView(request, post_pk):
+    print("view post_pk: ", post_pk)
+    comment = Comments.objects.get(Post_pk_str=post_pk)
+    serializer = CommentSerializer(comment, many=False)
+    return Response(serializer.data)
+"""     if request.method == 'GET':
         if request.get_full_path().split(' ')[0].split('/')[-2] == 'add_comment':
             form = CommentForm()
             path =  request.get_full_path()[:-9]
+            print("first")
             context = {'form': form, 'name':request.user.displayName, 'method':'POST', 'path':path}
             return render(request, "LinkedSpace/Posts/add_comment.html", context)
         else:
             if post_pk != None:
-                comment = Comments.objects.filter(Post_pk=post_pk)
+                print("second")
+                print(post_pk, type(post_pk))
+                #print(Comments.objects.filter(Post_pk_str=post_pk))
+                comment = Comments.objects.filter(Post_pk_str=post_pk)
             else:
                 comment = Comments.objects.all()
+                print("third")
             serializer = CommentSerializer(comment, many=True)
 
             return Response(serializer.data)
     elif request.method == 'POST':
-        return add_Comment(request, commentListView)
+        return add_Comment(request, commentListView) """
 
 def add_Comment(request, post_pk, auth_pk=None, uid=None):
     if request.method == "POST":
@@ -53,7 +62,8 @@ def add_Comment(request, post_pk, auth_pk=None, uid=None):
             author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'displayName', 'github',)))[0]['fields']
 
             post = Post.objects.get(pk = post_pk)
-            #print(getattr(post, 'comments'), type(getattr(post, 'comments')))
+            print("add_comment post_pk: ", post_pk)
+            post_pk_str = getattr(post, 'post_pk')
 
             if uid == None:
                 r_uid = uuid.uuid4().hex
@@ -61,7 +71,7 @@ def add_Comment(request, post_pk, auth_pk=None, uid=None):
             id = getattr(post, 'comments') + uid
             #print(id)
             #input()
-            comments = Comments(pk=uid, id=id, author=author, size=10, published=published, content=content)
+            comments = Comments(pk=uid, id=id, Post_pk_str = post_pk_str, author=author, size=10, published=published, content=content)
             #print(comments.objects)
             comments.save()
 
