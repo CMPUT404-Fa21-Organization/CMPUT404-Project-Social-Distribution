@@ -15,21 +15,21 @@ Run specified method: python3 manage.py test Author.tests.models.test_create_aut
 class AuthorTest(TestCase):
     def test_create_author(self):
         Author.objects.all().delete()
-        author = Author.objects.create(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
+        author = Author.objects.create_user(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
         self.assertTrue(Author.objects.filter(pk=author.auth_pk))
         return
 
     def test_author_str_(self):
         test_email = 'testauthor@email.com'
         Author.objects.all().delete()
-        author = Author.objects.create(email=test_email, displayName='Test Author', password='testauthorpassw0rd')
+        author = Author.objects.create_user(email=test_email, displayName='Test Author', password='testauthorpassw0rd')
         self.assertEqual(str(author.email), test_email)
 
     # def test_duplicate_author(self):
         # Author.objects.all().delete()
         # test_email = 'duplicateauthors@email.com'
-        # author = Author.objects.create(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
-        # dup_author = Author.objects.create(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
+        # author = Author.objects.create_user(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
+        # dup_author = Author.objects.create_user(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
         # print(Author.objects.create(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd'))
         # self.assertRaisesRegex(IntegrityError, 'UNIQUE constraint failed: Author_author.email',Author.objects.create(email='testauthor@email.com', displayName='Duplicate Author', password='duplicatepassw0rd'))
 
@@ -38,7 +38,7 @@ class AuthorTest(TestCase):
         
     def test_create_author_not_admin(self):
         Author.objects.all().delete()
-        author = Author.objects.create(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
+        author = Author.objects.create_user(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
         self.assertFalse(author.is_staff)
         self.assertFalse(author.is_superuser)
         self.assertFalse(author.is_admin_approved)
