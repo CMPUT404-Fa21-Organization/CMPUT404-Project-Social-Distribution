@@ -14,16 +14,12 @@
     {% for follow in follows %}
         <div class = "post card">
             <span style="display: inline;">
-                {% if user.is_authenticated %}
-                    <form action='acceptFollow/' method= 'POST' enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <input type="hidden" id="actorID" name="actorID" value={{follow.actor.id}}>
-                        <input type="hidden" id="objectID" name="objectID" value={{follow.object.id}}>
-                        <input type = "submit" value="Accept" class = "acceptFollow" style="background-color: rgb(0, 217, 255);">
-                    </form>
-                {% else %}
-                    <h3><a href={% url 'login' %} >Login</a></h3>
-                {% endif %}
+                <form action='acceptFollow/' method= 'POST' enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" id="actorID" name="actorID" value={{follow.actor.id}}>
+                    <input type="hidden" id="objectID" name="objectID" value={{follow.object.id}}>
+                    <input type = "submit" value="Accept" class = "acceptFollow" style="background-color: rgb(0, 217, 255);">
+                </form>
                 <h3 class = "postTitle" style="display: inline;">{{ follow.summary }}</h3>
             </span>
             
