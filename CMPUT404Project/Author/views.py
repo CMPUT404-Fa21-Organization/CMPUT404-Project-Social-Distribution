@@ -44,7 +44,7 @@ def clearInbox(request):
 def acceptFollow(request):
     # Code to accept follow request goes here.
 
-    if(request.user.id == request.POST["objectID"]):
+    if(request.user.is_authenticated and request.user.id == request.POST["objectID"]):
         # Delete the friend request
         try:
             frequest = FriendRequest.objects.filter(actor = Author.objects.get(id=request.POST["actorID"]) , object = Author.objects.get(id=request.POST["objectID"]))
@@ -69,7 +69,10 @@ def acceptFollow(request):
         #     followersAct.items.add(object)
         
 
-    return HttpResponseRedirect(reverse('author-inbox-frontend'))
+        return HttpResponseRedirect(reverse('author-inbox-frontend'))
+
+    else:
+        return HttpResponseRedirect(reverse('login'))
 
 def MyInboxView(request):
     # Non API view, Displays the users posts and github activity
