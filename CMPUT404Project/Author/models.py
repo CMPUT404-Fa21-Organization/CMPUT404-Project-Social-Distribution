@@ -117,9 +117,11 @@ class FriendRequest(models.Model):
         return Author.objects.get(email=self.object).get_author_url()
 
 class Followers(models.Model):
+    r_uid = uuid.uuid4().hex
+    uid = re.sub('-', '', r_uid)
     type = models.CharField(max_length=30, default='followers', editable=False)
-    items = models.ManyToManyField(FriendRequest, default=list, blank=True)
-
+    auth_pk= models.OneToOneField(Author, default=uid, on_delete=CASCADE, primary_key=True)
+    items = models.ManyToManyField(Author, default=list, blank=True, related_name ="items")
 
 class Inbox(models.Model):
     r_uid = uuid.uuid4().hex
