@@ -59,6 +59,7 @@ Can be found on [Wiki -> API Documentation](https://github.com/CMPUT404-Fa21-Org
 * https://stackoverflow.com/questions/53594745/what-is-the-use-of-cleaned-data-in-django
 * [Add actions to admin panel](https://simpleisbetterthancomplex.com/tutorial/2017/03/14/how-to-create-django-admin-list-actions.html)
 * [Restrict server access to admin approved users](https://stackoverflow.com/questions/49553511/why-authenticate-return-none-for-inactive-users)
+* [Adding flags/tags to Toast messages](https://docs.djangoproject.com/en/3.2/ref/contrib/messages/#adding-extra-message-tags)
 
 ## Technical sources
 
