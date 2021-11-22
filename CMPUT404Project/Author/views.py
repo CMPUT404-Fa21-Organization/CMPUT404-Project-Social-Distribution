@@ -102,6 +102,26 @@ def MyInboxView(request):
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
 
+    # Like Stuff
+    # Calculte Number of Likes for Posts
+    likeObjects = Like.objects.all()  
+    allLikes = LikeSerializer(likeObjects,  many=True)   
+    for post in posts:
+        post["userLike"] = False
+        post["numLikes"] = 0
+        for like in allLikes.data:
+            if post["id"] == like["object"]:
+                post["numLikes"] += 1
+    
+    # Check which posts the user has already liked
+    if(request.user.is_authenticated):
+        likeObjects = Like.objects.filter(auth_pk = author)  
+        userLikes = LikeSerializer(likeObjects,  many=True) 
+        for post in posts:
+            for like in userLikes.data:
+                if post["id"] == like["object"]:
+                    post["userLike"] = True
+
 
     context = {'user':author, 'posts':posts, 'likes':likes, 'follows': follows}
 
@@ -268,7 +288,7 @@ def AuthorInboxView(request, auth_pk):
             serializerPost = PostSerializer(data=request.data)
             
             if serializerPost.is_valid():
-                if(not "id" in serializerPost.validated_data):
+                if(not "id" in request.data):
 
                     serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
                     serializerPost.validated_data["author_id"] = Author.objects.get(id=request.user.id)
@@ -282,7 +302,7 @@ def AuthorInboxView(request, auth_pk):
                     inbox.iPosts.add(post)
                 
                 else:
-                    post = Post.objects.get(id= serializerPost.validated_data["id"])
+                    post = Post.objects.get(id= request.data["id"])
                     inbox.iPosts.add(post)
 
                 

@@ -46,7 +46,10 @@ def newLike(request):
             like = Like.objects.filter(auth_pk = author, object = object)
             like.delete()
 
-        return HttpResponseRedirect(reverse('user-stream-view'))
+        if(request.POST["context"] == "stream"):
+            return HttpResponseRedirect(reverse('user-stream-view'))
+        else:
+            return HttpResponseRedirect(reverse('author-inbox-frontend'))
 
     else:
         return HttpResponseRedirect(reverse('login'))
