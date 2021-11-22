@@ -37,6 +37,7 @@ urlpatterns = [
     path('inbox/', MyInboxView, name='author-inbox-frontend'),
     path('inbox/acceptFollow/', acceptFollow, name='accept-follow'),
     path('stream/newLike/', newLike, name='add-like'),
-    path('inbox/clearInbox/', clearInbox, name='clear-inbox')
+    path('inbox/clearInbox/', clearInbox, name='clear-inbox'),
+    path('inbox/newLike/', newLike, name='add-like'),
     # path('posts/',  include('Posts.urls')),
 ]
