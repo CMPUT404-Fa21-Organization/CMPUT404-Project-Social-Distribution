@@ -1,3 +1,4 @@
+from django.contrib import auth
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
 from rest_framework.decorators import api_view
@@ -105,6 +106,41 @@ def MyInboxView(request):
 
     template_name = 'LinkedSpace/Author/inbox.html'
     return HttpResponse(render(request, template_name, context),status=200)
+
+
+@api_view(['GET',])
+def AuthorLikedView(request, auth_pk):
+    # TODO Add check for if comment is on a public post
+    author = Author.objects.get(pk = auth_pk)
+    likeObjs = Like.objects.filter(auth_pk = author)
+
+    Likes = LikeSerializer(likeObjs, read_only=True, many=True)
+    likes = []
+    for l in Likes.data:
+        like = {}
+
+        if("comment" not in l["object"]):
+            # Public Post
+            post = Post.objects.get(id = l["object"])
+            if(post.visibility != 'PUBLIC'):
+                continue
+        else:
+            # TODO
+            pass
+        
+        for key in l:
+            if(key != "context"):
+                like[key] = l[key]
+        like["@context"] = l["context"]
+        like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
+        likes.append(like)
+
+    response_dict = {
+        "type": "liked",
+        "items": likes
+    }
+
+    return Response(response_dict)
 
 @api_view(['GET',])
 def AuthorsListView(request):

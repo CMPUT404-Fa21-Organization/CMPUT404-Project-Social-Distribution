@@ -16,6 +16,8 @@ import re
 import uuid
 import re
 import base64
+from django.db.models import Q
+import django.core
 
 # Create your views here.
 def newLike(request):
@@ -162,6 +164,26 @@ def deletePost(request, auth_pk, post_pk):
         post.delete()
     request.method = 'GET'
     return HttpResponseRedirect(reverse("postsHome", args=[auth_pk,]))
+
+
+@api_view(['GET',])
+def PostLikesView(request, post_pk, auth_pk):
+    post = Post.objects.get(post_pk = post_pk)
+    author = Author.objects.get(pk = auth_pk)
+    likeObjs = Like.objects.filter(~Q(auth_pk = author), object = post.id)
+
+    Likes = LikeSerializer(likeObjs, read_only=True, many=True)
+    likes = []
+    for l in Likes.data:
+        like = {}
+        for key in l:
+            if(key != "context"):
+                like[key] = l[key]
+        like["@context"] = l["context"]
+        like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
+        likes.append(like)
+
+    return Response(likes)
 
 
 @api_view(['GET', 'POST',])
