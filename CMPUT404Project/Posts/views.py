@@ -24,7 +24,7 @@ def newLike(request):
     # View to create a new like object after clicking the like button
     if request.user.is_authenticated:
         # TODO what is context supposed to be?
-        context = "https://www.w3.org/ns/activitystreams"
+        context = request.POST["postID"] # "https://www.w3.org/ns/activitystreams"
         author = request.user
         object = request.POST["postID"]
         objectType = "post"
