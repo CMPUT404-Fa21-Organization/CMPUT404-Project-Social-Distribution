@@ -116,19 +116,26 @@ def AuthorLikedView(request, auth_pk):
 
     Likes = LikeSerializer(likeObjs, read_only=True, many=True)
     likes = []
+
     for l in Likes.data:
         like = {}
 
-        if("comment" not in l["object"]):
-            # Public Post
-            post = Post.objects.get(id = l["object"])
-            if(post.visibility != 'PUBLIC'):
-                continue
-        else:
-            comment = Comments.objects.get(id = l["object"])
-            post = comment.Post_pk
-            if(post.visibility != 'PUBLIC'):
-                continue
+        try:
+            if("comment" not in l["object"]):
+                # Public Post
+                post = Post.objects.get(id = l["object"])
+                if(post.visibility != 'PUBLIC'):
+                    continue
+            else:
+                comment = Comments.objects.get(id = l["object"])
+                post = comment.Post_pk
+                if(post.visibility != 'PUBLIC'):
+                    continue
+                
+        except Post.DoesNotExist:
+            toDeleteLikes = Like.objects.filter(object = l["object"])
+            toDeleteLikes.delete()
+            continue
         
         for key in l:
             if(key != "context"):
