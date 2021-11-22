@@ -114,8 +114,8 @@ class Liked(models.Model):
 class FriendRequest(models.Model):
     type = models.CharField(max_length=30, default='follow', editable=False)
     summary = models.CharField(max_length=200)
-    actor = models.OneToOneField(Author, on_delete=CASCADE, related_name="actor")
-    object = models.OneToOneField(Author, on_delete=CASCADE, related_name="object")
+    actor = models.ForeignKey(Author, on_delete=CASCADE, related_name="actor")
+    object = models.ForeignKey(Author, on_delete=CASCADE, related_name="object")
 
     def get_actor(self):
         return Author.objects.get(email=self.actor).get_author_url()
