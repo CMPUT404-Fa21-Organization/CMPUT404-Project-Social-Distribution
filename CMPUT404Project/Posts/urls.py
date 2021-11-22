@@ -25,5 +25,6 @@ urlpatterns = [
     path('<post_pk>/add_post/', PostDetail, name='add_post'),
     path('<post_pk>/add_comment/', add_Comment, name='add_comment'),
     path('<post_pk>/comment/', commentListView, name='comment'),
-    path('<post_pk>/likes/', PostLikesView, name='post-likes-view')
+    path('<post_pk>/comment/<comment_pk>/', commentDetail, name='commentDet'),
+    path('<post_pk>/likes/', PostLikesView, name='post-likes-view'),
 ]
