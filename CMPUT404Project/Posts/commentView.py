@@ -1,6 +1,6 @@
 from django.core import serializers
 from django.utils import timezone
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import redirect, render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import CommentSerializer, PostSerializer
@@ -63,7 +63,7 @@ def commentListView(request, post_pk, auth_pk=None):
             return render(request, "LinkedSpace/Posts/add_comment.html", context)
         else:
             if post_pk != None:
-                #print("second")
+                print("second")
                 #print(post_pk, type(post_pk))
                 comment = Comments.objects.filter(Post_pk_str=post_pk)
             else:
@@ -89,21 +89,26 @@ def add_Comment(request, post_pk, auth_pk=None, uid=None):
                 content = form.cleaned_data["text"]
             author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'displayName', 'github',)))[0]['fields']
             auth_pk = author["id"].split("/")[-1]
-            post = Post.objects.get(pk = post_pk)
-            #print("add_comment post_pk: ", post_pk)
-            post_pk_str = getattr(post, 'post_pk')
+            try:
+                post = Post.objects.get(pk = post_pk)
+                #print("add_comment post_pk: ", post_pk)
+                post_pk_str = getattr(post, 'post_pk')
 
-            if uid == None:
-                r_uid = uuid.uuid4().hex
-                uid = re.sub('-', '', r_uid)
-            id = getattr(post, 'comments') + uid
-            #print(id)
-            #input()
-            comments = Comments(pk=uid, id=id, Post_pk_str = post_pk_str, auth_pk_str = auth_pk, author=author, size=10, published=published, content=content)
-            #print(comments.objects)
-            comments.save()
-            #print("user.pk ", request.user.pk)
-            return redirect(commentListView, post_pk_str)
+                if uid == None:
+                    r_uid = uuid.uuid4().hex
+                    uid = re.sub('-', '', r_uid)
+                id = getattr(post, 'comments') + uid
+                #print(id)
+                #input()
+                comments = Comments(pk=uid, id=id, Post_pk_str = post_pk_str, auth_pk_str = auth_pk, author=author, size=10, published=published, content=content)
+                #print(comments.objects)
+                comments.save()
+                #print("user.pk ", request.user.pk)
+                return redirect(commentListView, post_pk_str)
+            except:
+                ## let the user know that the post does not exist * need  popup to let user know
+                context = {'form': form, 'user':request.user, 'method':'GET'}
+                return render(request, "LinkedSpace/home.html", context)
         else:
             print(form.as_table, '\n')
             print(form.errors)
