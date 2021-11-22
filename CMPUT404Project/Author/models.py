@@ -28,6 +28,13 @@ class AuthorManager(BaseUserManager):
         user = self.model(email=email, displayName=displayName,auth_pk=uid,id=uri,url=uri, **other_kwargs)
         user.set_password(password)
         user.save(using=self._db)
+
+        # Create Inbox and Followers object
+        
+        inbox = Inbox(auth_pk = user)
+        followers = Followers(auth_pk = user)
+        followers.save()
+        inbox.save()
         
         return user
 

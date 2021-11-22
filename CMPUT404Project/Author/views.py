@@ -92,8 +92,6 @@ def MyInboxView(request):
     follows = [i for i in items if i["type"] == "follow"]
     follows.reverse()
     
-
-    
     # If Content is image
     for post in posts:
         post["isImage"] = False
@@ -101,14 +99,6 @@ def MyInboxView(request):
             post["isImage"] = True
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
-
-    
-    # # Determine if like is for post or comment
-    # for like in likes:
-    #     if "comment" in like["object"]:
-    #         like["isComment"] = True
-    #     else:
-    #         like["isComment"] = False
 
 
     context = {'user':author, 'posts':posts, 'likes':likes, 'follows': follows}
