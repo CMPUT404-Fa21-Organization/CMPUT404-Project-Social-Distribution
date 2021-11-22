@@ -3,6 +3,20 @@ from django.contrib.auth.admin import UserAdmin
 from .models import *
 
 # Register your models here.
+def set_active(modeladmin, request, queryset):
+    for user in queryset:
+        user.is_active = True
+        user.save()
+
+set_active.short_description = 'Set Status: Activated'
+
+def deactivate(modeladmin, request, queryset):
+    for user in queryset:
+        user.is_active = False
+        user.save()
+
+deactivate.short_description = 'Set Status: Deactivated'
+
 class AuthorAdmin(UserAdmin):
     # display fields
     fieldsets = (
@@ -20,6 +34,7 @@ class AuthorAdmin(UserAdmin):
     search_fields = ('email', 'displayName')
     # list_display = ('email', 'displayName', 'is_staff', 'url')
     list_display = ('email', 'auth_pk', 'displayName', 'github', 'is_active', 'is_staff', 'url')
+    actions = [set_active, deactivate,]
 
 
 # admin.site.unregister(User)
