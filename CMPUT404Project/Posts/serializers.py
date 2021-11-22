@@ -32,7 +32,7 @@ class CommentSerializer(serializers.ModelSerializer):
             'id',
             'contentType',
             'content',
-            'author'
-            'size'
-            'unlisted'
+            'author',
+            'size',
+            'published'
         )

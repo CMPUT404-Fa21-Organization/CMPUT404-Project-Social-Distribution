@@ -1,3 +1,4 @@
+from django.contrib import auth
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
 from rest_framework.decorators import api_view
@@ -5,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from LinkedSpace.views import loginView
+from Posts.commentModel import Comments
 from .serializers import *
 import json
 import uuid
@@ -92,8 +94,6 @@ def MyInboxView(request):
     follows = [i for i in items if i["type"] == "follow"]
     follows.reverse()
     
-
-    
     # If Content is image
     for post in posts:
         post["isImage"] = False
@@ -102,19 +102,54 @@ def MyInboxView(request):
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
 
-    
-    # # Determine if like is for post or comment
-    # for like in likes:
-    #     if "comment" in like["object"]:
-    #         like["isComment"] = True
-    #     else:
-    #         like["isComment"] = False
-
 
     context = {'user':author, 'posts':posts, 'likes':likes, 'follows': follows}
 
     template_name = 'LinkedSpace/Author/inbox.html'
     return HttpResponse(render(request, template_name, context),status=200)
+
+
+@api_view(['GET',])
+def AuthorLikedView(request, auth_pk):
+    author = Author.objects.get(pk = auth_pk)
+    likeObjs = Like.objects.filter(auth_pk = author)
+
+    Likes = LikeSerializer(likeObjs, read_only=True, many=True)
+    likes = []
+
+    for l in Likes.data:
+        like = {}
+
+        try:
+            if("comment" not in l["object"]):
+                # Public Post
+                post = Post.objects.get(id = l["object"])
+                if(post.visibility != 'PUBLIC'):
+                    continue
+            else:
+                comment = Comments.objects.get(id = l["object"])
+                post = comment.Post_pk
+                if(post.visibility != 'PUBLIC'):
+                    continue
+                
+        except Post.DoesNotExist:
+            toDeleteLikes = Like.objects.filter(object = l["object"])
+            toDeleteLikes.delete()
+            continue
+        
+        for key in l:
+            if(key != "context"):
+                like[key] = l[key]
+        like["@context"] = l["context"]
+        like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
+        likes.append(like)
+
+    response_dict = {
+        "type": "liked",
+        "items": likes
+    }
+
+    return Response(response_dict)
 
 @api_view(['GET',])
 def AuthorsListView(request):

@@ -77,10 +77,6 @@ def registerView(request):
             git_user = form.cleaned_data.get('github')
             github_url = f'http://github.com/{git_user}'
             user = Author.objects.create_user(displayName=form.cleaned_data.get('displayName'), email=form.cleaned_data.get('email'), password=form.cleaned_data.get('password1'), github=github_url)
-            inbox = Inbox(auth_pk = user)
-            followers = Followers(auth_pk = user)
-            followers.save()
-            inbox.save()
             
             return HttpResponseRedirect('/login')
             
