@@ -81,7 +81,7 @@ class AuthorAPITest(TestCase):
             'email':'updated@email.com',
             'displayName':'Updated Test Author'
         }
-        author = Author.objects.create(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
+        author = Author.objects.create_user(email='testauthor@email.com', displayName='Test Author', password='testpassw0rd')
         self.client.post(f'/author/{author.auth_pk}/', payload)
         updated_author = Author.objects.get(pk=author.auth_pk)
         self.assertNotEqual(updated_author.email, payload['email']) # author email not changed
