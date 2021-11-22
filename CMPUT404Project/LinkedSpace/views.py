@@ -11,7 +11,7 @@ from Author.serializers import *
 
 from django.contrib.auth import authenticate, login, logout
 from .models import *
-from Author.models import AuthorManager, Author, Inbox
+from Author.models import AuthorManager, Author, Followers, Inbox
 
 # Create your views here.
 def homeView(request):
@@ -77,8 +77,6 @@ def registerView(request):
             git_user = form.cleaned_data.get('github')
             github_url = f'http://github.com/{git_user}'
             user = Author.objects.create_user(displayName=form.cleaned_data.get('displayName'), email=form.cleaned_data.get('email'), password=form.cleaned_data.get('password1'), github=github_url)
-            inbox = Inbox(auth_pk = user)
-            inbox.save()
             
             return HttpResponseRedirect('/login')
             

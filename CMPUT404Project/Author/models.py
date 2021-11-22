@@ -28,6 +28,13 @@ class AuthorManager(BaseUserManager):
         user = self.model(email=email, displayName=displayName,auth_pk=uid,id=uri,url=uri, **other_kwargs)
         user.set_password(password)
         user.save(using=self._db)
+
+        # Create Inbox and Followers object
+        
+        inbox = Inbox(auth_pk = user)
+        followers = Followers(auth_pk = user)
+        followers.save()
+        inbox.save()
         
         return user
 
@@ -117,9 +124,11 @@ class FriendRequest(models.Model):
         return Author.objects.get(email=self.object).get_author_url()
 
 class Followers(models.Model):
+    r_uid = uuid.uuid4().hex
+    uid = re.sub('-', '', r_uid)
     type = models.CharField(max_length=30, default='followers', editable=False)
-    items = models.ManyToManyField(FriendRequest, default=list, blank=True)
-
+    auth_pk= models.OneToOneField(Author, default=uid, on_delete=CASCADE, primary_key=True)
+    items = models.ManyToManyField(Author, default=list, blank=True, related_name ="items")
 
 class Inbox(models.Model):
     r_uid = uuid.uuid4().hex

@@ -1,3 +1,4 @@
+from django.contrib import auth
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
 from rest_framework.decorators import api_view
@@ -10,12 +11,13 @@ import json
 import uuid
 import re
 from django.urls import reverse
+import requests
 
 
 from django.shortcuts import HttpResponse, render
 
 from Posts.models import *
-from .models import Author, FriendRequest, Inbox, Like
+from .models import Author, FriendRequest, Inbox, Like, Followers
 
 import django.core
 
@@ -30,6 +32,115 @@ from .models import Author
 def authorHome(request):
     template_name = 'LinkedSpace/Author/author.html'
     return render(request, template_name)
+
+def clearInbox(request):
+    if(request.user.is_authenticated):
+        inbox = Inbox.objects.get(auth_pk = request.user)
+        inbox.iPosts.set([None])
+        inbox.iLikes.set([None])
+        inbox.iFollows.set([None])
+
+    return HttpResponseRedirect(reverse('author-inbox-frontend'))
+
+def acceptFollow(request):
+    # Code to accept follow request goes here.
+
+    if(request.user.is_authenticated and request.user.id == request.POST["objectID"]):
+        # Delete the friend request
+        try:
+            frequest = FriendRequest.objects.filter(actor = Author.objects.get(id=request.POST["actorID"]) , object = Author.objects.get(id=request.POST["objectID"]))
+            frequest.delete()
+        except:
+            pass
+
+        # Add to followers
+
+        actor = Author.objects.get(id=request.POST["actorID"])
+        object = Author.objects.get(id=request.POST["objectID"])
+
+        followersObj = Followers.objects.get(pk = object.pk)
+
+        if actor not in followersObj.items.all():
+            followersObj.items.add(actor)
+
+        # Follow is not bidirectional
+        # followersAct = Followers.objects.get(pk = actor.pk)
+
+        # if object not in followersAct.items.all():
+        #     followersAct.items.add(object)
+        
+
+        return HttpResponseRedirect(reverse('author-inbox-frontend'))
+
+    else:
+        return HttpResponseRedirect(reverse('login'))
+
+def MyInboxView(request):
+    # Non API view, Displays the users posts and github activity
+    # TODO Better CSS for front-end of inbox
+    author = request.user
+    inbox =  Inbox.objects.get(pk=author.pk)
+    serializer = InboxSerializer(inbox, many=False)
+    data = getInboxData(serializer)
+    items = data["items"]
+
+    posts = [i for i in items if i["type"] == "post"]
+    posts.reverse()
+
+    likes = [i for i in items if i["type"] == "like"]
+    likes.reverse()
+
+    follows = [i for i in items if i["type"] == "follow"]
+    follows.reverse()
+    
+    # If Content is image
+    for post in posts:
+        post["isImage"] = False
+        if(post["contentType"] == "image/png" or post["contentType"] == "image/jpeg"):
+            post["isImage"] = True
+            imgdata = post["content"][2:-1]
+            post["image"] = imgdata
+
+
+    context = {'user':author, 'posts':posts, 'likes':likes, 'follows': follows}
+
+    template_name = 'LinkedSpace/Author/inbox.html'
+    return HttpResponse(render(request, template_name, context),status=200)
+
+
+@api_view(['GET',])
+def AuthorLikedView(request, auth_pk):
+    # TODO Add check for if comment is on a public post
+    author = Author.objects.get(pk = auth_pk)
+    likeObjs = Like.objects.filter(auth_pk = author)
+
+    Likes = LikeSerializer(likeObjs, read_only=True, many=True)
+    likes = []
+    for l in Likes.data:
+        like = {}
+
+        if("comment" not in l["object"]):
+            # Public Post
+            post = Post.objects.get(id = l["object"])
+            if(post.visibility != 'PUBLIC'):
+                continue
+        else:
+            # TODO
+            pass
+        
+        for key in l:
+            if(key != "context"):
+                like[key] = l[key]
+        like["@context"] = l["context"]
+        like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
+        likes.append(like)
+
+    response_dict = {
+        "type": "liked",
+        "items": likes
+    }
+
+    return Response(response_dict)
 
 @api_view(['GET',])
 def AuthorsListView(request):
@@ -112,6 +223,7 @@ def getInboxData(serializer):
             data["items"].append(item)
         
         return data
+
 
 @api_view(['GET', 'POST', 'DELETE'])
 def AuthorInboxView(request, auth_pk):
