@@ -14,7 +14,7 @@ import re
 import base64
 
 
-@api_view(['GET', 'POST', 'PUT', 'DELETE', ])
+@api_view(['GET', 'POST', ])
 def commentDetail(request, post_pk, comment_pk, auth_pk=None):
     if request.method == 'GET':
         if request.get_full_path().split(' ')[0].split('/')[-2] == 'add_comment':
@@ -27,7 +27,7 @@ def commentDetail(request, post_pk, comment_pk, auth_pk=None):
             comment = Comments.objects.get(pk=comment_pk)
             serializer = CommentSerializer(comment, many=False)
             return Response(serializer.data)
-
+"""
     elif request.method == 'PUT':
         print("put")
         #print(request.get_full_path().split(' ')[0].split('/'))
@@ -43,12 +43,13 @@ def commentDetail(request, post_pk, comment_pk, auth_pk=None):
             comment = Comments.objects.filter(auth_pk_str=auth_pk)
         else:
             comment = Comments.objects.all()
-        serializer = PostSerializer(comment, many=True)
+        serializer = CommentSerializer(comment, many=True)
         return Response(serializer.data)
 
     elif request.method == 'POST':
         uid = request.get_full_path().split(' ')[0].split('/')[-3]
         return add_Comment(request, commentDetail, uid)
+"""
 
 @api_view(['GET','POST'])
 def commentListView(request, post_pk, auth_pk=None):
