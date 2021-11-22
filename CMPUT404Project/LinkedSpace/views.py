@@ -31,6 +31,7 @@ def profileView(request):
     else:
         return HttpResponse(render(request, 'LinkedSpace/login.html'),status=200)
 
+# https://stackoverflow.com/questions/49553511/why-authenticate-return-none-for-inactive-users
 
 def loginView(request):
     template_name = 'LinkedSpace/login.html'
@@ -48,11 +49,16 @@ def loginView(request):
         user = authenticate(request, email = email, password = password)
         
         if user:
-            login(request, user)
+            if not user.is_active:
+                # print("This is NOT an active user.")
+                messages.error(request, 'Account Activation Pending.', extra_tags='inactive')
+                return HttpResponse(render(request, 'LinkedSpace/login.html'),status=401)
+            else:
+                login(request, user)
             return HttpResponse(render(request, 'LinkedSpace/home.html'),status=200)
 
         else:
-            messages.error(request, 'Please enter a valid email and password. Note that both fields are case sensitive.')
+            messages.error(request, 'Please enter a valid email and password. Note that both fields are case sensitive.', extra_tags='invalid')
             return HttpResponse(render(request, 'LinkedSpace/login.html'),status=401)
         
 

@@ -34,15 +34,15 @@ class AuthorManager(BaseUserManager):
     def create_superuser(self, email, displayName, password, **other_kwargs):
 
         other_kwargs.setdefault('is_staff', True)
+        other_kwargs.setdefault('is_active', True)
         other_kwargs.setdefault('is_superuser', True)
-        other_kwargs.setdefault('is_admin_approved', True)
 
         if other_kwargs.get('is_staff') is not True:
             raise ValueError("Superuser must be assigned to is_staff=True.")
+        if other_kwargs.get('is_active') is not True:
+            raise ValueError("Superuser must be assigned to is_active=True.")
         if other_kwargs.get('is_superuser') is not True:
             raise ValueError("Superuser must be assigned to is_superuser=True.")
-        if other_kwargs.get('is_admin_approved') is not True:
-            raise ValueError("Superuser must be assigned to is_admin_approved=True.")
 
         return self.create_user(email, displayName, password, **other_kwargs)
 
@@ -64,11 +64,10 @@ class Author(AbstractBaseUser, PermissionsMixin):
     displayName = models.CharField(max_length=50, editable=True)
     url = models.CharField(max_length=200, blank=False, editable=False)
     github = models.CharField(max_length=200, default='', blank=True)
-    is_admin_approved = models.BooleanField(default=False)
 
     # Required for extending AbstractUser ...
     username = None
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
 

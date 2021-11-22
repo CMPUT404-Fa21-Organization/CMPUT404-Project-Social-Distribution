@@ -19,7 +19,7 @@ class AuthorAdmin(UserAdmin):
     ordering = ('email',)
     search_fields = ('email', 'displayName')
     # list_display = ('email', 'displayName', 'is_staff', 'url')
-    list_display = ('email', 'auth_pk', 'displayName', 'github','is_staff', 'url')
+    list_display = ('email', 'auth_pk', 'displayName', 'github', 'is_active', 'is_staff', 'url')
 
 
 # admin.site.unregister(User)
