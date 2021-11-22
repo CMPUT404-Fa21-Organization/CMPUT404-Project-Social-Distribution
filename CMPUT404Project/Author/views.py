@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from LinkedSpace.views import loginView
+from Posts.commentModel import Comments
 from .serializers import *
 import json
 import uuid
@@ -110,7 +111,6 @@ def MyInboxView(request):
 
 @api_view(['GET',])
 def AuthorLikedView(request, auth_pk):
-    # TODO Add check for if comment is on a public post
     author = Author.objects.get(pk = auth_pk)
     likeObjs = Like.objects.filter(auth_pk = author)
 
@@ -125,8 +125,10 @@ def AuthorLikedView(request, auth_pk):
             if(post.visibility != 'PUBLIC'):
                 continue
         else:
-            # TODO
-            pass
+            comment = Comments.objects.get(id = l["object"])
+            post = comment.Post_pk
+            if(post.visibility != 'PUBLIC'):
+                continue
         
         for key in l:
             if(key != "context"):
