@@ -57,6 +57,8 @@ Can be found on [Wiki -> API Documentation](https://github.com/CMPUT404-Fa21-Org
 * https://openclassrooms.com/en/courses/7107341-intermediate-django/7265468-create-many-to-many-relationships - Many to many relationships
 * https://stackoverflow.com/questions/63135702/django-automatic-logout-and-and-after-login-it-stays-on-same-page
 * https://stackoverflow.com/questions/53594745/what-is-the-use-of-cleaned-data-in-django
+* [Add actions to admin panel](https://simpleisbetterthancomplex.com/tutorial/2017/03/14/how-to-create-django-admin-list-actions.html)
+* [Restrict server access to admin approved users](https://stackoverflow.com/questions/49553511/why-authenticate-return-none-for-inactive-users)
 
 ## Technical sources
 
