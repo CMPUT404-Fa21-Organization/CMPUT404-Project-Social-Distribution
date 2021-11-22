@@ -26,6 +26,7 @@ class Comments(models.Model):
 
     Post_pk = models.ForeignKey(Post, on_delete=CASCADE, blank=True, null=True, related_name ='comment')
     Post_pk_str = models.CharField(max_length=300, editable=False)
+    auth_pk_str = models.CharField(max_length=300, blank=True, null=True ,editable=False)
     author = models.JSONField(editable=False)
 
     id = models.CharField(max_length=200, editable=False)
