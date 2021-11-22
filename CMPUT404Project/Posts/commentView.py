@@ -81,11 +81,12 @@ def add_Comment(request, post_pk, auth_pk=None, uid=None):
         if form.is_valid():
             published = timezone.now()
             contentType = form.cleaned_data['contentType']
-            if contentType in ('app','png','jpeg','html'):
-                content = request.FILES['file'].read()
+            if contentType == "application/app": 
+                content = request.FILES['file'].read() #Inputfile
+            elif contentType in ["image/png", "image/jpeg",]:
+                content = base64.b64encode(request.FILES['file'].read()) #Inputfile
             else:
                 content = form.cleaned_data["text"]
-
             author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'displayName', 'github',)))[0]['fields']
             auth_pk = author["id"].split("/")[-1]
             post = Post.objects.get(pk = post_pk)
