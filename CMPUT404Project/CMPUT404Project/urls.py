@@ -28,14 +28,18 @@ urlpatterns = [
     path('register/', registerView, name='register'),
     path('logout/', logoutView, name='logout'),
     path('profile/', profileView, name='author-detail'),
-    path('stream/', MyStreamView, name='user-stream-view'),
+    
 
     path('inbox/', MyInboxView, name='author-inbox-frontend'),
-    path('inbox/acceptFollow/', acceptFollow, name='accept-follow'),
-    path('stream/newLike/', newLike, name='add-like'),
     path('inbox/clearInbox/', clearInbox, name='clear-inbox'),
     path('inbox/newLike/', newLike, name='add-like'),
+    path('inbox/acceptFollow/', acceptFollow, name='accept-follow'),
+
+    path('author/<auth_pk>/posts/', UserStreamView, name='user-stream-view'),
+    path('author/<auth_pk>/posts/newLike/', newLike, name='add-like'),
+    
     path('git/', include('GitEvents.urls')),
+
     path('posts/add_post/', PostsList, name='add_post'),
     path('posts/manage/', ManagePostsList, name='posts-manage'),
     path('posts/<post_pk>/add_comment/', add_Comment, name='add_comment'),

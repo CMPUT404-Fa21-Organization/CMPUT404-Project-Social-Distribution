@@ -47,11 +47,10 @@
                     </li>
                     {% if request.user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href={% url 'user-stream-view' %}>My Stream</a>
+                        <a class="nav-link" href={% url 'user-stream-view' auth_pk=request.user.pk %}>My Stream</a>
                      </li>
-                    {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href={% url 'user-stream-view' %}>Public Stream</a>
+                        <a class="nav-link" href={% url 'add_post' %}>Add Post</a>
                      </li>
                     {% endif %}
                 </ul>

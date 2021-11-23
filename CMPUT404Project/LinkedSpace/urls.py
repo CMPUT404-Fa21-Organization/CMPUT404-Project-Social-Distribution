@@ -16,7 +16,6 @@ Including another URLconf
 from django.conf.urls import url
 from django.urls import include, path
 
-from Posts.views import MyStreamView
 from . import views
 from Posts.views import ManagePostsList, newLike
 from Author.views import AuthorsListView, MyInboxView, acceptFollow, clearInbox
