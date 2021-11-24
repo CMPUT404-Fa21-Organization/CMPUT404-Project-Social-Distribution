@@ -88,12 +88,23 @@ def commentListView(request, post_pk, auth_pk=None):
                 print("second")
                 #print(post_pk, type(post_pk))
                 comment = Comments.objects.filter(Post_pk_str=post_pk)
+                post = Post.objects.get(pk=post_pk)
+                post_id = getattr(post, 'id')
+                comment_id = getattr(post, 'comments')
+                print(post_id, comment_id)
             else:
                 comment = Comments.objects.all()
+                #comment_id = getattr(comment, 'id')
                 print("third")
             serializer = CommentSerializer(comment, many=True)
 
-            return Response(serializer.data)
+            response_dict = {
+                "type": "comments",
+                "post": post_id,
+                "id": comment_id,
+                "items": serializer.data
+            }
+            return Response(response_dict)
     elif request.method == 'POST':
         return add_Comment(request, commentListView)
 
