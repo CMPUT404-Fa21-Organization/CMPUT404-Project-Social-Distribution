@@ -1,5 +1,4 @@
 """CMPUT404Project URL Configuration
-
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.2/topics/http/urls/
 Examples:
@@ -37,6 +36,8 @@ urlpatterns = [
 
     path('author/<auth_pk>/posts/', UserStreamView, name='user-stream-view'),
     path('author/<auth_pk>/posts/newLike/', newLike, name='add-like'),
+    path('author/<auth_pk>/', AuthorDetailView, name='author-detail'),
+    path('author/<auth_pk>/inbox/', AuthorInboxView, name='author-inbox'),
     
     path('git/', include('GitEvents.urls')),
 
