@@ -61,7 +61,7 @@ def acceptFollow(request):
 
         followersObj = Followers.objects.get(pk = object.pk)
 
-        if actor not in followersObj.items.all():
+        if actor not in followersObj.items.all() and actor != object:
             followersObj.items.add(actor)
 
         # Follow is not bidirectional
