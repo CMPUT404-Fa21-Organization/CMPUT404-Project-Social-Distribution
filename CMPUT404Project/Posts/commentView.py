@@ -109,7 +109,7 @@ def add_Comment(request, post_pk, auth_pk=None, uid=None):
                 content = base64.b64encode(request.FILES['file'].read()) #Inputfile
             else:
                 content = form.cleaned_data["text"]
-            author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'displayName', 'github',)))[0]['fields']
+            author = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'displayName', 'github',)))[0]['fields']
             auth_pk = author["id"].split("/")[-1]
             try:
                 post = Post.objects.get(pk = post_pk)
