@@ -15,7 +15,7 @@
           <div class="mt-3">
               <div class="card" style="width: 50rem;">
                 <div class="card-header text-black" style="background-color: #a2afe23b;">
-                  <a href="#" class="btn btn-primary float-right">Share to Stream</a>
+                  <a class="btn btn-primary float-right" href={% url 'gitPost'%}>Share to Stream</a>
                   {% if event.type == "GollumEvent"%}
                   <h5 class="card-title">GitHub Activity: <span style="color:rgb(9, 82, 25)">{{ event.type }}</span></h5>
                   {% elif event.type == "CreateEvent"%}

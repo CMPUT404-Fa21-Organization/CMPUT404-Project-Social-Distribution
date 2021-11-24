@@ -15,8 +15,9 @@ Including another URLconf
 """
 from django.urls import path
 from django.urls.conf import include
-from .views import GithubEventsView
+from .views import GithubEventsView, gitPost
 
 urlpatterns = [
     path('', GithubEventsView, name='git-events'),
+    path('share/', gitPost, name='gitPost'),
 ]

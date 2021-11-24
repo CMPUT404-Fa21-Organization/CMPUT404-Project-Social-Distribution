@@ -20,7 +20,7 @@ from Posts.views import MyStreamView
 from . import views
 from Posts.views import ManagePostsList, newLike
 from Author.views import AuthorsListView, MyInboxView, acceptFollow, clearInbox
-
+#from GitEvents.views import gitPost
 
 urlpatterns = [
     path('', views.homeView, name='home'),
@@ -33,7 +33,7 @@ urlpatterns = [
     path('stream/', MyStreamView, name='user-stream-view'),
     path('author/', include('Author.urls')),
     path('git/', include('GitEvents.urls')),
-
+    #path('', gitPost, name='gitPost'),
     path('inbox/', MyInboxView, name='author-inbox-frontend'),
     path('inbox/acceptFollow/', acceptFollow, name='accept-follow'),
     path('stream/newLike/', newLike, name='add-like'),
