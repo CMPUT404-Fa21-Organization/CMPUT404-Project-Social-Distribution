@@ -139,8 +139,8 @@ def newPost(request, func, uid=None):
             r_uid = uuid.uuid4().hex
             uid = re.sub('-', '', r_uid)
         id = request.user.id + '/posts/' + uid
-        comments_id = id + "/comment/"
-
+        comments_id = id + "/comments/"
+        print(comments_id)
         posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, categories=categories,visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
         posts.save()
         path = request.get_full_path().split('/')

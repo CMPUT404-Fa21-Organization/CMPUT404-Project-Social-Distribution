@@ -120,7 +120,7 @@ def add_Comment(request, post_pk, auth_pk=None, uid=None):
                     r_uid = uuid.uuid4().hex
                     uid = re.sub('-', '', r_uid)
                 id = getattr(post, 'comments') + uid
-                #print(id)
+                print("comment_id ",id)
                 #input()
                 comments = Comments(pk=uid, id=id, Post_pk_str = post_pk_str, auth_pk_str = auth_pk, author=author, size=10, published=published, content=content)
                 #print(comments.objects)
