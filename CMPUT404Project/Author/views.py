@@ -201,7 +201,7 @@ def AuthorDetailView(request, auth_pk):
             context = {'actor':request.user, 'object': author}
 
         else:
-            context = {'object': request.user}
+            context = {'object': author}
 
         return HttpResponse(render(request, template_name, context),status=200)
 
