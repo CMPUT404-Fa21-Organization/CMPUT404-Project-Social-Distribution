@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 import os
 from pathlib import Path
+import django_heroku
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +27,9 @@ SECRET_KEY = 'django-insecure-w0e@#r2^-v-27lx#eodb-a(k0-d(52uo3mw^*n@maoh7gba'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-SERVER_URL = 'http://127.0.0.1:8000'
+# SERVER_URL = 'http://127.0.0.1:8000'
+SERVER_URL = 'https://linkedspace-staging.herokuapp.com/'
+
 ALLOWED_HOSTS = ['*']
 
 
@@ -144,6 +147,7 @@ AUTH_USER_MODEL = 'Author.Author'
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'),]
 
 # Default primary key field type
@@ -175,3 +179,5 @@ MARKDOWNIFY = {
             ]
    }
 }
+
+django_heroku.settings(locals())
