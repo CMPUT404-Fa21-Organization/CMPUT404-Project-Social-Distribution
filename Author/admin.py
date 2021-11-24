@@ -8,14 +8,14 @@ def set_active(modeladmin, request, queryset):
         user.is_active = True
         user.save()
 
-set_active.short_description = 'Set Status: Activated'
+set_active.short_description = 'Set Account Status: Active'
 
 def deactivate(modeladmin, request, queryset):
     for user in queryset:
         user.is_active = False
         user.save()
 
-deactivate.short_description = 'Set Status: Deactivated'
+deactivate.short_description = 'Set Account Status: Inactive'
 
 class AuthorAdmin(UserAdmin):
     # display fields
