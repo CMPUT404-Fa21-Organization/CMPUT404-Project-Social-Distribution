@@ -100,6 +100,8 @@ def commentListView(request, post_pk, auth_pk=None):
 
             response_dict = {
                 "type": "comments",
+                "page": "1",
+                "size": "10",
                 "post": post_id,
                 "id": comment_id,
                 "items": serializer.data
