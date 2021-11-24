@@ -16,27 +16,14 @@ Including another URLconf
 from django.conf.urls import url
 from django.urls import include, path
 
-from Posts.views import MyStreamView
 from . import views
 from Posts.views import ManagePostsList, newLike
 from Author.views import AuthorsListView, MyInboxView, acceptFollow, clearInbox
 #from GitEvents.views import gitPost
 
 urlpatterns = [
-    path('', views.homeView, name='home'),
-    path('login/', views.loginView, name='login'),
-    path('register/', views.registerView, name='register'),
-    path('logout/', views.logoutView, name='logout'),
     path('authors/', AuthorsListView, name='authorsView'),
-    path('profile/', views.profileView, name='author-detail'),
     path('posts/',  include('Posts.urls')),
-    path('stream/', MyStreamView, name='user-stream-view'),
     path('author/', include('Author.urls')),
-    path('git/', include('GitEvents.urls')),
-    #path('', gitPost, name='gitPost'),
-    path('inbox/', MyInboxView, name='author-inbox-frontend'),
-    path('inbox/acceptFollow/', acceptFollow, name='accept-follow'),
-    path('stream/newLike/', newLike, name='add-like'),
-    path('inbox/clearInbox/', clearInbox, name='clear-inbox')
     # path('posts/',  include('Posts.urls')),
 ]

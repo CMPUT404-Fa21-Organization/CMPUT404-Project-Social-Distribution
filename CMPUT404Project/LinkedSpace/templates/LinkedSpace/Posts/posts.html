@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Welcome to posts stream {{ user.displayName }}</h1>
+    <h1>Welcome to {{ user.displayName }}'s stream </h1>
 
     {% for post in posts %}
         <div class = "post card">
@@ -28,6 +28,7 @@
                 
                 <form action='newLike/' method= 'POST' enctype="multipart/form-data">
                     {% csrf_token %}
+                    <input type="hidden" id="context" name="context" value="stream">
                     <input type="hidden" id="postID" name="postID" value={{post.id}}>
                     {% if post.userLike %}
                         <input type = "submit" value = "{{ post.numLikes }} 👍" style="color: white; background-color:blue" class = "postLikeButton-active" >

@@ -18,7 +18,6 @@ from django.urls.conf import include
 from .views import *
 
 urlpatterns = [
-    path('', authorHome, name='authorHome'),
     path('<auth_pk>/', AuthorDetailView, name='author-detail'),
     path('<auth_pk>/posts/', include('Posts.urls')),
     path('<auth_pk>/inbox/', AuthorInboxView, name='author-inbox'),

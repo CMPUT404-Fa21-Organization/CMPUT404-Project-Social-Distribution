@@ -21,11 +21,11 @@ from django.db.models import Q
 import django.core
 
 # Create your views here.
-def newLike(request):
+def newLike(request, auth_pk = None):
     # View to create a new like object after clicking the like button
     if request.user.is_authenticated:
         # TODO what is context supposed to be?
-        context = "https://www.w3.org/ns/activitystreams"
+        context = request.POST["postID"] # "https://www.w3.org/ns/activitystreams"
         author = request.user
         object = request.POST["postID"]
         objectType = "post"
@@ -47,7 +47,10 @@ def newLike(request):
             like = Like.objects.filter(auth_pk = author, object = object)
             like.delete()
 
-        return HttpResponseRedirect(reverse('user-stream-view'))
+        if(request.POST["context"] == "stream"):
+            return HttpResponseRedirect(reverse('user-stream-view', kwargs={ 'auth_pk': auth_pk }))
+        else:
+            return HttpResponseRedirect(reverse('author-inbox-frontend'))
 
     else:
         return HttpResponseRedirect(reverse('login'))
@@ -55,17 +58,17 @@ def newLike(request):
 
 # TODO Better CSS for Stream
 # Non API view, Displays the users posts and github activity
-def MyStreamView(request):
+def UserStreamView(request, auth_pk):
     # TODO Add Github API stuff here
-    # TODO Following Posts
     
-    if(request.user.is_authenticated):
+    if(request.user.is_authenticated and request.user.pk == auth_pk):
         author = request.user
-        postsObjects = Post.objects.filter(author_id=author.pk) | Post.objects.filter(visibility = "PUBLIC")
+        postsObjects = Post.objects.filter(author_id=author.pk) # | Post.objects.filter(visibility = "PUBLIC")
 
     else:
-        author = None
-        postsObjects = Post.objects.filter(visibility = "PUBLIC")
+        # TODO Friend Posts in stream
+        author = Author.objects.get(pk = auth_pk)
+        postsObjects = Post.objects.filter(author_id=author.pk, visibility = "PUBLIC")
     
     postsObjects = postsObjects.order_by('-published')
 
