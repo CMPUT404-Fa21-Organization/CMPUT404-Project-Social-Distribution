@@ -20,6 +20,7 @@ def GithubEventsView(request):
     template_name = 'LinkedSpace/GitHub/github.html'
 
     try:
+
         if request.user.is_authenticated:
             git_url = request.user.github
             git_username = git_url.replace("http://github.com/", "")
@@ -81,4 +82,5 @@ def GithubEventsView(request):
         # raise NotFound(e)
         return render(request, 'LinkedSpace/GitHub/github_404.html', status=status.HTTP_404_NOT_FOUND)
 
-    
+def gitPost(request):
+    print(request)

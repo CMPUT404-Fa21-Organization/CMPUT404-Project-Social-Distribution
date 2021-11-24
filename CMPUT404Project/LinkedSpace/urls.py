@@ -19,7 +19,7 @@ from django.urls import include, path
 from . import views
 from Posts.views import ManagePostsList, newLike
 from Author.views import AuthorsListView, MyInboxView, acceptFollow, clearInbox
-
+#from GitEvents.views import gitPost
 
 urlpatterns = [
     path('authors/', AuthorsListView, name='authorsView'),
