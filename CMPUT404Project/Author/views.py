@@ -186,22 +186,32 @@ def AuthorsListView(request):
 
 @api_view(['GET', 'POST',])
 def AuthorDetailView(request, auth_pk):
-	try:
-		author = Author.objects.get(pk=auth_pk)
-	except Author.DoesNotExist:
-		return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        author = Author.objects.get(pk=auth_pk)
+    except Author.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
-	if request.method == "GET":
-		serializer = AuthorSerializer(author, many=False)
-		return Response(serializer.data)
+    if request.method == "GET":
+        # serializer = AuthorSerializer(author, many=False)
+        # return Response(serializer.data)
+        
+        template_name = 'LinkedSpace/authordetail.html'
 
-	if request.method == "POST":
-		serializer = AuthorProfileSerializer(instance=author, data=request.data)
+        if request.user.is_authenticated:
+            context = {'actor':request.user, 'object': author}
 
-		if serializer.is_valid():
-			serializer.save()
-			return Response(serializer.data)
-		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            context = {'object': author}
+
+        return HttpResponse(render(request, template_name, context),status=200)
+
+    if request.method == "POST":
+        serializer = AuthorProfileSerializer(instance=author, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # @api_view(['DELETE'])
 # def AuthorDeleteView(request, pk):
@@ -339,29 +349,46 @@ def AuthorInboxView(request, auth_pk):
             
             return Response(serializerLike.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        
         if(request.data["type"] == "follow"):
-            request.data["actor"] = request.data["actor"]["id"]
-            request.data["object"] = request.data["object"]["id"]
-            serializerFollow = FriendRequestSerializer(data=request.data)
-
-            if serializerFollow.is_valid():
-                serializerFollow.validated_data["actor"] = Author.objects.get(id=request.data["actor"])
-                serializerFollow.validated_data["object"] = Author.objects.get(id=request.data["object"])
-                serializerFollow.validated_data.pop("get_actor")
-                serializerFollow.validated_data.pop("get_object")
-                
-                if(FriendRequest.objects.filter(actor = Author.objects.get(id=request.data["actor"]) , object = Author.objects.get(id=request.data["object"])).count() == 0):
-                    serializerFollow.save()
-
-                follow = FriendRequest.objects.get(actor = Author.objects.get(id=request.data["actor"]) , object = Author.objects.get(id=request.data["object"]))
-
-                inbox.iFollows.add(follow)
-
-                serializer = InboxSerializer(inbox, many=False)
-                data = getInboxData(serializer)
-                return Response(data)
             
-            return Response(serializerFollow.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            if request.data["frontend"]:
+                actor = Author.objects.get(id = request.data["actor"])
+                objectauthor = Author.objects.get(id = request.data["object"])
+
+                summary = actor.displayName + ' wants to follow ' + objectauthor.displayName
+
+                type = request.data["type"]
+
+                frequest = FriendRequest(summary = summary, type = type, actor = actor, object = objectauthor)
+
+                inbox.iFollows.add(FriendRequest.objects.create(summary = summary, type = type, actor = actor, object = objectauthor))
+
+                return HttpResponseRedirect('/authors')
+
+            # TODO: Keep for api requests!
+
+            # serializerFollow = FriendRequestSerializer(data=request.data)
+
+            # if serializerFollow.is_valid():
+            #     serializerFollow.validated_data["actor"] = Author.objects.get(id=request.data["actor"])
+            #     serializerFollow.validated_data["object"] = Author.objects.get(id=request.data["object"])
+            #     serializerFollow.validated_data.pop("get_actor")
+            #     serializerFollow.validated_data.pop("get_object")
+                
+            #     if(FriendRequest.objects.filter(actor = Author.objects.get(id=request.data["actor"]) , object = Author.objects.get(id=request.data["object"])).count() == 0):
+            #         serializerFollow.save()
+
+            #     follow = FriendRequest.objects.get(actor = Author.objects.get(id=request.data["actor"]) , object = Author.objects.get(id=request.data["object"]))
+
+            #     inbox.iFollows.add(follow)
+
+            #     serializer = InboxSerializer(inbox, many=False)
+            #     data = getInboxData(serializer)
+            #     return Response(data)
+            
+            # return Response(serializerFollow.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # DEPRECATED INBOX VIEW
