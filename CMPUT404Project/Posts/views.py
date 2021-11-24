@@ -3,6 +3,7 @@ from django.http.response import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
 from django.shortcuts import render
+from .commentModel import Comments
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import PostSerializer
@@ -160,13 +161,21 @@ def newPost(request, func, uid=None):
         context = {'form': form, 'user':request.user, 'method':'PUT'}
         return render(request, "LinkedSpace/Posts/add_post.html", context)
 
-
+"""
 def deletePost(request, auth_pk, post_pk):
     post = Post.objects.get(pk=post_pk)
     if post.author_id_id == request.user.pk:
+        comments = Comments.objects.filter(post_pk_str=post_pk)
+        print(comments)
+        print("")
+        print(comments.id)
+        input()
+        for comment in comments:
+            comment.delete()
         post.delete()
     request.method = 'GET'
     return HttpResponseRedirect(reverse("postsHome", args=[auth_pk,]))
+"""
 
 
 @api_view(['GET',])
@@ -229,7 +238,10 @@ def PostDetail(request, post_pk=None, auth_pk=None):
 
     elif request.method == 'DELETE':
         post = Post.objects.get(pk=post_pk)
+        comments = Comments.objects.filter(Post_pk_str=post_pk)
         if post.author_id_id == request.user.pk:
+            for comment in comments:
+                comment.delete()
             post.delete()
         if auth_pk != None:
             post = Post.objects.filter(author_id=auth_pk)
