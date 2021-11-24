@@ -365,7 +365,7 @@ def AuthorInboxView(request, auth_pk):
 
                 inbox.iFollows.add(FriendRequest.objects.create(summary = summary, type = type, actor = actor, object = objectauthor))
 
-                return HttpResponseRedirect('/authors')
+                return HttpResponseRedirect('/api/authors')
 
             # TODO: Keep for api requests!
 

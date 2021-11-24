@@ -37,6 +37,8 @@ urlpatterns = [
 
     path('author/<auth_pk>/posts/', UserStreamView, name='user-stream-view'),
     path('author/<auth_pk>/posts/newLike/', newLike, name='add-like'),
+    path('author/<auth_pk>/', AuthorDetailView, name='author-detail'),
+    path('author/<auth_pk>/inbox/', AuthorInboxView, name='author-inbox'),
     
     path('git/', include('GitEvents.urls')),
 
