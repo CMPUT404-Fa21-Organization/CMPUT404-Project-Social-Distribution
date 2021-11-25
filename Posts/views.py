@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.shortcuts import redirect, render
 from .commentModel import Comments
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from .serializers import PostSerializer
 from Author.serializers import LikeSerializer
@@ -20,6 +20,7 @@ import re
 import base64
 from django.db.models import Q
 import django.core
+from permissions import CustomAuthentication, AccessPermission
 
 # Create your views here.
 def newLike(request, auth_pk = None):
@@ -171,6 +172,8 @@ def PostLikesView(request, post_pk, auth_pk):
 
 
 @api_view(['GET', 'POST',])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
 def PostsList(request, auth_pk=None):
     if request.method == 'GET':
         if request.get_full_path().split(' ')[0].split('/')[-2] == 'add_post':
