@@ -1,0 +1,40 @@
+{% extends '../base.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block title %}
+    GitHub Activities
+{% endblock %}
+
+{% block content %}
+    <h1>My GitHub Activities</h1>
+
+    {% for event in activities %}
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="mt-3">
+              <div class="card" style="width: 50rem;">
+                <div class="card-header text-black" style="background-color: #a2afe23b;">
+                  <a class="btn btn-primary float-right" href={% url 'gitPost'%}>Share to Stream</a>
+                  {% if event.type == "GollumEvent"%}
+                  <h5 class="card-title">GitHub Activity: <span style="color:rgb(9, 82, 25)">{{ event.type }}</span></h5>
+                  {% elif event.type == "CreateEvent"%}
+                  <h5 class="card-title">GitHub Activity: <span style="color:rgb(81, 179, 245)">{{ event.type }}</span></h5>
+                  {% elif event.type == "PushEvent"%}
+                  <h5 class="card-title">GitHub Activity: <span style="color:rgb(199, 37, 37)">{{ event.type }}</span></h5>
+                  {% elif event.type == "PullRequestEvent"%}
+                  <h5 class="card-title">GitHub Activity: <span style="color:rgb(144, 39, 214)">{{ event.type }}</span></h5>
+                  {% else %}
+                  <h5 class="card-title">GitHub Activity: <span style="color:black">{{ event.type }}</span></h5>
+                  {% endif %}
+                </div>
+                <div class="card-body">
+                  <p class="card-text"><a href="http://github.com/{{event.actor}}">{{ event.actor }} </a>made changes to <strong>{{ event.repo }}</strong>.</p>
+                  <p class="text-muted">on {{ event.timestamp }}<span class="small float-right">ID: {{ event.id }}</span></p>
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+{% endblock %}
