@@ -15,8 +15,8 @@
           <div class="mt-3">
               <div class="card" style="width: 50rem;">
                 <div class="card-header text-black" style="background-color: #a2afe23b;">
-                  <a href="#" class="btn btn-outline-danger btn-sm float-right">Delete</a>
-                  <a href="#" class="btn btn-primary btn-sm float-right mr-2">Edit</a>
+                  <a href="{% url 'delete_Post' post.pk %}" class="btn btn-outline-danger btn-sm float-right">Delete</a>
+                  <a href="{% url 'edit_Post' post.pk %}" class="btn btn-primary btn-sm float-right mr-2">Edit</a>
                   <h4 class="card-title">{{ post.title }}<span style="font-size:medium"> by <a href="#">{{ post.author.displayName }}</a></span>
                 </h4>
                 </div>

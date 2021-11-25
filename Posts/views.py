@@ -1,8 +1,9 @@
+from django.conf import settings
 from django.core import serializers
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from .commentModel import Comments
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -127,11 +128,9 @@ def newPost(request, func, uid=None):
         else:
             content = form.cleaned_data["text"]
 
-        source = ""
-        origin = ""
+        source = settings.SERVER_URL
+        origin = settings.SERVER_URL
         author_id = request.user
-        print(json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',))))
-        print("========================")
         author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
         published = timezone.now()
 
@@ -140,42 +139,15 @@ def newPost(request, func, uid=None):
             uid = re.sub('-', '', r_uid)
         id = request.user.id + '/posts/' + uid
         comments_id = id + "/comments/"
-        print(comments_id)
         posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, categories=categories,visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
         posts.save()
-        path = request.get_full_path().split('/')
 
-        if func == PostsList:
-            if len(path) > 4:
-                return HttpResponseRedirect(reverse("postsHome", args=[path[2]]))
-            else:
-                return HttpResponseRedirect(reverse("postsHome"))
-        else:
-            if len(path) > 4:
-                return HttpResponseRedirect(reverse("post", args=[uid, path[2],]))
-            else:
-                return HttpResponseRedirect(reverse("post", args=[uid,]))
+        return redirect(ManagePostsList)
     else:
         print(form.errors)
         form = PostForm()
-        context = {'form': form, 'user':request.user, 'method':'PUT'}
+        context = {'form': form, 'user':request.user, 'add': True}
         return render(request, "LinkedSpace/Posts/add_post.html", context)
-
-"""
-def deletePost(request, auth_pk, post_pk):
-    post = Post.objects.get(pk=post_pk)
-    if post.author_id_id == request.user.pk:
-        comments = Comments.objects.filter(post_pk_str=post_pk)
-        print(comments)
-        print("")
-        print(comments.id)
-        input()
-        for comment in comments:
-            comment.delete()
-        post.delete()
-    request.method = 'GET'
-    return HttpResponseRedirect(reverse("postsHome", args=[auth_pk,]))
-"""
 
 
 @api_view(['GET',])
@@ -204,7 +176,7 @@ def PostsList(request, auth_pk=None):
         if request.get_full_path().split(' ')[0].split('/')[-2] == 'add_post':
             form = PostForm()
             path =  request.get_full_path()[:-9]
-            context = {'form': form, 'name':request.user.displayName, 'method':'POST', 'path':path}
+            context = {'form': form, 'name':request.user.displayName, 'add': True}
             return render(request, "LinkedSpace/Posts/add_post.html", context)
         else:
             if auth_pk != None:
@@ -220,16 +192,10 @@ def PostsList(request, auth_pk=None):
 @api_view(['GET', 'POST', 'PUT', 'DELETE', ])
 def PostDetail(request, post_pk=None, auth_pk=None):
     if request.method == 'GET':
-        if request.get_full_path().split(' ')[0].split('/')[-2] == 'add_post':
-            form = PostForm()
-            path = request.get_full_path()[:-9]
-            context = {'form': form, 'name':request.user.displayName, 'method':'PUT', 'path':path}
-            return render(request, "LinkedSpace/Posts/add_post.html", context)
-        else:
-            post = Post.objects.filter(post_pk=post_pk)
-            serializer = PostSerializer(post, many=True)
+        post = Post.objects.filter(post_pk=post_pk)
+        serializer = PostSerializer(post, many=True)
 
-            return Response(serializer.data)
+        return Response(serializer.data)
 
     elif request.method == 'PUT':
         print(request.get_full_path().split(' ')[0].split('/'))
@@ -261,3 +227,23 @@ def ManagePostsList(request):
     # posts = Post.objects.all().order_by('-published')
     
     return render(request, "LinkedSpace/Posts/manage_posts.html", {'posts': posts})
+
+# @api_view(['DELETE',])
+def delete_Comment(request, post_pk):
+    post = Post.objects.filter(post_pk=post_pk)
+    post.delete()
+    return redirect(ManagePostsList)
+
+def edit_Comment(request, post_pk):
+    if request.method == 'POST':
+        post = Post.objects.get(post_pk=post_pk)
+        form = PostForm(request.POST or None)
+        if form.is_valid():
+            form.save()
+            return redirect(ManagePostsList)
+    else:
+        form = PostForm()
+        post = Post.objects.get(post_pk=post_pk)
+        context = {'form': form, 'user':request.user, 'add': False, 'post': post}
+        return render(request, "LinkedSpace/Posts/add_post.html", context)
+    return

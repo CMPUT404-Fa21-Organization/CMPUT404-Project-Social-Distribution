@@ -9,7 +9,7 @@ env.bak/
 venv.bak/
 
 # pycache
-__pycache__/
+*/__pycache__/
 
 # misc
 .DS_Store
@@ -17,3 +17,4 @@ __pycache__/
 
 db.sqlite3
 .nfs*
+*/migrations/*

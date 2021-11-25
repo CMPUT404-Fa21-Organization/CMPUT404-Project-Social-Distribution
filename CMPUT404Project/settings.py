@@ -12,7 +12,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 import os
 from pathlib import Path
-import django_heroku
+# import django_heroku
+import django_on_heroku
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,8 +29,7 @@ SECRET_KEY = 'django-insecure-w0e@#r2^-v-27lx#eodb-a(k0-d(52uo3mw^*n@maoh7gba'
 DEBUG = True
 
 # SERVER_URL = 'http://127.0.0.1:8000'
-# SERVER_URL = 'https://linkedspace-staging.herokuapp.com'
-SERVER_URL = 'https://cmput404-social-distribution.herokuapp.com/'
+SERVER_URL = 'https://linkedspace-staging.herokuapp.com'
 
 ALLOWED_HOSTS = ['*']
 
@@ -181,4 +181,5 @@ MARKDOWNIFY = {
    }
 }
 
-django_heroku.settings(locals())
+# django_heroku.settings(locals())
+django_on_heroku.settings(locals())
