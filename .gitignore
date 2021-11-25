@@ -9,7 +9,7 @@ env.bak/
 venv.bak/
 
 # pycache
-__pycache__/
+*/__pycache__/
 
 # misc
 .DS_Store

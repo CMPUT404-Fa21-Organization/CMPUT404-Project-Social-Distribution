@@ -3,24 +3,29 @@
 {% load crispy_forms_filters %}
 
 {% block title %}
-    Add Post
+    {% if add %}
+        Add Post
+    {% else %}
+        Edit Post
+    {% endif %}
 {% endblock %}
 
 {% block content %}
-    <h1>Welcome to Linked Space Add Post</h1>
+    {% if add %}
+        <h1>Welcome to Linked Space Add Post</h1>
+    {% else %}
+        <h1>Welcome to Linked Space Edit Post</h1>
+    {% endif %}
     {% if user.is_authenticated %}
          <form action='' method= 'POST' enctype="multipart/form-data">
             {% csrf_token %}
             <label for="author">author: {{ name }}</label><br>
-            <label for="path">path: {{ path }}</label><br>
-            <label for="path">method: {{ method }}</label><br>
-
 
             <label for="Title">Title:</label><br>
-            <input id="title" type="text" name="title" class="form-control"> <br>
+            <input id="title" type="text" name="title" value="{{ post.title }}" class="form-control"> <br>
 
             <label for="Description">Description:</label><br>
-            <input id="description" type="text" name="description" class="form-control"><br>
+            <input id="description" type="text" name="description" value="{{ post.title }}" class="form-control"><br>
 
             <label for="Categories">Categories:</label><br>
             {{ form.categories }}<br>
@@ -29,13 +34,13 @@
             {{ form.visibility }}<br>
 
             <label for="Unlisted">Unlisted:</label>
-            <input id="unlisted" type="checkbox" name="unlisted" value=True><br>
+            <input id="unlisted" type="checkbox" name="unlisted" value="{{ post.value }}"><br>
 
             <label for="ContentType">Content Type:</label><br>
             {{ form.contentType }}<br>
 
             <label for="Text">Text:</label><br>
-            <input id="text" type="text" name="text" class="form-control"><br>
+            <input id="text" type="text" name="text" class="form-control" value="{{ post.content }}"><br>
 
             <label for="file">File:</label><br>
             <input type="file" name="file" id="file"><br/><br/>

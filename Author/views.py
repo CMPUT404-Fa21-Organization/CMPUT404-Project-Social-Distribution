@@ -1,7 +1,7 @@
 from django.contrib import auth
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -13,6 +13,7 @@ import uuid
 import re
 from django.urls import reverse
 import requests
+from permissions import CustomAuthentication, AccessPermission
 
 
 from django.shortcuts import HttpResponse, render
@@ -172,6 +173,8 @@ def AuthorLikedView(request, auth_pk):
     return Response(response_dict)
 
 @api_view(['GET',])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
 def AuthorsListView(request):
 
     authors = Author.objects.all()
