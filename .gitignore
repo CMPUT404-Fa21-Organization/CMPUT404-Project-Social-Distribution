@@ -17,4 +17,3 @@ venv.bak/
 
 db.sqlite3
 .nfs*
-*/migrations/*
