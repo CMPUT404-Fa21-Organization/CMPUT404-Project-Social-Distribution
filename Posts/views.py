@@ -190,7 +190,8 @@ def PostsList(request, auth_pk=None):
 
             return Response(serializer.data)
     elif request.method == 'POST':
-        return newPost(request, PostsList)
+        newPost(request, PostsList)
+        return HttpResponseRedirect('/api/posts/')
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE', ])
 def PostDetail(request, post_pk=None, auth_pk=None):
@@ -203,7 +204,8 @@ def PostDetail(request, post_pk=None, auth_pk=None):
     elif request.method == 'PUT':
         print(request.get_full_path().split(' ')[0].split('/'))
         uid = request.get_full_path().split(' ')[0].split('/')[-3]
-        return newPost(request, PostDetail, uid)
+        newPost(request, PostDetail, uid)
+        return HttpResponseRedirect('/api/posts/')
 
     elif request.method == 'DELETE':
         post = Post.objects.get(pk=post_pk)
@@ -221,8 +223,11 @@ def PostDetail(request, post_pk=None, auth_pk=None):
 
     elif request.method == 'POST':
         uid = request.get_full_path().split(' ')[0].split('/')[-3]
-        return newPost(request, PostDetail, uid)
-
+        newPost(request, PostDetail, uid)
+        post = Post.objects.all()
+        serializer = PostSerializer(post, many=True)
+        return Response(serializer.data)
+        # return HttpResponseRedirect('/api/posts/')
 
 @api_view(['GET',])
 def ManagePostsList(request):
