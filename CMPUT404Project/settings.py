@@ -28,7 +28,8 @@ SECRET_KEY = 'django-insecure-w0e@#r2^-v-27lx#eodb-a(k0-d(52uo3mw^*n@maoh7gba'
 DEBUG = True
 
 # SERVER_URL = 'http://127.0.0.1:8000'
-SERVER_URL = 'https://linkedspace-staging.herokuapp.com'
+# SERVER_URL = 'https://linkedspace-staging.herokuapp.com'
+SERVER_URL = 'https://cmput404-social-distribution.herokuapp.com/'
 
 ALLOWED_HOSTS = ['*']
 
