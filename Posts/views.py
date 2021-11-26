@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core import serializers
+from django.http import response
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
@@ -7,6 +8,7 @@ from django.shortcuts import redirect, render
 from .commentModel import Comments
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
+from requests import get
 from .serializers import PostSerializer
 from Author.serializers import LikeSerializer
 from Author.models import Inbox, Like, Liked, Followers
@@ -112,7 +114,7 @@ def UserStreamView(request, auth_pk):
     return HttpResponse(render(request, template_name, context),status=200)
 
 
-def newPost(request, func, uid=None):
+def newPost(request, uid=None, author=None):
     form = PostForm(request.POST, request.FILES)
     if form.is_valid():
         title = form.cleaned_data['title']
@@ -131,21 +133,25 @@ def newPost(request, func, uid=None):
 
         source = settings.SERVER_URL
         origin = settings.SERVER_URL
-        author_id = request.user
-        author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
+        if not author:
+            author_id = request.user
+            author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
+
+            if uid == None:
+                r_uid = uuid.uuid4().hex
+                uid = re.sub('-', '', r_uid)
+            id = request.user.id + '/posts/' + uid
+            comments_id = id + "/comments/"
+
         published = timezone.now()
 
-        if uid == None:
-            r_uid = uuid.uuid4().hex
-            uid = re.sub('-', '', r_uid)
-        id = request.user.id + '/posts/' + uid
-        comments_id = id + "/comments/"
         posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, categories=categories,visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
         posts.save()
 
         return redirect(ManagePostsList)
     else:
         print(form.errors)
+        print(form.data)
         form = PostForm()
         context = {'form': form, 'user':request.user, 'add': True}
         return render(request, "LinkedSpace/Posts/add_post.html", context)
@@ -176,21 +182,15 @@ def PostLikesView(request, post_pk, auth_pk):
 @permission_classes([AccessPermission])
 def PostsList(request, auth_pk=None):
     if request.method == 'GET':
-        if request.get_full_path().split(' ')[0].split('/')[-2] == 'add_post':
-            form = PostForm()
-            path =  request.get_full_path()[:-9]
-            context = {'form': form, 'name':request.user.displayName, 'add': True}
-            return render(request, "LinkedSpace/Posts/add_post.html", context)
-        else:
-            if auth_pk != None:
-                post = Post.objects.filter(author_id=auth_pk)
-            else:
-                post = Post.objects.all()
-            serializer = PostSerializer(post, many=True)
-
-            return Response(serializer.data)
+        post = Post.objects.all()
+        serializer = PostSerializer(post, many=True)
+        return Response(serializer.data)
     elif request.method == 'POST':
-        return newPost(request, PostsList)
+        print(request.data)
+        newPost(request, author=request.data['author'])
+        post = Post.objects.all()
+        serializer = PostSerializer(post, many=True)
+        return Response(serializer.data)
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE', ])
 def PostDetail(request, post_pk=None, auth_pk=None):
@@ -203,7 +203,8 @@ def PostDetail(request, post_pk=None, auth_pk=None):
     elif request.method == 'PUT':
         print(request.get_full_path().split(' ')[0].split('/'))
         uid = request.get_full_path().split(' ')[0].split('/')[-3]
-        return newPost(request, PostDetail, uid)
+        newPost(request, PostDetail, uid)
+        return HttpResponseRedirect('/api/posts/')
 
     elif request.method == 'DELETE':
         post = Post.objects.get(pk=post_pk)
@@ -221,8 +222,11 @@ def PostDetail(request, post_pk=None, auth_pk=None):
 
     elif request.method == 'POST':
         uid = request.get_full_path().split(' ')[0].split('/')[-3]
-        return newPost(request, PostDetail, uid)
-
+        newPost(request, PostDetail, uid)
+        post = Post.objects.all()
+        serializer = PostSerializer(post, many=True)
+        return Response(serializer.data)
+        # return HttpResponseRedirect('/api/posts/')
 
 @api_view(['GET',])
 def ManagePostsList(request):
@@ -231,7 +235,6 @@ def ManagePostsList(request):
     
     return render(request, "LinkedSpace/Posts/manage_posts.html", {'posts': posts})
 
-# @api_view(['DELETE',])
 def delete_Comment(request, post_pk):
     post = Post.objects.filter(post_pk=post_pk)
     post.delete()
@@ -240,13 +243,58 @@ def delete_Comment(request, post_pk):
 def edit_Comment(request, post_pk):
     if request.method == 'POST':
         post = Post.objects.get(post_pk=post_pk)
-        form = PostForm(request.POST or None)
+        form = PostForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            title = form.cleaned_data['title']
+            descirption = form.cleaned_data['description']
+            categories = form.cleaned_data['categories']
+            visibility = form.cleaned_data['visibility']
+            unlisted = form.cleaned_data['unlisted']
+            contentType = form.cleaned_data['contentType']
+
+            if contentType == "application/app": 
+                content = request.FILES['file'].read() #Inputfile
+            elif contentType in ["image/png", "image/jpeg",]:
+                content = base64.b64encode(request.FILES['file'].read()) #Inputfile
+            else:
+                content = form.cleaned_data["text"]
+
+            post.title = title
+            post.descirption = descirption
+            post.categories = categories
+            post.visibility = visibility
+            post.unlisted = unlisted
+            post.contentType = contentType
+            post.content = content
+            post.save()
+
             return redirect(ManagePostsList)
+        else:
+            print(form.errors)
+            print(form.data)
+            form = PostForm()
+            context = {'form': form, 'user':request.user, 'add': True}
+            return render(request, "LinkedSpace/Posts/add_post.html", context)
     else:
         form = PostForm()
         post = Post.objects.get(post_pk=post_pk)
         context = {'form': form, 'user':request.user, 'add': False, 'post': post}
         return render(request, "LinkedSpace/Posts/add_post.html", context)
-    return
+
+@api_view(['GET',])
+def connection(request, auth_id=None):
+    data = []
+
+    team3 = get('https://social-dis.herokuapp.com/posts', auth=('socialdistribution_t03','c404t03'))
+    if team3.status_code == 200:
+        data.append(team3.json())
+
+    team15 = get('https://unhindled.herokuapp.com/service/allposts/', auth=('connectionsuperuser','404connection'))
+    if team15.status_code == 200:
+        data.append(team15.json())
+
+    team17 = get('https://cmput404f21t17.herokuapp.com/service/connect/public/', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
+    if team17.status_code == 200:
+        data.append(team17.json())
+
+    return Response({'connection': data})

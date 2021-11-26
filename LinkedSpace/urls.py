@@ -18,12 +18,12 @@ from django.urls import include, path
 
 from . import views
 from Posts.views import ManagePostsList, newLike
-from Author.views import AuthorsListView, MyInboxView, acceptFollow, clearInbox
+from Author.views import AuthorsListView, AuthorsConnection, MyInboxView, acceptFollow, clearInbox
 #from GitEvents.views import gitPost
 
 urlpatterns = [
     path('authors/', AuthorsListView, name='authorsView'),
+    path('authors/connection/', AuthorsConnection, name='connection'),
     path('posts/',  include('Posts.urls')),
     path('author/', include('Author.urls')),
-    # path('posts/',  include('Posts.urls')),
 ]
