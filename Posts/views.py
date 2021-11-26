@@ -24,6 +24,7 @@ import base64
 from django.db.models import Q
 import django.core
 from permissions import CustomAuthentication, AccessPermission
+from django.core.paginator import Paginator
 
 # Create your views here.
 def newLike(request, auth_pk = None):
@@ -107,7 +108,16 @@ def UserStreamView(request, auth_pk):
                 if post["id"] == like["object"]:
                     post["userLike"] = True
 
-    context = {'posts':posts.data, 'user':author}
+    page_number = request.GET.get('page')
+    if 'size' in request.GET:
+        page_size = request.GET.get('size')
+    else:
+        page_size = 5
+
+    paginator = Paginator(posts.data, page_size)
+    page_obj = paginator.get_page(page_number)
+
+    context = {'posts':page_obj, 'user':author}
 
     template_name = 'LinkedSpace/Posts/posts.html'
     return HttpResponse(render(request, template_name, context),status=200)
@@ -186,8 +196,19 @@ def PostLikesView(request, post_pk, auth_pk):
 @permission_classes([AccessPermission])
 def PostsList(request, auth_pk=None):
     if request.method == 'GET':
-        post = Post.objects.all()
-        serializer = PostSerializer(post, many=True)
+        posts = Post.objects.all()
+
+        page_number = request.GET.get('page')
+        if 'size' in request.GET:
+            page_size = request.GET.get('size')
+        else:
+            page_size = 5
+
+        paginator = Paginator(posts, page_size)
+        page_obj = paginator.get_page(page_number)
+
+        serializer = PostSerializer(page_obj.object_list, many=True)
+
         return Response(serializer.data)
     elif request.method == 'POST':
         print(request.data)
@@ -229,8 +250,17 @@ def PostDetail(request, post_pk=None, auth_pk=None):
 def ManagePostsList(request):
     posts = Post.objects.filter(author_id=request.user).order_by('-published')
     # posts = Post.objects.all().order_by('-published')
+
+    page_number = request.GET.get('page')
+    if 'size' in request.GET:
+        page_size = request.GET.get('size')
+    else:
+        page_size = 5
+
+    paginator = Paginator(posts, page_size)
+    page_obj = paginator.get_page(page_number)
     
-    return render(request, "LinkedSpace/Posts/manage_posts.html", {'posts': posts})
+    return render(request, "LinkedSpace/Posts/manage_posts.html", {'posts': page_obj})
 
 def delete_Post(request, post_pk):
     post = Post.objects.filter(post_pk=post_pk)

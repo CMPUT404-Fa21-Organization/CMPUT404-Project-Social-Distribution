@@ -30,6 +30,8 @@ from rest_framework.mixins import DestroyModelMixin
 
 from .models import Author
 
+from django.core.paginator import Paginator
+
 # Create your views here.
 def authorHome(request):
     template_name = 'LinkedSpace/Author/author.html'
@@ -178,7 +180,17 @@ def AuthorLikedView(request, auth_pk):
 def AuthorsListView(request):
 
     authors = Author.objects.all()
-    serializer = AuthorSerializer(authors, many=True)
+
+    page_number = request.GET.get('page')
+    if 'size' in request.GET:
+        page_size = request.GET.get('size')
+    else:
+        page_size = 5
+
+    paginator = Paginator(authors, page_size)
+    page_obj = paginator.get_page(page_number)
+
+    serializer = AuthorSerializer(page_obj.object_list, many=True)
 
     response_dict = {
         "type": "authors",
