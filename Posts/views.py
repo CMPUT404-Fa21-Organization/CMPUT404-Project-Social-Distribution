@@ -190,8 +190,19 @@ def PostLikesView(request, post_pk, auth_pk):
 @permission_classes([AccessPermission])
 def PostsList(request, auth_pk=None):
     if request.method == 'GET':
-        post = Post.objects.all()
-        serializer = PostSerializer(post, many=True)
+        posts = Post.objects.all()
+
+        page_number = request.GET.get('page')
+        if 'size' in request.GET:
+            page_size = request.GET.get('size')
+        else:
+            page_size = 5
+
+        paginator = Paginator(posts, page_size)
+        page_obj = paginator.get_page(page_number)
+
+        serializer = PostSerializer(page_obj.object_list, many=True)
+
         return Response(serializer.data)
     elif request.method == 'POST':
         print(request.data)
