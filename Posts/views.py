@@ -5,6 +5,7 @@ from django.http.response import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
 from django.shortcuts import redirect, render
+import requests
 from .commentModel import Comments
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
@@ -106,15 +107,13 @@ def UserStreamView(request, auth_pk):
                 if post["id"] == like["object"]:
                     post["userLike"] = True
 
-            
-
     context = {'posts':posts.data, 'user':author}
 
     template_name = 'LinkedSpace/Posts/posts.html'
     return HttpResponse(render(request, template_name, context),status=200)
 
 
-def newPost(request, uid=None, author=None):
+def newPost(request, uid=None, displayName=None):
     form = PostForm(request.POST, request.FILES)
     if form.is_valid():
         title = form.cleaned_data['title']
@@ -133,15 +132,20 @@ def newPost(request, uid=None, author=None):
 
         source = settings.SERVER_URL
         origin = settings.SERVER_URL
-        if not author:
+        if not displayName:
             author_id = request.user
+            id = request.user.id
             author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
+        else:
+            author_id = Author.objects.get(displayName=displayName)
+            id = author_id.url
+            author = json.loads(serializers.serialize('json', Author.objects.filter(displayName=displayName), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
 
-            if uid == None:
-                r_uid = uuid.uuid4().hex
-                uid = re.sub('-', '', r_uid)
-            id = request.user.id + '/posts/' + uid
-            comments_id = id + "/comments/"
+        if uid == None:
+            r_uid = uuid.uuid4().hex
+            uid = re.sub('-', '', r_uid)
+        id = id + '/posts/' + uid
+        comments_id = id + "/comments/"
 
         published = timezone.now()
 
@@ -187,7 +191,7 @@ def PostsList(request, auth_pk=None):
         return Response(serializer.data)
     elif request.method == 'POST':
         print(request.data)
-        newPost(request, author=request.data['author'])
+        newPost(request, displayName=request.data['displayName'])
         post = Post.objects.all()
         serializer = PostSerializer(post, many=True)
         return Response(serializer.data)
@@ -200,33 +204,26 @@ def PostDetail(request, post_pk=None, auth_pk=None):
 
         return Response(serializer.data)
 
-    elif request.method == 'PUT':
-        print(request.get_full_path().split(' ')[0].split('/'))
-        uid = request.get_full_path().split(' ')[0].split('/')[-3]
-        newPost(request, PostDetail, uid)
-        return HttpResponseRedirect('/api/posts/')
-
-    elif request.method == 'DELETE':
-        post = Post.objects.get(pk=post_pk)
-        comments = Comments.objects.filter(Post_pk_str=post_pk)
-        if post.author_id_id == request.user.pk:
-            for comment in comments:
-                comment.delete()
-            post.delete()
-        if auth_pk != None:
-            post = Post.objects.filter(author_id=auth_pk)
-        else:
-            post = Post.objects.all()
-        serializer = PostSerializer(post, many=True)
-        return Response(serializer.data)
-
     elif request.method == 'POST':
         uid = request.get_full_path().split(' ')[0].split('/')[-3]
         newPost(request, PostDetail, uid)
         post = Post.objects.all()
         serializer = PostSerializer(post, many=True)
         return Response(serializer.data)
-        # return HttpResponseRedirect('/api/posts/')
+
+    elif request.method == 'PUT':
+        uid = request.get_full_path().split(' ')[0].split('/')[-3]
+        newPost(request, PostDetail, uid)
+        post = Post.objects.all()
+        serializer = PostSerializer(post, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'DELETE':
+        post = Post.objects.get(post_pk=post_pk)
+        post.delete()
+        post = Post.objects.all()
+        serializer = PostSerializer(post, many=True)
+        return Response(serializer.data)
 
 @api_view(['GET',])
 def ManagePostsList(request):
@@ -235,12 +232,12 @@ def ManagePostsList(request):
     
     return render(request, "LinkedSpace/Posts/manage_posts.html", {'posts': posts})
 
-def delete_Comment(request, post_pk):
+def delete_Post(request, post_pk):
     post = Post.objects.filter(post_pk=post_pk)
     post.delete()
     return redirect(ManagePostsList)
 
-def edit_Comment(request, post_pk):
+def edit_Post(request, post_pk):
     if request.method == 'POST':
         post = Post.objects.get(post_pk=post_pk)
         form = PostForm(request.POST, request.FILES)
@@ -259,8 +256,9 @@ def edit_Comment(request, post_pk):
             else:
                 content = form.cleaned_data["text"]
 
+            print([title, descirption, categories, visibility, unlisted, contentType, content])
             post.title = title
-            post.descirption = descirption
+            post.description = descirption
             post.categories = categories
             post.visibility = visibility
             post.unlisted = unlisted

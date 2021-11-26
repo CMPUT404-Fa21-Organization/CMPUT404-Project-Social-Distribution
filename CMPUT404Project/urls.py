@@ -41,10 +41,10 @@ urlpatterns = [
     
     path('git/', include('GitEvents.urls')),
 
-    path('add_post/', newPost, name='add_post'),
+    path('posts/add_post/', newPost, name='add_post'),
     path('posts/manage/', ManagePostsList, name='posts-manage'),
-    path('edit/<post_pk>/', edit_Comment, name='edit_Post'),
-    path('delete/<post_pk>/', delete_Comment, name='delete_Post'),
+    path('edit/<post_pk>/', edit_Post, name='edit_Post'),
+    path('delete/<post_pk>/', delete_Post, name='delete_Post'),
     path('posts/<post_pk>/add_comment/', add_Comment, name='add_comment'),
 
     # TODO Not sure if this is non-api
