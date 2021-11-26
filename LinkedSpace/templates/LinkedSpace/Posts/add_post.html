@@ -19,13 +19,11 @@
     {% if user.is_authenticated %}
          <form action='' method= 'POST' enctype="multipart/form-data">
             {% csrf_token %}
-            <label for="author">author: {{ name }}</label><br>
-
             <label for="Title">Title:</label><br>
             <input id="title" type="text" name="title" value="{{ post.title }}" class="form-control"> <br>
 
             <label for="Description">Description:</label><br>
-            <input id="description" type="text" name="description" value="{{ post.title }}" class="form-control"><br>
+            <input id="description" type="text" name="description" value="{{ post.description }}" class="form-control"><br>
 
             <label for="Categories">Categories:</label><br>
             {{ form.categories }}<br>
@@ -34,7 +32,7 @@
             {{ form.visibility }}<br>
 
             <label for="Unlisted">Unlisted:</label>
-            <input id="unlisted" type="checkbox" name="unlisted" value="{{ post.value }}"><br>
+            <input id="unlisted" type="checkbox" name="unlisted" value="{{ post.unlisted }}"><br>
 
             <label for="ContentType">Content Type:</label><br>
             {{ form.contentType }}<br>
@@ -51,4 +49,3 @@
         <h3><a href={% url 'login' %} >Login</a></h3>
     {% endif %}
 {% endblock %}
-<!--{% url 'post' user.pk %} -->

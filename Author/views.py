@@ -382,6 +382,24 @@ def AuthorInboxView(request, auth_pk):
 
                 return HttpResponseRedirect('/api/authors')
 
+@api_view(['GET',])
+def AuthorsConnection(request, auth_id=None):
+    data = []
+
+    team3 = requests.get('https://social-dis.herokuapp.com/authors', auth=('socialdistribution_t03','c404t03'))
+    if team3.status_code == 200:
+        data.append(team3.json())
+
+    team15 = requests.get('https://unhindled.herokuapp.com/service/authors/', auth=('connectionsuperuser','404connection'))
+    if team15.status_code == 200:
+        data.append(team15.json())
+
+    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/author/', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
+    if team17.status_code == 200:
+        data.append(team17.json())
+
+    return Response({'connection': data})
+
             # TODO: Keep for api requests!
 
             # serializerFollow = FriendRequestSerializer(data=request.data)
