@@ -293,7 +293,7 @@ def connection(request, auth_id=None):
     if team15.status_code == 200:
         data.append(team15.json())
 
-    team17 = get('https://cmput404f21t17.herokuapp.com/service/connect/public/', auth=('9fb0d3eb-dc4d-4555-b5a4-ff35f8d1263a','123456'))
+    team17 = get('https://cmput404f21t17.herokuapp.com/service/connect/public/', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
     if team17.status_code == 200:
         data.append(team17.json())
 
