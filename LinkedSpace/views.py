@@ -55,6 +55,7 @@ def loginView(request):
                 return HttpResponse(render(request, 'LinkedSpace/login.html'),status=401)
             else:
                 login(request, user)
+            return redirect(homeView)
             return HttpResponse(render(request, 'LinkedSpace/home.html'),status=200)
 
         else:
@@ -83,12 +84,9 @@ def registerView(request):
             git_user = form.cleaned_data.get('github')
             github_url = f'http://github.com/{git_user}'
             user = Author.objects.create_user(displayName=form.cleaned_data.get('displayName'), email=form.cleaned_data.get('email'), password=form.cleaned_data.get('password1'), github=github_url)
-            
+
+            return redirect(loginView)
             return HttpResponseRedirect('/login')
-            
-            # return render(request,"my_blog/post_create.html",context)
-        
-        
 
     context = {'form':form}
     return render(request, template_name, context)
