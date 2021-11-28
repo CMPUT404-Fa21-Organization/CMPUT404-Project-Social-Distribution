@@ -1,18 +1,12 @@
 from django.conf import settings
 from django.core import serializers
-from django.http import response
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
 from django.shortcuts import redirect, render
-import requests
-from .commentModel import Comments
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.response import Response
-from requests import get
 from .serializers import PostSerializer
 from Author.serializers import LikeSerializer
-from Author.models import Inbox, Like, Liked, Followers
+from Author.models import Inbox, Like
 from .models import Post, Author
 from .form import PostForm
 import json
@@ -21,9 +15,6 @@ import re
 import uuid
 import re
 import base64
-from django.db.models import Q
-import django.core
-from permissions import CustomAuthentication, AccessPermission
 from django.core.paginator import Paginator
 
 # Create your views here.
@@ -122,8 +113,7 @@ def UserStreamView(request, auth_pk):
     template_name = 'LinkedSpace/Posts/posts.html'
     return HttpResponse(render(request, template_name, context),status=200)
 
-
-def newPost(request, uid=None, displayName=None):
+def newPost(request, auth_pk=None):
     form = PostForm(request.POST, request.FILES)
     if form.is_valid():
         title = form.cleaned_data['title']
@@ -140,22 +130,17 @@ def newPost(request, uid=None, displayName=None):
         else:
             content = form.cleaned_data["text"]
 
-        source = settings.SERVER_URL
-        origin = settings.SERVER_URL
-        if not displayName:
-            author_id = request.user
-            id = request.user.id
-            author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
-        else:
-            author_id = Author.objects.get(displayName=displayName)
-            id = author_id.url
-            author = json.loads(serializers.serialize('json', Author.objects.filter(displayName=displayName), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
+        source = settings.SERVER_URL + "/"
+        origin = settings.SERVER_URL + "/"
 
-        if uid == None:
-            r_uid = uuid.uuid4().hex
-            uid = re.sub('-', '', r_uid)
-        id = id + '/posts/' + uid
-        comments_id = id + "/comments/"
+        author_id = request.user
+        id = request.user.id
+        author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
+
+        r_uid = uuid.uuid4().hex
+        uid = re.sub('-', '', r_uid)
+        id = id + '/posts/' + uid + "/"
+        comments_id = id + "comments/"
 
         published = timezone.now()
 
@@ -170,84 +155,7 @@ def newPost(request, uid=None, displayName=None):
         context = {'form': form, 'user':request.user, 'add': True}
         return render(request, "LinkedSpace/Posts/add_post.html", context)
 
-
-@api_view(['GET',])
-def PostLikesView(request, post_pk, auth_pk):
-    post = Post.objects.get(post_pk = post_pk)
-    author = Author.objects.get(pk = auth_pk)
-    likeObjs = Like.objects.filter(~Q(auth_pk = author), object = post.id)
-
-    Likes = LikeSerializer(likeObjs, read_only=True, many=True)
-    likes = []
-    for l in Likes.data:
-        like = {}
-        for key in l:
-            if(key != "context"):
-                like[key] = l[key]
-        like["@context"] = l["context"]
-        like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
-        likes.append(like)
-
-    return Response(likes)
-
-
-@api_view(['GET', 'POST',])
-@authentication_classes([CustomAuthentication])
-@permission_classes([AccessPermission])
-def PostsList(request, auth_pk=None):
-    if request.method == 'GET':
-        posts = Post.objects.all()
-
-        page_number = request.GET.get('page')
-        if 'size' in request.GET:
-            page_size = request.GET.get('size')
-        else:
-            page_size = 5
-
-        paginator = Paginator(posts, page_size)
-        page_obj = paginator.get_page(page_number)
-
-        serializer = PostSerializer(page_obj.object_list, many=True)
-
-        return Response(serializer.data)
-    elif request.method == 'POST':
-        print(request.data)
-        newPost(request, displayName=request.data['displayName'])
-        post = Post.objects.all()
-        serializer = PostSerializer(post, many=True)
-        return Response(serializer.data)
-
-@api_view(['GET', 'POST', 'PUT', 'DELETE', ])
-def PostDetail(request, post_pk=None, auth_pk=None):
-    if request.method == 'GET':
-        post = Post.objects.filter(post_pk=post_pk)
-        serializer = PostSerializer(post, many=True)
-
-        return Response(serializer.data)
-
-    elif request.method == 'POST':
-        uid = request.get_full_path().split(' ')[0].split('/')[-3]
-        newPost(request, PostDetail, uid)
-        post = Post.objects.all()
-        serializer = PostSerializer(post, many=True)
-        return Response(serializer.data)
-
-    elif request.method == 'PUT':
-        uid = request.get_full_path().split(' ')[0].split('/')[-3]
-        newPost(request, PostDetail, uid)
-        post = Post.objects.all()
-        serializer = PostSerializer(post, many=True)
-        return Response(serializer.data)
-
-    elif request.method == 'DELETE':
-        post = Post.objects.get(post_pk=post_pk)
-        post.delete()
-        post = Post.objects.all()
-        serializer = PostSerializer(post, many=True)
-        return Response(serializer.data)
-
-@api_view(['GET',])
-def ManagePostsList(request):
+def ManagePostsList(request, auth_pk=None):
     posts = Post.objects.filter(author_id=request.user).order_by('-published')
     # posts = Post.objects.all().order_by('-published')
 
@@ -262,16 +170,17 @@ def ManagePostsList(request):
     
     return render(request, "LinkedSpace/Posts/manage_posts.html", {'posts': page_obj})
 
-def delete_Post(request, post_pk):
-    post = Post.objects.filter(post_pk=post_pk)
-    post.delete()
+def delete_Post(request, post_pk, auth_pk=None):
+    post = Post.objects.get(post_pk=post_pk)
+    if request.user.id == post.author['id']:
+        post.delete()
     return redirect(ManagePostsList)
 
-def edit_Post(request, post_pk):
+def edit_Post(request, post_pk, auth_pk=None):
     if request.method == 'POST':
         post = Post.objects.get(post_pk=post_pk)
         form = PostForm(request.POST, request.FILES)
-        if form.is_valid():
+        if form.is_valid() and request.user.id == post.author['id']:
             title = form.cleaned_data['title']
             descirption = form.cleaned_data['description']
             categories = form.cleaned_data['categories']
@@ -286,7 +195,6 @@ def edit_Post(request, post_pk):
             else:
                 content = form.cleaned_data["text"]
 
-            print([title, descirption, categories, visibility, unlisted, contentType, content])
             post.title = title
             post.description = descirption
             post.categories = categories
@@ -306,23 +214,8 @@ def edit_Post(request, post_pk):
     else:
         form = PostForm()
         post = Post.objects.get(post_pk=post_pk)
-        context = {'form': form, 'user':request.user, 'add': False, 'post': post}
-        return render(request, "LinkedSpace/Posts/add_post.html", context)
-
-@api_view(['GET',])
-def connection(request, auth_id=None):
-    data = []
-
-    team3 = get('https://social-dis.herokuapp.com/posts', auth=('socialdistribution_t03','c404t03'))
-    if team3.status_code == 200:
-        data.append(team3.json())
-
-    team15 = get('https://unhindled.herokuapp.com/service/allposts/', auth=('connectionsuperuser','404connection'))
-    if team15.status_code == 200:
-        data.append(team15.json())
-
-    team17 = get('https://cmput404f21t17.herokuapp.com/service/connect/public/', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
-    if team17.status_code == 200:
-        data.append(team17.json())
-
-    return Response({'connection': data})
+        if request.user.id == post.author['id']:
+            context = {'form': form, 'user':request.user, 'add': False, 'post': post}
+            return render(request, "LinkedSpace/Posts/add_post.html", context)
+        else:
+            return redirect(ManagePostsList)
