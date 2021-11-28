@@ -1,0 +1,73 @@
+{% extends '../base.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block title %}
+    Manage Posts
+{% endblock %}
+
+{% block content %}
+    <h1>My Post History</h1>
+
+    {% for post in posts %}
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="mt-3">
+              <div class="card" style="width: 50rem;">
+                <div class="card-header text-black" style="background-color: #a2afe23b;">
+                  <a href="{% url 'delete_Post' post.pk %}" class="btn btn-outline-danger btn-sm float-right">Delete</a>
+                  <a href="{% url 'edit_Post' post.pk %}" class="btn btn-primary btn-sm float-right mr-2">Edit</a>
+                  <h4 class="card-title">{{ post.title }}<span style="font-size:medium"> by <a href="#">{{ post.author.displayName }}</a></span>
+                </h4>
+                </div>
+                <div class="card-body">
+                    <p class="card-text small">Description: {{ post.description }}
+                        <span class="card-text">
+                            <button type="button" class="btn btn-warning btn-sm float-right font-size: small" disabled><span style="font-size:smaller;">{{ post.categories }}</span></button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm float-right mr-2" disabled><span style="font-size:smaller;">{{ post.visibility }}</span></button>
+                        </span>
+                    </p>
+                    {% if post.contentType == "text/plain" %}
+                        <p>{{ post.content }}</p>
+                    {% elif post.contentType == "text/markdown" %}
+
+                        {% load markdownify %}
+                    <p class="background-color: grey;">{{ post.content |markdownify }}</p>
+                    {% elif post.contentType == "application/base64" %}
+                        <p>Some base64 file would be displayed here ...</p>
+                    {% elif post.contentType == "image/png;base64" %}
+                        <p>Some .png file would be displayed here ...</p>
+                    {% elif post.contentType == "image/jpeg;base64" %}
+                        <p>Some .jpeg file would be displayed here ...</p>
+                    {% elif post.contentType == "HTML" %}
+                        <p>HTML would be displayed here ...</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <p class="card-text small"><a href="#">View comments</a>
+                        <span class="text-muted small float-right">Published: {{ post.published }}</span>
+                    </p>
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+    <div class="pagination">
+        <span class="step-links">
+            {% if posts.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ posts.previous_page_number }}">previous</a>
+            {% endif %}
+    
+            <span class="current">
+                Page {{ posts.number }} of {{ posts.paginator.num_pages }}.
+            </span>
+    
+            {% if posts.has_next %}
+                <a href="?page={{ posts.next_page_number }}">next</a>
+                <a href="?page={{ posts.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+{% endblock %}

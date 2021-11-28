@@ -1,0 +1,36 @@
+{% extends './base.html' %}
+
+{% block title %}
+    Profile
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <h2>Profile</h2>
+        <hr>
+        <b>Username:</b><br/>
+        {{ object.displayName }}<br/>
+        <br/>
+        <b>Email:</b><br/>
+        {{ object.email }}<br/>
+        <br/>
+        <b>Github:</b><br/>
+        {{ object.github }}<br/>
+
+        <hr>
+        {% if actor %}
+        <form method="POST" action='inbox/'>
+            {% csrf_token %}
+            <input id="frontend" type="hidden" name="frontend" class="form-control" value="yes" >
+            <input id="type" type="hidden" name="type" class="form-control" value="follow" >
+            <input id="actor" type="hidden" name="actor" class="form-control" value="{{ actor.id }}" >
+            <input id="object" type="hidden" name="object" class="form-control" value="{{ object.id }}" >
+            <button type="submit" class="btn btn-primary">Send friend request</button>
+        </form>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}
