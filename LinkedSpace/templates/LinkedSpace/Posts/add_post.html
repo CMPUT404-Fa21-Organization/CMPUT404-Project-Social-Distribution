@@ -17,7 +17,7 @@
         <h1>Welcome to Linked Space Edit Post</h1>
     {% endif %}
     {% if user.is_authenticated %}
-         <form action='' method= 'POST' enctype="multipart/form-data">
+        <form action='' method= 'POST' enctype="multipart/form-data">
             {% csrf_token %}
             <label for="Title">Title:</label><br>
             <input id="title" type="text" name="title" value="{{ post.title }}" class="form-control"> <br>
@@ -26,16 +26,36 @@
             <input id="description" type="text" name="description" value="{{ post.description }}" class="form-control"><br>
 
             <label for="Categories">Categories:</label><br>
-            {{ form.categories }}<br>
+            <select id="categories" name="categories" required>
+                <option value="" selected disabled hidden>{{ post.categories }}</option>
+                <option value="Web">Web</option>
+                <option value="Tutorial">Tutorial</option>
+            </select><br><br>
 
             <label for="Visibility">Visibility:</label><br>
-            {{ form.visibility }}<br>
+            <select id="visibility" name="visibility" required>
+                <option value="" selected disabled hidden>{{ post.visibility }}</option>
+                <option value="Public">Public</option>
+                <option value="Friends">Friends</option>
+             </select><br><br>
 
             <label for="Unlisted">Unlisted:</label>
-            <input id="unlisted" type="checkbox" name="unlisted" value="{{ post.unlisted }}"><br>
+            <select id="unlisted" name="unlisted">
+                <option value="" selected disabled hidden>{{ post.unlisted }}</option>
+                <option value="False">False</option>
+                <option value="True">True</option>
+             </select><br><br>
 
             <label for="ContentType">Content Type:</label><br>
-            {{ form.contentType }}<br>
+            <select id="contentType" name="contentType" required>
+                <option value="" selected disabled hidden>{{ post.contentType }}</option>
+                <option value="text/markdown">text/markdown</option>
+                <option value="text/plain">text/plain</option>
+                <option value="application/app">application/app</option>
+                <option value="image/png">image/png</option>
+                <option value="image/jpeg">text/jpeg</option>
+                <option value="HTML">HTML</option>
+             </select><br><br>
 
             <label for="Text">Text:</label><br>
             <input id="text" type="text" name="text" class="form-control" value="{{ post.content }}"><br>

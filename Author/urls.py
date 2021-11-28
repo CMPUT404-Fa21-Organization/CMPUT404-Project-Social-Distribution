@@ -19,7 +19,7 @@ from .views import *
 
 urlpatterns = [
     path('<auth_pk>/', AuthorDetailView, name='author-detail'),
-    path('<auth_pk>/posts/', include('Posts.urls')),
+    path('<auth_pk>/posts/', include('Posts.urlsAPI')),
     path('<auth_pk>/inbox/', AuthorInboxView, name='author-inbox'),
     path('<auth_pk>/liked/', AuthorLikedView, name='author-liked-view')
     # DEPRECATED
