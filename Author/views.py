@@ -134,6 +134,8 @@ def MyInboxView(request):
 
 
 @api_view(['GET',])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
 def AuthorLikedView(request, auth_pk):
     author = Author.objects.get(pk = auth_pk)
     likeObjs = Like.objects.filter(auth_pk = author)
@@ -281,6 +283,8 @@ def getInboxData(serializer):
 
 
 @api_view(['GET', 'POST', 'DELETE'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
 def AuthorInboxView(request, auth_pk):
     try:
         author = Author.objects.get(pk=auth_pk)
