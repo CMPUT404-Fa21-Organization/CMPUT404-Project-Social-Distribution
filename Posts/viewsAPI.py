@@ -1,15 +1,18 @@
 from django.conf import settings
 from django.core import serializers
 from django.utils import timezone
+from Posts.commentModel import Comments
+from Posts.commentView import add_Comment
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from requests import get
-from .serializers import PostSerializer
+from .serializers import CommentSerializer, PostSerializer
 from Author.serializers import LikeSerializer
 from Author.models import Like
 from .models import Post, Author
 from .form import PostForm
+from Posts.commentForm import CommentForm
 import json
 import uuid
 import re
@@ -104,6 +107,43 @@ def PostsList(request, auth_pk=None):
 
     return Response(serializer.data)
 
+@api_view(['GET', 'POST',])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
+def commentListView(request, post_pk, auth_pk=None):
+    page_number = request.GET.get('page')
+    if 'size' in request.GET:
+        page_size = request.GET.get('size')
+    else:
+        page_size = 5
+        
+    if request.method == 'GET':
+        comments = Comments.objects.filter(Post_pk_str=post_pk)
+        post = Post.objects.get(pk=post_pk)
+        post_id = getattr(post, 'id')
+        comment_id = getattr(post, 'comments')
+        paginator = Paginator(comments, page_size)
+        page_obj = paginator.get_page(page_number)
+        serializer = CommentSerializer(page_obj.object_list, many=True)
+        
+        response_dict = {
+            "type": "comments",
+            "page": page_number,
+            "size": page_size,
+            "post": post_id,
+            "id": comment_id,
+            "comments": serializer.data,
+        }
+        
+        return Response(response_dict)
+        
+    elif request.method == 'POST':
+        add_Comment(request, post_pk=request.data['Post_pk'])
+        comment = Comments.objects.last()
+        serializer = CommentSerializer(comment)
+        
+        return Response(serializer.data)
+
 @api_view(['GET', 'POST', 'PUT', 'DELETE', ])
 @authentication_classes([CustomAuthentication])
 @permission_classes([AccessPermission])
@@ -188,6 +228,51 @@ def PostDetail(request, post_pk, auth_pk=None):
 
     return Response(serializer.data, code)
 
+@api_view(['GET', 'POST', ])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
+def commentDetail(request, post_pk, comment_pk, auth_pk=None):
+    page_number = request.GET.get('page')
+    if 'size' in request.GET:
+        page_size = request.GET.get('size')
+    else:
+        page_size = 5
+        
+    if request.method == 'GET':
+        try:
+            code = status.HTTP_200_OK
+            comment = Comments.objects.get(pk=comment_pk)
+            serializer = CommentSerializer(comment)
+        except Exception as e:
+            print(e)
+            code = status.HTTP_404_NOT_FOUND
+
+            comment = Comments.objects.all()
+            paginator = Paginator(comment, page_size)
+            page_obj = paginator.get_page(page_number)
+            serializer = CommentSerializer(page_obj.object_list, many=True)
+
+    elif request.method == 'POST':
+        try:
+            code = status.HTTP_200_OK
+            comment = Comments.objects.get(pk=comment_pk)
+            if 'contentType' in request.data.keys():
+                comment.contentType = request.data['contentType']
+            if 'text' in request.data.keys():
+                comment.content = request.data['text']
+            comment.save()
+            serializer = CommentSerializer(comment)
+        except Exception as e:
+            print(e)
+            code = status.HTTP_400_BAD_REQUEST
+            comment = Comments.objects.all()
+            paginator = Paginator(comment, page_size)
+            page_obj = paginator.get_page(page_number)
+            serializer = CommentSerializer(page_obj.object_list, many=True)
+            
+    return Response(serializer.data, code)
+            
+            
 @api_view(['GET',])
 def connection(request, auth_id=None):
     data = []
