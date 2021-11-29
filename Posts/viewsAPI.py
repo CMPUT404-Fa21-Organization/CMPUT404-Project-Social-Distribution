@@ -1,15 +1,18 @@
 from django.conf import settings
 from django.core import serializers
 from django.utils import timezone
+from Posts.commentModel import Comments
+#from Posts.commentView import add_Comment
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from requests import get
-from .serializers import PostSerializer
+from .serializers import CommentSerializer, PostSerializer
 from Author.serializers import LikeSerializer
 from Author.models import Like
 from .models import Post, Author
 from .form import PostForm
+from Posts.commentForm import CommentForm
 import json
 import uuid
 import re
@@ -60,7 +63,31 @@ def newPost(request, uid=None, auth_pk=None):
         print(form.errors)
         print(form.data)
 
-
+def add_Comment(request, post_pk, auth_pk=None, uid=None):
+    form = CommentForm(request.POST, request.FILES)
+    if form.is_valid():
+        published = timezone.now()
+        contentType = form.cleaned_data['contentType']
+        if contentType == "application/app": 
+            content = request.FILES['file'].read() #Inputfile
+        elif contentType in ["image/png", "image/jpeg",]:
+            content = base64.b64encode(request.FILES['file'].read()) #Inputfile
+        else:
+            content = form.cleaned_data["text"]
+        author = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'displayName', 'github',)))[0]['fields']
+        auth_pk = author["id"].split("/")[-1]
+        
+        post = Post.objects.get(pk = post_pk)
+        post_pk_str = getattr(post, 'post_pk')
+        if uid == None:
+            r_uid = uuid.uuid4().hex
+            uid = re.sub('-', '', r_uid)
+        id = getattr(post, 'comments') + uid
+        comments = Comments(pk=uid, id=id, Post_pk=post, Post_pk_str = post_pk_str, auth_pk_str = auth_pk, author=author, size=10, published=published, content=content)
+        comments.save()
+    else:
+        print(request.data)   
+        
 @api_view(['GET',])
 def PostLikesView(request, post_pk, auth_pk):
     post = Post.objects.get(post_pk = post_pk)
@@ -80,6 +107,24 @@ def PostLikesView(request, post_pk, auth_pk):
 
     return Response(likes)
 
+@api_view(['GET',])
+def CommentLikesView(request, comment_pk, post_pk, auth_pk):
+    comment = Comments.objects.get(pk = comment_pk)
+    author = Author.objects.get(pk = auth_pk)
+    likeObjs = Like.objects.filter(~Q(auth_pk = author), object = comment.id)
+
+    Likes = LikeSerializer(likeObjs, read_only=True, many=True)
+    likes = []
+    for l in Likes.data:
+        like = {}
+        for key in l:
+            if(key != "context"):
+                like[key] = l[key]
+        like["@context"] = l["context"]
+        like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
+        likes.append(like)
+
+    return Response(likes)
 
 @api_view(['GET', 'POST',])
 @authentication_classes([CustomAuthentication])
@@ -103,6 +148,43 @@ def PostsList(request, auth_pk=None):
         serializer = PostSerializer(post)
 
     return Response(serializer.data)
+
+@api_view(['GET', 'POST',])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
+def commentListView(request, post_pk, auth_pk=None):
+    page_number = request.GET.get('page')
+    if 'size' in request.GET:
+        page_size = request.GET.get('size')
+    else:
+        page_size = 5
+        
+    if request.method == 'GET':
+        comments = Comments.objects.filter(Post_pk_str=post_pk)
+        post = Post.objects.get(pk=post_pk)
+        post_id = getattr(post, 'id')
+        comment_id = getattr(post, 'comments')
+        paginator = Paginator(comments, page_size)
+        page_obj = paginator.get_page(page_number)
+        serializer = CommentSerializer(page_obj.object_list, many=True)
+        
+        response_dict = {
+            "type": "comments",
+            "page": page_number,
+            "size": page_size,
+            "post": post_id,
+            "id": comment_id,
+            "comments": serializer.data,
+        }
+        
+        return Response(response_dict)
+        
+    elif request.method == 'POST':
+        add_Comment(request, post_pk=request.data['Post_pk'])
+        comment = Comments.objects.last()
+        serializer = CommentSerializer(comment)
+        
+        return Response(serializer.data)
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE', ])
 @authentication_classes([CustomAuthentication])
@@ -188,6 +270,51 @@ def PostDetail(request, post_pk, auth_pk=None):
 
     return Response(serializer.data, code)
 
+@api_view(['GET', 'POST', ])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
+def commentDetail(request, post_pk, comment_pk, auth_pk=None):
+    page_number = request.GET.get('page')
+    if 'size' in request.GET:
+        page_size = request.GET.get('size')
+    else:
+        page_size = 5
+        
+    if request.method == 'GET':
+        try:
+            code = status.HTTP_200_OK
+            comment = Comments.objects.get(pk=comment_pk)
+            serializer = CommentSerializer(comment)
+        except Exception as e:
+            print(e)
+            code = status.HTTP_404_NOT_FOUND
+
+            comment = Comments.objects.all()
+            paginator = Paginator(comment, page_size)
+            page_obj = paginator.get_page(page_number)
+            serializer = CommentSerializer(page_obj.object_list, many=True)
+
+    elif request.method == 'POST':
+        try:
+            code = status.HTTP_200_OK
+            comment = Comments.objects.get(pk=comment_pk)
+            if 'contentType' in request.data.keys():
+                comment.contentType = request.data['contentType']
+            if 'text' in request.data.keys():
+                comment.content = request.data['text']
+            comment.save()
+            serializer = CommentSerializer(comment)
+        except Exception as e:
+            print(e)
+            code = status.HTTP_400_BAD_REQUEST
+            comment = Comments.objects.all()
+            paginator = Paginator(comment, page_size)
+            page_obj = paginator.get_page(page_number)
+            serializer = CommentSerializer(page_obj.object_list, many=True)
+            
+    return Response(serializer.data, code)
+            
+            
 @api_view(['GET',])
 def connection(request, auth_id=None):
     data = []

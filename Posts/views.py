@@ -167,7 +167,6 @@ def ManagePostsList(request, auth_pk=None):
 
     paginator = Paginator(posts, page_size)
     page_obj = paginator.get_page(page_number)
-    
     return render(request, "LinkedSpace/Posts/manage_posts.html", {'posts': page_obj})
 
 def delete_Post(request, post_pk, auth_pk=None):
