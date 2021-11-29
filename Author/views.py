@@ -40,9 +40,9 @@ def authorHome(request):
 def clearInbox(request):
     if(request.user.is_authenticated):
         inbox = Inbox.objects.get(auth_pk = request.user)
-        inbox.iPosts.set([None])
-        inbox.iLikes.set([None])
-        inbox.iFollows.set([None])
+        inbox.iPosts.set([], clear = True)
+        inbox.iLikes.set([], clear = True)
+        inbox.iFollows.set([], clear = True)
 
     return HttpResponseRedirect(reverse('author-inbox-frontend'))
 
@@ -62,16 +62,17 @@ def acceptFollow(request):
         actor = Author.objects.get(id=request.POST["actorID"])
         object = Author.objects.get(id=request.POST["objectID"])
 
+        ###### REDUNDANT #################
         followersObj = Followers.objects.get(pk = object.pk)
 
         if actor not in followersObj.items.all() and actor != object:
             followersObj.items.add(actor)
+        ####################################
 
-        # Follow is not bidirectional
-        # followersAct = Followers.objects.get(pk = actor.pk)
+        followersAct = Followers.objects.get(pk = actor.pk)
 
-        # if object not in followersAct.items.all():
-        #     followersAct.items.add(object)
+        if object not in followersAct.items.all() and actor != object:
+            followersAct.items.add(object)
         
 
         return HttpResponseRedirect(reverse('author-inbox-frontend'))
@@ -133,6 +134,8 @@ def MyInboxView(request):
 
 
 @api_view(['GET',])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
 def AuthorLikedView(request, auth_pk):
     author = Author.objects.get(pk = auth_pk)
     likeObjs = Like.objects.filter(auth_pk = author)
@@ -280,16 +283,13 @@ def getInboxData(serializer):
 
 
 @api_view(['GET', 'POST', 'DELETE'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
 def AuthorInboxView(request, auth_pk):
     try:
         author = Author.objects.get(pk=auth_pk)
-
-        # if not the inbox of logged in user then redirect to login page
-        # TODO is this what we want?
-        # if(request.user.id != author.id or not request.user.is_authenticated):
-        #     return HttpResponseRedirect(reverse('login'))
-
         inbox =  Inbox.objects.get(pk=auth_pk)
+
     except Author.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -297,12 +297,24 @@ def AuthorInboxView(request, auth_pk):
         serializer = InboxSerializer(inbox, many=False)
         data = getInboxData(serializer)
 
+        page_number = request.GET.get('page')
+        if 'size' in request.GET:
+            page_size = request.GET.get('size')
+        else:
+            page_size = 5
+
+        paginator = Paginator(data["items"], page_size)
+        page_obj = paginator.get_page(page_number)
+
+        data["items"] = page_obj.object_list
+
+
         return Response(data)
 
     if request.method == "DELETE":
-        inbox.iPosts.set([None])
-        inbox.iLikes.set([None])
-        inbox.iFollows.set([None])
+        inbox.iPosts.set([], clear = True)
+        inbox.iLikes.set([], clear = True)
+        inbox.iFollows.set([], clear = True)
         
         serializer = InboxSerializer(inbox, many=False)
         data = getInboxData(serializer)
@@ -345,9 +357,6 @@ def AuthorInboxView(request, auth_pk):
             serializerLike = LikeSerializer(data=request.data)
 
             if serializerLike.is_valid():
-                # r_uid = uuid.uuid4().hex
-                # uid = re.sub('-', '', r_uid)
-                # serializerLike.validated_data["like_id"] = uid
                 serializerLike.validated_data["auth_pk"] = Author.objects.get(id=request.data["author"])
                 serializerLike.validated_data.pop("get_author")
 
@@ -366,21 +375,42 @@ def AuthorInboxView(request, auth_pk):
 
         
         if(request.data["type"] == "follow"):
+
+            serializerFollow = FriendRequestSerializer(data=request.data)
+
+            if serializerFollow.is_valid():
+                serializerFollow.validated_data["actor"] = Author.objects.get(id=request.data["actor"])
+                serializerFollow.validated_data["object"] = Author.objects.get(id=request.data["object"])
+                serializerFollow.validated_data.pop("get_actor")
+                serializerFollow.validated_data.pop("get_object")
+                
+                if(FriendRequest.objects.filter(actor = Author.objects.get(id=request.data["actor"]) , object = Author.objects.get(id=request.data["object"])).count() == 0):
+                    serializerFollow.save()
+
+                follow = FriendRequest.objects.get(actor = Author.objects.get(id=request.data["actor"]) , object = Author.objects.get(id=request.data["object"]))
+
+                inbox.iFollows.add(follow)
+
+                serializer = InboxSerializer(inbox, many=False)
+                data = getInboxData(serializer)
+                return Response(data)
             
+            return Response(serializerFollow.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            ########## POULOMI'S ACCEPT FOLLOW FRONTEND #############
+            # if request.data["frontend"]:
+            #     actor = Author.objects.get(id = request.data["actor"])
+            #     objectauthor = Author.objects.get(id = request.data["object"])
 
-            if request.data["frontend"]:
-                actor = Author.objects.get(id = request.data["actor"])
-                objectauthor = Author.objects.get(id = request.data["object"])
+            #     summary = actor.displayName + ' wants to follow ' + objectauthor.displayName
 
-                summary = actor.displayName + ' wants to follow ' + objectauthor.displayName
+            #     type = request.data["type"]
 
-                type = request.data["type"]
+            #     frequest = FriendRequest(summary = summary, type = type, actor = actor, object = objectauthor)
 
-                frequest = FriendRequest(summary = summary, type = type, actor = actor, object = objectauthor)
+            #     inbox.iFollows.add(FriendRequest.objects.create(summary = summary, type = type, actor = actor, object = objectauthor))
 
-                inbox.iFollows.add(FriendRequest.objects.create(summary = summary, type = type, actor = actor, object = objectauthor))
-
-                return HttpResponseRedirect('/api/authors')
+            #     return HttpResponseRedirect('/api/authors')
 
 @api_view(['GET',])
 def AuthorsConnection(request, auth_id=None):
@@ -400,28 +430,9 @@ def AuthorsConnection(request, auth_id=None):
 
     return Response({'connection': data})
 
-            # TODO: Keep for api requests!
 
-            # serializerFollow = FriendRequestSerializer(data=request.data)
 
-            # if serializerFollow.is_valid():
-            #     serializerFollow.validated_data["actor"] = Author.objects.get(id=request.data["actor"])
-            #     serializerFollow.validated_data["object"] = Author.objects.get(id=request.data["object"])
-            #     serializerFollow.validated_data.pop("get_actor")
-            #     serializerFollow.validated_data.pop("get_object")
-                
-            #     if(FriendRequest.objects.filter(actor = Author.objects.get(id=request.data["actor"]) , object = Author.objects.get(id=request.data["object"])).count() == 0):
-            #         serializerFollow.save()
-
-            #     follow = FriendRequest.objects.get(actor = Author.objects.get(id=request.data["actor"]) , object = Author.objects.get(id=request.data["object"]))
-
-            #     inbox.iFollows.add(follow)
-
-            #     serializer = InboxSerializer(inbox, many=False)
-            #     data = getInboxData(serializer)
-            #     return Response(data)
             
-            # return Response(serializerFollow.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # DEPRECATED INBOX VIEW

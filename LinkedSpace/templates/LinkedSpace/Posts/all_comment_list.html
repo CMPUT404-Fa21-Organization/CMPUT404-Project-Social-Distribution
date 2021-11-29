@@ -1,0 +1,71 @@
+{% extends '../base.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block title %}
+    Comments List
+{% endblock %}
+
+{% block content %}
+    <h1>All Comments</h1>
+
+    {% for comment in comments %}
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="mt-3">
+              <div class="card" style="width: 50rem;">
+                <div class="card-header text-black" style="background-color: #a2afe23b;">
+                </div>
+                <div class="card-body">
+                    {% if comment.contentType == "text/plain" %}
+                        <p>{{ comment.content }}</p>
+                    {% elif comment.contentType == "text/markdown" %}
+                        {% load markdownify %}
+                    <p class="background-color: grey;">{{ comment.content |markdownify }}</p>
+                    {% elif comment.contentType == "application/base64" %}
+                        <p>Some base64 file would be displayed here ...</p>
+                    {% elif comment.isImage %}
+                        <img src="data:{{ comment.contentType }};base64, {{ comment.image }}"/>
+                    {% elif comment.contentType == "HTML" %}
+                        <p>HTML would be displayed here ...</p>
+                    {% endif %}
+                </div>
+                <!-- Like Button -->
+                <!-- TODO: Better CSS for Like Button -->
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+                
+                <form action='newLike/' method= 'POST' enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" id="context" name="context" value="comments">
+                    <input type="hidden" id="postID" name="postID" value={{comment.id}}>
+                    {% if comment.userLike %}
+                        <input type = "submit" value = "{{ comment.numLikes }} 👍" style="color: white; background-color:blue" class = "postLikeButton-active" >
+                    {% else %}
+                        <input type = "submit" value = "{{ comment.numLikes }} 👍"  class = "postLikeButton-deactive">
+                    {% endif %}
+                </form>
+              </div>
+          </div>
+        </div>
+    </div>
+
+    
+    {% endfor %}
+    <div class="pagination">
+        <span class="step-links">
+            {% if comments.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ comments.previous_page_number }}">previous</a>
+            {% endif %}
+    
+            <span class="current">
+                Page {{ comments.number }} of {{ comments.paginator.num_pages }}.
+            </span>
+    
+            {% if comments.has_next %}
+                <a href="?page={{ comments.next_page_number }}">next</a>
+                <a href="?page={{ comments.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+{% endblock %}

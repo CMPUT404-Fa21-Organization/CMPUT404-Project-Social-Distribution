@@ -20,5 +20,5 @@ urlpatterns = [
     path('authors/', AuthorsListAPIView),
     path('authors/connection/', AuthorsConnection),
     path('posts/',  include('Posts.urlsAPI')),
-    path('author/',  include('Author.urlsAPI')),
+    path('author/', include('Author.urlsAPI')),
 ]
