@@ -2,7 +2,7 @@ from django.conf import settings
 from django.core import serializers
 from django.utils import timezone
 from Posts.commentModel import Comments
-from Posts.commentView import add_Comment
+#from Posts.commentView import add_Comment
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
@@ -63,7 +63,31 @@ def newPost(request, uid=None, auth_pk=None):
         print(form.errors)
         print(form.data)
 
-
+def add_Comment(request, post_pk, auth_pk=None, uid=None):
+    form = CommentForm(request.POST, request.FILES)
+    if form.is_valid():
+        published = timezone.now()
+        contentType = form.cleaned_data['contentType']
+        if contentType == "application/app": 
+            content = request.FILES['file'].read() #Inputfile
+        elif contentType in ["image/png", "image/jpeg",]:
+            content = base64.b64encode(request.FILES['file'].read()) #Inputfile
+        else:
+            content = form.cleaned_data["text"]
+        author = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'displayName', 'github',)))[0]['fields']
+        auth_pk = author["id"].split("/")[-1]
+        
+        post = Post.objects.get(pk = post_pk)
+        post_pk_str = getattr(post, 'post_pk')
+        if uid == None:
+            r_uid = uuid.uuid4().hex
+            uid = re.sub('-', '', r_uid)
+        id = getattr(post, 'comments') + uid
+        comments = Comments(pk=uid, id=id, Post_pk=post, Post_pk_str = post_pk_str, auth_pk_str = auth_pk, author=author, size=10, published=published, content=content)
+        comments.save()
+    else:
+        print(request.data)   
+        
 @api_view(['GET',])
 def PostLikesView(request, post_pk, auth_pk):
     post = Post.objects.get(post_pk = post_pk)
