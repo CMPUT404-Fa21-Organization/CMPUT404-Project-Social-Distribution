@@ -303,11 +303,13 @@ def AuthorInboxView(request, auth_pk):
         else:
             page_size = 5
 
-        paginator = Paginator(data, page_size)
+        paginator = Paginator(data["items"], page_size)
         page_obj = paginator.get_page(page_number)
 
+        data["items"] = page_obj.object_list
 
-        return Response(page_obj)
+
+        return Response(data)
 
     if request.method == "DELETE":
         inbox.iPosts.set([], clear = True)
