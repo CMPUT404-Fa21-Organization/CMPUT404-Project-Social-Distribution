@@ -33,7 +33,7 @@ def PostDetailView(request, post_pk, auth_pk = None):
 
 
     # TODO Add logic to check for friend
-    if(postObj.visibility == "Public"):
+    if(postObj.visibility == "Public" or user == postObj.author_id):
     
         # If Content is image
         

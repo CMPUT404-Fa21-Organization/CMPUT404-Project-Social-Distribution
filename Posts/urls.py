@@ -19,14 +19,14 @@ from Posts.commentView import *
 urlpatterns = [
     # All the NON-API Views
     path('', UserStreamView, name='user-stream-view'),
-    path('<post_pk>/', PostDetailView, name= 'post-detail-view'),
-    path('<post_pk>/newLike/', newLike, name= 'add-like-post'),
     path('newLike/', newLike, name='add-like'),
     path('manage/', ManagePostsList, name='posts-manage'),
-    path('<post_pk>/comments/', AllCommentsList, name='comment-list'),
-    path('<post_pk>/comments/newLike/', newLike, name='add-like-comment'),
     path('add_post/', newPost, name='add_post'),
     path('edit/<post_pk>/', edit_Post, name='edit_Post'),
     path('delete/<post_pk>/', delete_Post, name='delete_Post'),
     path('<post_pk>/add_comment/', add_Comment, name='add_comment'),
+    path('<post_pk>/', PostDetailView, name= 'post-detail-view'),
+    path('<post_pk>/newLike/', newLike, name= 'add-like-post'),
+    path('<post_pk>/comments/', AllCommentsList, name='comment-list'),
+    path('<post_pk>/comments/newLike/', newLike, name='add-like-comment'),
 ]
