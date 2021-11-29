@@ -19,6 +19,8 @@ from Posts.commentView import *
 urlpatterns = [
     # All the NON-API Views
     path('', UserStreamView, name='user-stream-view'),
+    path('<post_pk>/', PostDetailView, name= 'post-detail-view'),
+    path('<post_pk>/newLike/', newLike, name= 'add-like-post'),
     path('newLike/', newLike, name='add-like'),
     path('manage/', ManagePostsList, name='posts-manage'),
     path('<post_pk>/comments/', AllCommentsList, name='comment-list'),

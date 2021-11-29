@@ -20,6 +20,58 @@ import base64
 from django.core.paginator import Paginator
 
 # Create your views here.
+
+def PostDetailView(request, post_pk, auth_pk = None):
+
+    user = None
+    if(request.user.is_authenticated):
+        user = request.user
+
+    postObj = Post.objects.get(pk = post_pk)
+    postSeririaliezed = PostSerializer(postObj, many=False)
+    post = postSeririaliezed.data
+
+
+    # TODO Add logic to check for friend
+    if(postObj.visibility == "Public"):
+    
+        # If Content is image
+        
+        post["isImage"] = False
+        if(post["contentType"] == "image/png" or post["contentType"] == "image/jpeg"):
+            post["isImage"] = True
+            imgdata = post["content"][2:-1]
+            post["image"] = imgdata
+
+        # Like Stuff
+        # Calculte Number of Likes for Posts
+        likeObjects = Like.objects.all()  
+        likes = LikeSerializer(likeObjects,  many=True)   
+        post["userLike"] = False
+        post["numLikes"] = 0
+        for like in likes.data:
+            if post["id"] == like["object"]:
+                post["numLikes"] += 1
+        
+        # Check which posts the user has already liked
+        if(request.user.is_authenticated):
+            likeObjects = Like.objects.filter(auth_pk = request.user)  
+            userLikes = LikeSerializer(likeObjects,  many=True) 
+            for like in userLikes.data:
+                if post["id"] == like["object"]:
+                    post["userLike"] = True
+
+
+        context = {'post':post, 'user':user}
+
+        template_name = 'LinkedSpace/Posts/post_detail.html'
+        return HttpResponse(render(request, template_name, context),status=200)
+    
+    else:
+        return HttpResponse(status=401)
+
+    
+
 def newLike(request, auth_pk = None, post_pk = None):
     # View to create a new like object after clicking the like button
     if request.user.is_authenticated:
@@ -54,6 +106,8 @@ def newLike(request, auth_pk = None, post_pk = None):
             return HttpResponseRedirect(reverse('user-stream-view', kwargs={ 'auth_pk': auth_pk }))
         elif(request.POST["context"] == "comments"):
             return HttpResponseRedirect(reverse('comment-list', kwargs={ 'post_pk': post_pk }))
+        elif(request.POST["context"] == "post-detail"):
+            return HttpResponseRedirect(reverse('post-detail-view', kwargs={ 'post_pk': post_pk }))
         else:
             return HttpResponseRedirect(reverse('author-inbox-frontend'))
 
