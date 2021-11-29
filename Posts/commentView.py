@@ -140,7 +140,7 @@ def add_Comment(request, post_pk, auth_pk=None, uid=None):
                 id = getattr(post, 'comments') + uid
                 print("comment_id ",id)
                 #input()
-                comments = Comments(pk=uid, id=id, Post_pk=post, Post_pk_str = post_pk_str, auth_pk_str = auth_pk, author=author, size=10, published=published, content=content)
+                comments = Comments(pk=uid, id=id, Post_pk=post, Post_pk_str = post_pk_str, auth_pk_str = auth_pk, author=author, size=10, published=published, content=content, contentType = contentType)
                 #print(comments.objects)
                 comments.save()
                 #print("user.pk ", request.user.pk)
@@ -157,8 +157,8 @@ def add_Comment(request, post_pk, auth_pk=None, uid=None):
         form = CommentForm()
     return render(request, "LinkedSpace/Posts/add_comment.html", {'form': form, 'user':request.user})
 
-def AllCommentsList(request, post_pk):
-    comments = Comments.objects.filter(Post_pk_str=post_pk).order_by('-published')
+def AllCommentsList(request, post_pk, auth_pk = None):
+    commentsObj = Comments.objects.filter(Post_pk_str=post_pk).order_by('-published')
 
     page_number = request.GET.get('page')
     if 'size' in request.GET:
@@ -166,7 +166,37 @@ def AllCommentsList(request, post_pk):
     else:
         page_size = 5
 
-    paginator = Paginator(comments, page_size)
+    comments = CommentSerializer(commentsObj, many = True)
+
+    # If Content is image
+    for post in comments.data:
+        post["isImage"] = False
+        if(post["contentType"] == "image/png" or post["contentType"] == "image/jpeg"):
+            post["isImage"] = True
+            imgdata = post["content"][2:-1]
+            post["image"] = imgdata
+
+    # Like Stuff
+    # Calculte Number of Likes for Posts
+    likeObjects = Like.objects.all()  
+    likes = LikeSerializer(likeObjects,  many=True)   
+    for post in comments.data:
+        post["userLike"] = False
+        post["numLikes"] = 0
+        for like in likes.data:
+            if post["id"] == like["object"]:
+                post["numLikes"] += 1
+    
+    # Check which posts the user has already liked
+    if(request.user.is_authenticated):
+        likeObjects = Like.objects.filter(auth_pk = request.user)  
+        userLikes = LikeSerializer(likeObjects,  many=True) 
+        for post in comments.data:
+            for like in userLikes.data:
+                if post["id"] == like["object"]:
+                    post["userLike"] = True
+
+    paginator = Paginator(comments.data, page_size)
     page_obj = paginator.get_page(page_number)
     print("redirected to comment list html")
-    return render(request, "LinkedSpace/Posts/all_comment_list.html", {'posts': page_obj})
+    return render(request, "LinkedSpace/Posts/all_comment_list.html", {'comments': page_obj})

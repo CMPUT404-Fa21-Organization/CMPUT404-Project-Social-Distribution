@@ -89,6 +89,8 @@ def add_Comment(request, post_pk, auth_pk=None, uid=None):
         print(request.data)   
         
 @api_view(['GET',])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
 def PostLikesView(request, post_pk, auth_pk):
     post = Post.objects.get(post_pk = post_pk)
     author = Author.objects.get(pk = auth_pk)

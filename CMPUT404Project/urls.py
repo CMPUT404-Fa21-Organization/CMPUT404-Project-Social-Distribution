@@ -34,20 +34,14 @@ urlpatterns = [
     path('inbox/newLike/', newLike, name='add-like'),
     path('inbox/acceptFollow/', acceptFollow, name='accept-follow'),
 
-    path('author/<auth_pk>/posts/', include('Posts.urls')),
-    path('author/<auth_pk>/', AuthorDetailView, name='author-detail'),
-    path('author/<auth_pk>/inbox/', AuthorInboxView, name='author-inbox'),
+   
 
     path('git/', include('GitEvents.urls')),
 
-    path('posts/', ManagePostsList, name='posts-manage'),
-    path('posts/add_post/', newPost, name='add_post'),
-    path('posts/edit/<post_pk>/', edit_Post, name='edit_Post'),
-    path('posts/delete/<post_pk>/', delete_Post, name='delete_Post'),
-    path('posts/<post_pk>/add_comment/', add_Comment, name='add_comment'),
+    path('author/', include('Author.urls')),
 
-    # TODO Not sure if this is non-api
-    path('author/', authorHome, name='authorHome'),
+    path('posts/', include('Posts.urls')),
+    
 
     # All the API views
     path('api/', include('LinkedSpace.urls')),
