@@ -288,13 +288,8 @@ def getInboxData(serializer):
 def AuthorInboxView(request, auth_pk):
     try:
         author = Author.objects.get(pk=auth_pk)
-
-        # if not the inbox of logged in user then redirect to login page
-        # TODO is this what we want?
-        # if(request.user.id != author.id or not request.user.is_authenticated):
-        #     return HttpResponseRedirect(reverse('login'))
-
         inbox =  Inbox.objects.get(pk=auth_pk)
+
     except Author.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -302,7 +297,17 @@ def AuthorInboxView(request, auth_pk):
         serializer = InboxSerializer(inbox, many=False)
         data = getInboxData(serializer)
 
-        return Response(data)
+        page_number = request.GET.get('page')
+        if 'size' in request.GET:
+            page_size = request.GET.get('size')
+        else:
+            page_size = 5
+
+        paginator = Paginator(data, page_size)
+        page_obj = paginator.get_page(page_number)
+
+
+        return Response(page_obj)
 
     if request.method == "DELETE":
         inbox.iPosts.set([], clear = True)
