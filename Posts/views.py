@@ -65,7 +65,7 @@ def UserStreamView(request, auth_pk):
     else:
         # TODO Friend Posts in stream
         author = Author.objects.get(pk = auth_pk)
-        postsObjects = Post.objects.filter(author_id=author.pk, visibility = "PUBLIC")
+        postsObjects = Post.objects.filter(author_id=author.pk, visibility = "Public")
     
     postsObjects = postsObjects.order_by('-published')
 
@@ -92,7 +92,7 @@ def UserStreamView(request, auth_pk):
     
     # Check which posts the user has already liked
     if(request.user.is_authenticated):
-        likeObjects = Like.objects.filter(auth_pk = author)  
+        likeObjects = Like.objects.filter(auth_pk = request.user)  
         userLikes = LikeSerializer(likeObjects,  many=True) 
         for post in posts.data:
             for like in userLikes.data:
