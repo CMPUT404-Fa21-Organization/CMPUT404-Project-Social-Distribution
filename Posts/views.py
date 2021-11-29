@@ -4,6 +4,8 @@ from django.http.response import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
 from django.shortcuts import redirect, render
+
+from Posts.commentModel import Comments
 from .serializers import PostSerializer
 from Author.serializers import LikeSerializer
 from Author.models import Inbox, Like
@@ -18,7 +20,7 @@ import base64
 from django.core.paginator import Paginator
 
 # Create your views here.
-def newLike(request, auth_pk = None):
+def newLike(request, auth_pk = None, post_pk = None):
     # View to create a new like object after clicking the like button
     if request.user.is_authenticated:
         # TODO what is context supposed to be?
@@ -26,10 +28,14 @@ def newLike(request, auth_pk = None):
         author = request.user
         object = request.POST["postID"]
         objectType = "post"
+
         if "comment" in object:
             objectType = "comment"
-        post = Post.objects.get(id = object)
-        postAuthor = Author.objects.get(email = post.author_id)
+            post = Comments.objects.get(id = object)
+            postAuthor = Author.objects.get(pk = post.auth_pk_str)
+        else:
+            post = Post.objects.get(id = object)
+            postAuthor = Author.objects.get(email = post.author_id)
     
         summary = request.user.displayName + " liked " + postAuthor.displayName + "'s " + objectType
         if(Like.objects.filter(auth_pk = author, object = object).count() == 0):
@@ -46,6 +52,8 @@ def newLike(request, auth_pk = None):
 
         if(request.POST["context"] == "stream"):
             return HttpResponseRedirect(reverse('user-stream-view', kwargs={ 'auth_pk': auth_pk }))
+        elif(request.POST["context"] == "comments"):
+            return HttpResponseRedirect(reverse('comment-list', kwargs={ 'post_pk': post_pk }))
         else:
             return HttpResponseRedirect(reverse('author-inbox-frontend'))
 

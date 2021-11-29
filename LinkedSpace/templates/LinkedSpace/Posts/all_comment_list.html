@@ -24,18 +24,32 @@
                     <p class="background-color: grey;">{{ comment.content |markdownify }}</p>
                     {% elif comment.contentType == "application/base64" %}
                         <p>Some base64 file would be displayed here ...</p>
-                    {% elif comment.contentType == "image/png;base64" %}
-                        <p>Some .png file would be displayed here ...</p>
-                    {% elif comment.contentType == "image/jpeg;base64" %}
-                        <p>Some .jpeg file would be displayed here ...</p>
+                    {% elif comment.isImage %}
+                        <img src="data:{{ comment.contentType }};base64, {{ comment.image }}"/>
                     {% elif comment.contentType == "HTML" %}
                         <p>HTML would be displayed here ...</p>
                     {% endif %}
                 </div>
+                <!-- Like Button -->
+                <!-- TODO: Better CSS for Like Button -->
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+                
+                <form action='newLike/' method= 'POST' enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" id="context" name="context" value="comments">
+                    <input type="hidden" id="postID" name="postID" value={{comment.id}}>
+                    {% if comment.userLike %}
+                        <input type = "submit" value = "{{ comment.numLikes }} 👍" style="color: white; background-color:blue" class = "postLikeButton-active" >
+                    {% else %}
+                        <input type = "submit" value = "{{ comment.numLikes }} 👍"  class = "postLikeButton-deactive">
+                    {% endif %}
+                </form>
               </div>
           </div>
         </div>
     </div>
+
+    
     {% endfor %}
     <div class="pagination">
         <span class="step-links">
