@@ -27,6 +27,7 @@ urlpatterns = [
     path('register/', registerView, name='register'),
     path('logout/', logoutView, name='logout'),
     path('profile/', profileView, name='author-detail'),
+    path('profile/edit/', profileEdit, name='profile-edit'),
     
 
     path('inbox/', MyInboxView, name='author-inbox-frontend'),
