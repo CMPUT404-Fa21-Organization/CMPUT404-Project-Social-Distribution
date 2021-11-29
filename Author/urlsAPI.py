@@ -15,11 +15,12 @@ Including another URLconf
 """
 from django.urls import path
 from django.urls.conf import include
+from .api import *
 from .views import *
 
 urlpatterns = [
  
-    path('<auth_pk>/', AuthorDetailView, name='author-detail'),
+    path('<auth_pk>/', AuthorDetailAPIView),
     path('<auth_pk>/posts/', include('Posts.urlsAPI')),
     path('<auth_pk>/inbox/', AuthorInboxView, name='author-inbox'),
     path('<auth_pk>/liked/', AuthorLikedView, name='author-liked-view')
