@@ -1,5 +1,5 @@
-"""CMPUT404Project URL Configuration
 
+"""CMPUT404Project URL Configuration
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.2/topics/http/urls/
 Examples:
@@ -13,12 +13,19 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import include, path
-from Author.api import AuthorsConnection, AuthorsListAPIView
+from django.urls import path
+from django.urls.conf import include
+from .api import *
+from .views import *
 
 urlpatterns = [
-    path('authors/', AuthorsListAPIView),
-    path('authors/connection/', AuthorsConnection),
-    path('posts/',  include('Posts.urlsAPI')),
-    path('author/', include('Author.urlsAPI')),
+ 
+    path('<auth_pk>/', AuthorDetailAPIView),
+    path('<auth_pk>/posts/', include('Posts.urlsAPI')),
+    path('<auth_pk>/inbox/', AuthorInboxView, name='author-inbox'),
+    path('<auth_pk>/liked/', AuthorLikedView, name='author-liked-view')
+    # DEPRECATED
+    # path('<auth_pk>/inbox/', AuthorInboxView.as_view(), name='author-inbox'),
+    # path('<auth_pk>/delete', AuthorDeleteView, name='author-delete'),
+
 ]

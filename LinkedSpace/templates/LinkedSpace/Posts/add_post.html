@@ -53,17 +53,17 @@
                 <option value="text/plain">text/plain</option>
                 <option value="application/app">application/app</option>
                 <option value="image/png">image/png</option>
-                <option value="image/jpeg">text/jpeg</option>
+                <option value="image/jpeg">image/jpeg</option>
                 <option value="HTML">HTML</option>
              </select><br><br>
 
             <label for="Text">Text:</label><br>
-            <input id="text" type="text" name="text" class="form-control" value="{{ post.content }}"><br>
+            <textarea id="text" type="text" name="text" class="form-control">{{ post.content }}</textarea><br>
 
             <label for="file">File:</label><br>
             <input type="file" name="file" id="file"><br/><br/>
 
-            <input type="submit" value="OK" class="btn btn-primary">
+            <input type="submit" value="Submit" class="btn btn-primary">
         </form>
     {% else %}
         <h3><a href={% url 'login' %} >Login</a></h3>

@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotFound
 from .serializers import ActivitySerializer
+from django.core.paginator import Paginator
 
 # https://raybesiga.com/basic-django-app-github-api/
 # https://docs.github.com/en/rest/reference/activity
@@ -59,8 +60,17 @@ def GithubEventsView(request):
                     }
                     activities.append(event_object)
 
-            serializer = ActivitySerializer(activities, many=True)
-            context = {'activities': serializer.data}
+            page_number = request.GET.get('page')
+            if 'size' in request.GET:
+                page_size = request.GET.get('size')
+            else:
+                page_size = 5
+
+            paginator = Paginator(activities, page_size)
+            page_obj = paginator.get_page(page_number)
+
+            serializer = ActivitySerializer(page_obj, many=True)
+            context = {'pages': page_obj, 'activities': serializer.data}
 
             # django REST framework API view
             # return Response(context, status=status.HTTP_200_OK)
