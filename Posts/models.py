@@ -2,6 +2,8 @@ import base64
 from django.db import models
 from django.db.models.deletion import CASCADE
 from Author.models import Author
+from django.contrib.postgres.fields import ArrayField
+from multiselectfield import MultiSelectField
 
 class Base64Field(models.TextField):
     # https://djangosnippets.org/snippets/1669/
@@ -48,7 +50,8 @@ class Post(models.Model):
         ('Tutorial', 'Tutorial'),
         ('', ''),
     )
-    categories = models.CharField(max_length=20, choices=post_categories, editable=True)
+    # categories = models.CharField(max_length=20, choices=post_categories, editable=True)
+    categories = MultiSelectField(choices=post_categories, editable=True, blank=True, null=True)
     count = models.PositiveBigIntegerField(default=0)
     size = models.PositiveBigIntegerField(default=10)
 
