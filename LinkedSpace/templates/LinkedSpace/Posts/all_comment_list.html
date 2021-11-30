@@ -18,10 +18,9 @@
                 </div>
                 <div class="card-body">
                     {% if comment.contentType == "text/plain" %}
-                        <p>{{ comment.content }}</p><p>should be stuff here</p>
+                        <p>{{ comment.content }}</p>
                     {% elif comment.contentType == "text/markdown" %}
                         {% load markdownify %}
-                        <p>should be stuff here</p>
                     <p class="background-color: grey;">{{ comment.content |markdownify }}</p>
                     {% elif comment.contentType == "application/base64" %}
                         <p>Some base64 file would be displayed here ...</p>
