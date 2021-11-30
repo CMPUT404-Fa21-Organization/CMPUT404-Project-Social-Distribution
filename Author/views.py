@@ -375,7 +375,9 @@ def AuthorInboxView(request, auth_pk):
 
         
         if(request.data["type"] == "follow"):
-
+            request.data["actor"] = request.data["actor"]["id"]
+            request.data["object"] = request.data["object"]["id"]
+            
             serializerFollow = FriendRequestSerializer(data=request.data)
 
             if serializerFollow.is_valid():
