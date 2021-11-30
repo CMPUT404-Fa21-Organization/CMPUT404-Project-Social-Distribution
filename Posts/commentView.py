@@ -167,36 +167,37 @@ def AllCommentsList(request, post_pk, auth_pk = None):
         page_size = 5
 
     comments = CommentSerializer(commentsObj, many = True)
+    post = Post.objects.get(pk = post_pk)
 
     # If Content is image
-    for post in comments.data:
-        post["isImage"] = False
-        if(post["contentType"] == "image/png" or post["contentType"] == "image/jpeg"):
-            post["isImage"] = True
-            imgdata = post["content"][2:-1]
-            post["image"] = imgdata
+    for comment in comments.data:
+        comment["isImage"] = False
+        if(comment["contentType"] == "image/png" or comment["contentType"] == "image/jpeg"):
+            comment["isImage"] = True
+            imgdata = comment["content"][2:-1]
+            comment["image"] = imgdata
 
     # Like Stuff
-    # Calculte Number of Likes for Posts
+    # Calculte Number of Likes for comments
     likeObjects = Like.objects.all()  
     likes = LikeSerializer(likeObjects,  many=True)   
-    for post in comments.data:
-        post["userLike"] = False
-        post["numLikes"] = 0
+    for comment in comments.data:
+        comment["userLike"] = False
+        comment["numLikes"] = 0
         for like in likes.data:
-            if post["id"] == like["object"]:
-                post["numLikes"] += 1
+            if comment["id"] == like["object"]:
+                comment["numLikes"] += 1
     
-    # Check which posts the user has already liked
+    # Check which comments the user has already liked
     if(request.user.is_authenticated):
         likeObjects = Like.objects.filter(auth_pk = request.user)  
         userLikes = LikeSerializer(likeObjects,  many=True) 
-        for post in comments.data:
+        for comment in comments.data:
             for like in userLikes.data:
-                if post["id"] == like["object"]:
-                    post["userLike"] = True
+                if comment["id"] == like["object"]:
+                    comment["userLike"] = True
 
     paginator = Paginator(comments.data, page_size)
     page_obj = paginator.get_page(page_number)
     print("redirected to comment list html")
-    return render(request, "LinkedSpace/Posts/all_comment_list.html", {'comments': page_obj, 'post_pk': post_pk})
+    return render(request, "LinkedSpace/Posts/all_comment_list.html", {'comments': page_obj, 'post': post})
