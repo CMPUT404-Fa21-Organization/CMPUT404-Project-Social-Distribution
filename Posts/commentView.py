@@ -199,4 +199,4 @@ def AllCommentsList(request, post_pk, auth_pk = None):
     paginator = Paginator(comments.data, page_size)
     page_obj = paginator.get_page(page_number)
     print("redirected to comment list html")
-    return render(request, "LinkedSpace/Posts/all_comment_list.html", {'comments': page_obj})
+    return render(request, "LinkedSpace/Posts/all_comment_list.html", {'comments': page_obj, 'post_pk': post_pk})
