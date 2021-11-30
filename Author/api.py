@@ -46,26 +46,25 @@ def AuthorDetailAPIView(request, auth_pk):
         serializer = AuthorSerializer(instance=author)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-
-    """
-        TODO: require current user authentication before permitting update.
-    """
     if request.method == "POST":
-        # authenticate_classes = (CustomAuthentication,)
-        # permission_classes = (AccessPermission,)
-        # if request.user.is_authenticated:
         if 'displayName' in request.data.keys():
             author.displayName = request.data['displayName']
+        if 'email' in request.data.keys():
+
+            if not len(Author.objects.filter(email=request.data['email'])):
+                author.email = request.data['email'] # update email field
+            else:
+                # email already exists
+                serializer = AuthorSerializer(author)
+                return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)      
+
         if 'github' in request.data.keys():
-            author.github = request.data['github']
-        
+            github_user = request.data['github']
+            author.github = f'http://github.com/{github_user}'
+
+        author.save()
         serializer = AuthorSerializer(author)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
