@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'Author.apps.AuthorConfig',
     'Posts.apps.PostsConfig',
     'GitEvents.apps.GiteventsConfig',
+    'Node.apps.NodeConfig',
     'markdownify.apps.MarkdownifyConfig',
 
     'crispy_forms',
