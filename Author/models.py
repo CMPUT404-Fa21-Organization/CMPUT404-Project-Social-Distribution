@@ -63,14 +63,14 @@ class Author(AbstractBaseUser, PermissionsMixin):
 
     
 
-    auth_pk = models.CharField(primary_key=True, max_length=500, editable=False)
+    auth_pk = models.TextField(primary_key=True, max_length=500, editable=False)
     email = models.EmailField(verbose_name='email', max_length=500, unique=True)
-    id = models.CharField(max_length=200, blank=False, editable=False, unique=True)
-    type = models.CharField(max_length=30, default='author', editable=False)
-    host = models.CharField(max_length=200, default=HOST)
-    displayName = models.CharField(max_length=500, editable=True)
-    url = models.CharField(max_length=200, blank=False, editable=False)
-    github = models.CharField(max_length=200, default='', blank=True)
+    id = models.TextField(max_length=200, blank=False, editable=False, unique=True)
+    type = models.TextField(max_length=30, default='author', editable=False)
+    host = models.TextField(max_length=200, default=HOST)
+    displayName = models.TextField(max_length=500, editable=True)
+    url = models.TextField(max_length=200, blank=False, editable=False)
+    github = models.TextField(max_length=200, default='', blank=True)
 
     # Required for extending AbstractUser ...
     username = None
