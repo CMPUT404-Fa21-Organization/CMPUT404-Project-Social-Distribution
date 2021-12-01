@@ -1,6 +1,6 @@
 from django.contrib import auth
 from django.db import connection
-from django.http.response import HttpResponseRedirect
+from django.http.response import HttpResponseRedirect, HttpResponseRedirectBase
 from django.shortcuts import render
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
@@ -454,6 +454,22 @@ def AuthorInboxView(request, auth_pk):
             
             return Response(serializerFollow.errors, status=status.HTTP_400_BAD_REQUEST)
 
+def AuthorInboxViewFrontend(request, auth_pk):
+    if request.method == 'POST':
+
+        if request.user.is_authenticated:
+
+
+            actor = Author.objects.get(id = request.POST["actor"])
+            objectauthor = Author.objects.get(id = request.POST["object"])
+
+            summary = actor.displayName + ' wants to follow ' + objectauthor.displayName
+
+            type = request.POST["type"]
+
+            inbox =  Inbox.objects.get(pk=auth_pk)
+            inbox.iFollows.add(FriendRequest.objects.create(summary=summary, type = type, actor = actor, object = objectauthor))
+            return HttpResponseRedirect('/authors')
 
 def GetForeignAuthors():
     data = []
@@ -507,3 +523,16 @@ def AuthorsConnection(request, auth_id=None):
         data.append(team17.json())
 
     return Response({'connection': data})
+
+@api_view(['GET',])
+def ForeignAuthorsFrontend(request):
+    if request.method == 'GET':
+        authorList = GetForeignAuthors()
+
+        context = {'Foreigners':authorList}
+
+        return HttpResponse(render(template_name='LinkedSpace/foreignauthors.html', request=request, context= context), status = 200)
+        
+
+    
+
