@@ -2,7 +2,8 @@ import base64
 from django.db import models
 from django.db.models.deletion import CASCADE
 from Author.models import Author
-from django.contrib.postgres.fields import ArrayField
+# from django.contrib.postgres.fields import ArrayField
+from django_postgres_extensions.models.fields import ArrayField
 from multiselectfield import MultiSelectField
 
 class Base64Field(models.TextField):
