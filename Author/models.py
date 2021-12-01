@@ -87,7 +87,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     def get_author_url(self):
-        return f'{HOST}author/{str(self.auth_pk)}'
+        return self.url
     
     def get_github_url(self):
         return f'http://github.com/{str(self.github)}'
@@ -108,7 +108,6 @@ class Like(models.Model):
 class Liked(models.Model):
     type = models.CharField(max_length=30, default='liked', editable=False)
     items = models.ManyToManyField(Like, default=list, blank=True)
-    
 
 class FriendRequest(models.Model):
     type = models.CharField(max_length=30, default='follow', editable=False)
@@ -141,7 +140,3 @@ class Inbox(models.Model):
 
     def get_author(self):
         return Author.objects.get(email=self.auth_pk).get_author_url()
-
-
-
-
