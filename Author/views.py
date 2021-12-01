@@ -453,7 +453,7 @@ def AuthorInboxView(request, auth_pk):
                 return Response(data)
             
             return Response(serializerFollow.errors, status=status.HTTP_400_BAD_REQUEST)
-
+@api_view(['POST',])
 def AuthorInboxViewFrontend(request, auth_pk):
     if request.method == 'POST':
 
@@ -469,6 +469,12 @@ def AuthorInboxViewFrontend(request, auth_pk):
 
             inbox =  Inbox.objects.get(pk=auth_pk)
             inbox.iFollows.add(FriendRequest.objects.create(summary=summary, type = type, actor = actor, object = objectauthor))
+            
+            followersObj = Followers.objects.get(pk = objectauthor.pk)
+
+            if actor not in followersObj.items.all() and actor != objectauthor:
+                followersObj.items.add(actor)
+            
             return HttpResponseRedirect('/authors')
 
 def GetForeignAuthors():
