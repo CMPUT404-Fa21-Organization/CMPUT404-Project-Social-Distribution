@@ -390,9 +390,9 @@ def AuthorInboxView(request, auth_pk):
                 
                 else:
                     
-                    post = Post.objects.filter(id= request.data["id"])
+                    postSet = Post.objects.filter(id= request.data["id"])
                         
-                    if(post.count() == 0):
+                    if(postSet.count() == 0):
                         serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.data["author"]["id"]), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
                         serializerPost.validated_data["author_id"] = Author.objects.get(id=request.data["author"]["id"])
                         r_uid = uuid.uuid4().hex
@@ -403,6 +403,8 @@ def AuthorInboxView(request, auth_pk):
                         serializerPost.save()
                         post = Post.objects.get(id= request.data["id"])
 
+                    else:
+                      post =  Post.objects.get(id= request.data["id"])
                     inbox.iPosts.add(post)
 
                 
