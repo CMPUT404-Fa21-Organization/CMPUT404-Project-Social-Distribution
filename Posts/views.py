@@ -33,7 +33,7 @@ def PostDetailView(request, post_pk, auth_pk = None):
 
 
     # TODO Add logic to check for friend
-    if(postObj.visibility == "Public" or user == postObj.author_id):
+    if(postObj.visibility.lower() == "public" or user == postObj.author_id):
     
         # If Content is image
         
@@ -127,7 +127,7 @@ def UserStreamView(request, auth_pk):
     else:
         # TODO Friend Posts in stream
         author = Author.objects.get(pk = auth_pk)
-        postsObjects = Post.objects.filter(author_id=author.pk, visibility = "Public")
+        postsObjects = Post.objects.filter(author_id=author.pk, visibility = "Public") | Post.objects.filter(author_id=author.pk, visibility = "PUBLIC")
     
     postsObjects = postsObjects.order_by('-published')
 
