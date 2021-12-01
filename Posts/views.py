@@ -74,8 +74,36 @@ def PostDetailView(request, post_pk, auth_pk = None):
 def sendPOSTrequest(url, data):
     auth = getAuth(url)
     headers = {'content-type': 'application/json'}
+
+    # preprocess url
+    url = url +"/"
+    url = url.replace("//", "/")
+    url = url.replace("http", "https")
+    url = url.replace(":/", "://")
+
     x = requests.post(url, data = json.dumps(data), auth = auth, headers=headers)
+
+    if x.status_code - 300 >= 0:
+        url = url[:-1]
+        x = requests.post(url, data = json.dumps(data), auth = auth, headers=headers)
     # print(x.json())
+
+def sendGETrequest(url):
+    auth = getAuth(url)
+
+    # preprocess url
+    url = url +"/"
+    url = url.replace("//", "/")
+    url = url.replace("http", "https")
+    url = url.replace(":/", "://")
+
+    x = requests.get(url, auth = auth)
+    if x.status_code - 300 >= 0:
+        url = url[:-1]
+        x = requests.get(url, auth = auth)
+
+    print(x.json())
+    return x.status_code, x.json()
 
 def getAuth(url):
     if "social-dis" in url:
@@ -84,6 +112,8 @@ def getAuth(url):
         auth=('connectionsuperuser','404connection')
     elif "cmput404f21t17" in url:
         auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456')
+    else:
+        auth=('socialdistribution_t14','c404t14')
     
     return auth
 
@@ -145,6 +175,51 @@ def newLike(request, auth_pk = None, post_pk = None):
     else:
         return HttpResponseRedirect(reverse('login'))
 
+def processLikes(request, posts):
+    # Like Stuff
+    # Calculte Number of Likes for Posts
+
+    
+    likeObjects = Like.objects.all()  
+    likes_local = LikeSerializer(likeObjects,  many=True)   
+    for post in posts:
+        if "linkedspace-staging" in post["id"]:
+            post["userLike"] = False
+            post["numLikes"] = 0
+            for like in likes_local.data:
+                if post["id"] == like["object"]:
+                    post["numLikes"] += 1
+
+        else:
+
+            post["userLike"] = False
+            post["numLikes"] = 0
+
+            code, likes = sendGETrequest(post["id"] + "/likes/")
+
+            if code - 300 < 0:
+                post["numLikes"] = len(likes)
+    
+    # Check which posts the user has already liked
+    if(request.user.is_authenticated):
+        likeObjects = Like.objects.filter(auth_pk = request.user)  
+        userLikes = LikeSerializer(likeObjects,  many=True) 
+        for post in posts:
+            if "linkedspace-staging" in post["id"]:
+                for like in userLikes.data:
+                    if post["id"] == like["object"]:
+                        post["userLike"] = True
+            else:
+                
+                code, likes = sendGETrequest(post["id"] + "/likes/")
+
+                if code - 300 < 0:
+                    for like in likes:
+                        if post["id"] == like["object"]:
+                            post["userLike"] = True
+                
+
+    return posts
 
 # TODO Better CSS for Stream
 # Non API view, Displays the users posts and github activity
@@ -172,25 +247,10 @@ def UserStreamView(request, auth_pk):
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
 
-    # Like Stuff
-    # Calculte Number of Likes for Posts
-    likeObjects = Like.objects.all()  
-    likes = LikeSerializer(likeObjects,  many=True)   
-    for post in posts.data:
-        post["userLike"] = False
-        post["numLikes"] = 0
-        for like in likes.data:
-            if post["id"] == like["object"]:
-                post["numLikes"] += 1
     
-    # Check which posts the user has already liked
-    if(request.user.is_authenticated):
-        likeObjects = Like.objects.filter(auth_pk = request.user)  
-        userLikes = LikeSerializer(likeObjects,  many=True) 
-        for post in posts.data:
-            for like in userLikes.data:
-                if post["id"] == like["object"]:
-                    post["userLike"] = True
+    posts = processLikes(request, posts.data)
+
+    
 
     page_number = request.GET.get('page')
     if 'size' in request.GET:
@@ -198,7 +258,7 @@ def UserStreamView(request, auth_pk):
     else:
         page_size = 5
 
-    paginator = Paginator(posts.data, page_size)
+    paginator = Paginator(posts, page_size)
     page_obj = paginator.get_page(page_number)
 
     context = {'posts':page_obj, 'user':author}

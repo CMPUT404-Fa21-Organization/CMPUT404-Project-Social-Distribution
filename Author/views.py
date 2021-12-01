@@ -32,7 +32,7 @@ from rest_framework.mixins import DestroyModelMixin
 from .models import Author
 
 from django.core.paginator import Paginator
-from Posts.views import sendPOSTrequest
+from Posts.views import processLikes, sendPOSTrequest
 
 # Create your views here.
 def authorHome(request):
@@ -111,25 +111,9 @@ def MyInboxView(request):
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
 
-    # Like Stuff
-    # Calculte Number of Likes for Posts
-    likeObjects = Like.objects.all()  
-    allLikes = LikeSerializer(likeObjects,  many=True)   
-    for post in posts:
-        post["userLike"] = False
-        post["numLikes"] = 0
-        for like in allLikes.data:
-            if post["id"] == like["object"]:
-                post["numLikes"] += 1
     
-    # Check which posts the user has already liked
-    if(request.user.is_authenticated):
-        likeObjects = Like.objects.filter(auth_pk = author)  
-        userLikes = LikeSerializer(likeObjects,  many=True) 
-        for post in posts:
-            for like in userLikes.data:
-                if post["id"] == like["object"]:
-                    post["userLike"] = True
+    
+    posts = processLikes(request, posts)
 
 
     context = {'user':author, 'posts':posts, 'likes':likes, 'follows': follows}
