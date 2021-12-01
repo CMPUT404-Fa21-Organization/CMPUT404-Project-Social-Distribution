@@ -16,8 +16,6 @@ from Posts.commentForm import CommentForm
 import json
 import uuid
 import re
-import uuid
-import re
 import base64
 from django.db.models import Q
 import django.core
