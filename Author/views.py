@@ -1,5 +1,4 @@
 from django.contrib import auth
-from django.db import connection
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -266,9 +265,7 @@ def getInboxData(serializer):
                 if(key != "context"):
                     like[key] = l[key]
             like["@context"] = l["context"]
-            
             like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
-            
             likes.append(like)
 
         for f in iFollows:
@@ -295,53 +292,6 @@ def AuthorInboxView(request, auth_pk):
 
     except Author.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-
-
-    ############ CONNECTION STUFF ###############
-
-    foreign_authors_db_obj = Author.objects.filter(url__icontains = "social-dis") | Author.objects.filter(url__icontains = "unhindled") | Author.objects.filter(url__icontains = "cmput404f21t17") 
-
-    fa_list = GetForeignAuthors()
-    foreign_authors1 = fa_list[0]['items']
-    foreign_authors2 = fa_list[1]['items']
-    foreign_authors3 = fa_list[2]['items']
-
-    foreign_authors = foreign_authors1 + foreign_authors2 + foreign_authors3
-
-    for fadb in foreign_authors_db_obj:
-        remove = True
-        for fa in foreign_authors:
-            if(fadb.url == fa["url"] or fa['url'].find("linkedspace-staging") != -1 or fa['url'].find("127.0.0.1:8000") != -1):
-                foreign_authors.remove(fa)
-                remove = False
-
-        if(remove):
-            fadb.delete()
-
-    newIDs = []
-    
-    for fa in foreign_authors:
-        fa["id"] = fa["url"]
-
-        if fa["id"] in newIDs:
-            continue
-
-        newIDs.append(fa["id"])
-        
-        new_author = AuthorSerializer(data = fa)
-
-        if new_author.is_valid():
-            new_author.validated_data["id"] = fa["id"]
-            new_author.validated_data["url"] = fa["url"]
-            new_author.validated_data["email"] = fa["id"]
-            new_author.validated_data["auth_pk"] = fa["id"]
-            
-            new_author.save()
-
-        else:
-            print(new_author.errors)
-    
-    ##############################################
 
     if request.method == "GET":
         serializer = InboxSerializer(inbox, many=False)
@@ -371,7 +321,7 @@ def AuthorInboxView(request, auth_pk):
         return Response(data)
 
     if request.method == "POST":
-        if(request.data["type"].lower() == "post"):
+        if(request.data["type"] == "post"):
             serializerPost = PostSerializer(data=request.data)
             
             if serializerPost.is_valid():
@@ -389,20 +339,7 @@ def AuthorInboxView(request, auth_pk):
                     inbox.iPosts.add(post)
                 
                 else:
-                    
-                    post = Post.objects.filter(id= request.data["id"])
-                        
-                    if(post.count() == 0):
-                        serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.data["author"]["id"]), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
-                        serializerPost.validated_data["author_id"] = Author.objects.get(id=request.data["author"]["id"])
-                        r_uid = uuid.uuid4().hex
-                        uid = re.sub('-', '', r_uid)
-                        serializerPost.validated_data["post_pk"] = request.data["id"].split("/")[-1]
-                        serializerPost.validated_data["id"] = request.data["id"]
-
-                        serializerPost.save()
-                        post = Post.objects.get(id= request.data["id"])
-
+                    post = Post.objects.get(id= request.data["id"])
                     inbox.iPosts.add(post)
 
                 
@@ -414,7 +351,7 @@ def AuthorInboxView(request, auth_pk):
 
             return Response(serializerPost.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        if(request.data["type"].lower() == "like"):
+        if(request.data["type"] == "like"):
             request.data["author"] = request.data["author"]["id"]
             request.data["context"] = request.data["@context"]
             serializerLike = LikeSerializer(data=request.data)
@@ -437,7 +374,7 @@ def AuthorInboxView(request, auth_pk):
             return Response(serializerLike.errors, status=status.HTTP_400_BAD_REQUEST)
 
         
-        if(request.data["type"].lower() == "follow"):
+        if(request.data["type"] == "follow"):
             request.data["actor"] = request.data["actor"]["id"]
             request.data["object"] = request.data["object"]["id"]
             
@@ -461,42 +398,21 @@ def AuthorInboxView(request, auth_pk):
                 return Response(data)
             
             return Response(serializerFollow.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            ########## POULOMI'S ACCEPT FOLLOW FRONTEND #############
+            # if request.data["frontend"]:
+            #     actor = Author.objects.get(id = request.data["actor"])
+            #     objectauthor = Author.objects.get(id = request.data["object"])
 
+            #     summary = actor.displayName + ' wants to follow ' + objectauthor.displayName
 
-def GetForeignAuthors():
-    data = []
+            #     type = request.data["type"]
 
-    team3 = requests.get('https://social-dis.herokuapp.com/authors', auth=('socialdistribution_t03','c404t03'))
-    if team3.status_code == 200:
-        data.append(team3.json())
+            #     frequest = FriendRequest(summary = summary, type = type, actor = actor, object = objectauthor)
 
-    team15 = requests.get('https://unhindled.herokuapp.com/service/authors/', auth=('connectionsuperuser','404connection'))
-    if team15.status_code == 200:
-        data.append(team15.json())
+            #     inbox.iFollows.add(FriendRequest.objects.create(summary = summary, type = type, actor = actor, object = objectauthor))
 
-    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/author/', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
-    if team17.status_code == 200:
-        data.append(team17.json())
-
-    return data
-
-
-def GetForeignPosts():
-    data = []
-
-    team3 = requests.get('https://social-dis.herokuapp.com/posts', auth=('socialdistribution_t03','c404t03'))
-    if team3.status_code == 200:
-        data.append(team3.json())
-
-    team15 = requests.get('https://unhindled.herokuapp.com/service/allposts/', auth=('connectionsuperuser','404connection'))
-    if team15.status_code == 200:
-        data.append(team15.json())
-
-    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
-    if team17.status_code == 200:
-        data.append(team17.json())
-
-    return data
+            #     return HttpResponseRedirect('/api/authors')
 
 @api_view(['GET',])
 def AuthorsConnection(request, auth_id=None):
@@ -515,3 +431,25 @@ def AuthorsConnection(request, auth_id=None):
         data.append(team17.json())
 
     return Response({'connection': data})
+
+
+
+            
+
+
+# DEPRECATED INBOX VIEW
+# class DeleteInboxMixin(DestroyModelMixin):
+#     def destroy(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         self.perform_destroy(instance)
+#         return Response()
+
+#     def perform_destroy(self, instance):
+#         instance.items.set([None])
+
+# class AuthorInboxView(DeleteInboxMixin ,generics.RetrieveDestroyAPIView):
+#     serializer_class = InboxSerializer
+#     queryset = Inbox.objects.all()
+#     lookup_field = 'auth_pk'
+#     http_method_names = ["get", "delete"]
+
