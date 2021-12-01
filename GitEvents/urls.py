@@ -19,5 +19,5 @@ from .views import GithubEventsView, gitPost
 
 urlpatterns = [
     path('', GithubEventsView, name='git-events'),
-    path('share/', gitPost, name='gitPost'),
+    path('share/<event_id>', gitPost, name='gitPost'),
 ]
