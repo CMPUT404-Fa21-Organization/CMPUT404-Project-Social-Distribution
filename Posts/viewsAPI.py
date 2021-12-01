@@ -111,7 +111,12 @@ def PostLikesView(request, post_pk, auth_pk):
         like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
         likes.append(like)
 
-    return Response(likes)
+    
+    response_dict = {
+        "type": "likes",
+        "items": likes
+    }
+    return Response(response_dict)
 
 @api_view(['GET',])
 def CommentLikesView(request, comment_pk, post_pk, auth_pk):
@@ -130,7 +135,11 @@ def CommentLikesView(request, comment_pk, post_pk, auth_pk):
         like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
         likes.append(like)
 
-    return Response(likes)
+    response_dict = {
+        "type": "likes",
+        "items": likes
+    }
+    return Response(response_dict)
 
 @api_view(['GET', 'POST',])
 @authentication_classes([CustomAuthentication])

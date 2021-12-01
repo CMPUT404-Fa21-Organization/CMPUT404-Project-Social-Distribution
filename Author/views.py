@@ -32,6 +32,7 @@ from rest_framework.mixins import DestroyModelMixin
 from .models import Author
 
 from django.core.paginator import Paginator
+from Posts.views import processLikes, sendPOSTrequest
 
 # Create your views here.
 def authorHome(request):
@@ -70,11 +71,14 @@ def acceptFollow(request):
             followersObj.items.add(actor)
         ####################################
 
-        followersAct = Followers.objects.get(pk = actor.pk)
+        try:
+            followersAct = Followers.objects.get(pk = actor.pk)
 
-        if object not in followersAct.items.all() and actor != object:
-            followersAct.items.add(object)
-        
+            if object not in followersAct.items.all() and actor != object:
+                followersAct.items.add(object)
+        except Followers.DoesNotExist:
+            # Send PUT request to foreign followers
+            pass
 
         return HttpResponseRedirect(reverse('author-inbox-frontend'))
 
@@ -107,25 +111,9 @@ def MyInboxView(request):
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
 
-    # Like Stuff
-    # Calculte Number of Likes for Posts
-    likeObjects = Like.objects.all()  
-    allLikes = LikeSerializer(likeObjects,  many=True)   
-    for post in posts:
-        post["userLike"] = False
-        post["numLikes"] = 0
-        for like in allLikes.data:
-            if post["id"] == like["object"]:
-                post["numLikes"] += 1
     
-    # Check which posts the user has already liked
-    if(request.user.is_authenticated):
-        likeObjects = Like.objects.filter(auth_pk = author)  
-        userLikes = LikeSerializer(likeObjects,  many=True) 
-        for post in posts:
-            for like in userLikes.data:
-                if post["id"] == like["object"]:
-                    post["userLike"] = True
+    
+    posts = processLikes(request, posts)
 
 
     context = {'user':author, 'posts':posts, 'likes':likes, 'follows': follows}
@@ -232,20 +220,7 @@ def AuthorDetailView(request, auth_pk):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# @api_view(['DELETE'])
-# def AuthorDeleteView(request, pk):
-# 	author = Author.objects.get(id=pk)
-# 	author.delete()
 
-
-# 	return Response('Item succesfully deleted.')
-
-    # def get_object(self):
-    #     id = self.kwargs['auth_pk']
-    #     try:
-    #         return get_object_or_404(Author.objects, id=id)
-    #     except Exception as e:
-    #         raise ValidationError({str(e): status.HTTP_404_NOT_FOUND})
 
 
 # Auxillary Function for Inbox
@@ -285,18 +260,7 @@ def getInboxData(serializer):
         return data
 
 
-@api_view(['GET', 'POST', 'DELETE'])
-@authentication_classes([CustomAuthentication])
-@permission_classes([AccessPermission])
-def AuthorInboxView(request, auth_pk):
-    try:
-        author = Author.objects.get(pk=auth_pk)
-        inbox =  Inbox.objects.get(pk=auth_pk)
-
-    except Author.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-
+def updateForeignAuthors():
     ############ CONNECTION STUFF ###############
 
     foreign_authors_db_obj = Author.objects.filter(url__icontains = "social-dis") | Author.objects.filter(url__icontains = "unhindled") | Author.objects.filter(url__icontains = "cmput404f21t17") 
@@ -342,6 +306,20 @@ def AuthorInboxView(request, auth_pk):
             print(new_author.errors)
     
     ##############################################
+
+@api_view(['GET', 'POST', 'DELETE'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
+def AuthorInboxView(request, auth_pk):
+    try:
+        author = Author.objects.get(pk=auth_pk)
+        inbox =  Inbox.objects.get(pk=auth_pk)
+
+    except Author.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+    updateForeignAuthors()
 
     if request.method == "GET":
         serializer = InboxSerializer(inbox, many=False)
