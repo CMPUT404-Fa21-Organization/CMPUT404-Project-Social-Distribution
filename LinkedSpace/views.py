@@ -111,4 +111,9 @@ def registerView(request):
 
 def authorsView(request):
     template_name = 'LinkedSpace/authors.html'
-    return render(request, template_name)
+
+    authorObjects = Author.objects.filter(id__icontains = "linkedspace-staging") | Author.objects.filter(id__icontains = "127.0.0.1")
+
+    context = {'Authors':authorObjects}
+
+    return HttpResponse(render(request, template_name, context),status=200)
