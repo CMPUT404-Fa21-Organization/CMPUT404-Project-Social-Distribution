@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.core import serializers
-from django.http.response import HttpResponse, HttpResponseRedirect
 from django.utils import timezone
 from django.shortcuts import redirect, render
 from Posts.models import Post, Author
@@ -102,12 +101,10 @@ def gitPost(request, event_id):
         git_username = git_url.replace("http://github.com/", "")
         response = requests.get(f'https://api.github.com/users/{git_username}/events/public')
 
-        activities = []
         data = response.json() # list
         for event in data:
             if event['id'] == event_id:
                 break
-        print(event)
 
         title = "Shared GitHub Activity: " + event['type']
         descirption = event['created_at']
