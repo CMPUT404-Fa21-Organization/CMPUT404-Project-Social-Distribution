@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render
 
 from Posts.commentModel import Comments
 from .serializers import PostSerializer
-from Author.serializers import LikeSerializer
+from Author.serializers import AuthorSerializer, LikeSerializer
 from Author.models import Inbox, Like
 from .models import Post, Author
 from .form import PostForm
@@ -18,6 +18,7 @@ import uuid
 import re
 import base64
 from django.core.paginator import Paginator
+import requests
 
 # Create your views here.
 
@@ -70,7 +71,21 @@ def PostDetailView(request, post_pk, auth_pk = None):
     else:
         return HttpResponse(status=401)
 
+def sendPOSTrequest(url, data):
+    auth = getAuth(url)
+    headers = {'content-type': 'application/json'}
+    x = requests.post(url, data = json.dumps(data), auth = auth, headers=headers)
+    # print(x.json())
+
+def getAuth(url):
+    if "social-dis" in url:
+        auth=('socialdistribution_t03','c404t03')
+    elif "unhindled" in url:
+        auth=('connectionsuperuser','404connection')
+    elif "cmput404f21t17" in url:
+        auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456')
     
+    return auth
 
 def newLike(request, auth_pk = None, post_pk = None):
     # View to create a new like object after clicking the like button
@@ -90,17 +105,33 @@ def newLike(request, auth_pk = None, post_pk = None):
             postAuthor = Author.objects.get(email = post.author_id)
     
         summary = request.user.displayName + " liked " + postAuthor.displayName + "'s " + objectType
-        if(Like.objects.filter(auth_pk = author, object = object).count() == 0):
-            like = Like(context = context, auth_pk = author, object = object, summary = summary)
-            like.save()
+        
+        if(Inbox.objects.filter(auth_pk = postAuthor).count() != 0):
+            if(Like.objects.filter(auth_pk = author, object = object).count() == 0):
+                like = Like(context = context, auth_pk = author, object = object, summary = summary)
+                like.save()
 
-            # Send to inbox
-            if author != postAuthor:
-                inbox = Inbox.objects.get(auth_pk = postAuthor)
-                inbox.iLikes.add(like)
+                # Send to inbox
+                if author != postAuthor:
+                    inbox = Inbox.objects.get(auth_pk = postAuthor)
+                    inbox.iLikes.add(like)
+            else:
+                like = Like.objects.filter(auth_pk = author, object = object)
+                like.delete()
+
         else:
-            like = Like.objects.filter(auth_pk = author, object = object)
-            like.delete()
+            # Send like to foreign author's inbox
+            url = postAuthor.url + "/inbox/"
+            authorSerialized = AuthorSerializer(request.user, many = False)
+            data = {
+            "type": "like",
+            "@context": context,
+            "object": object,
+            "summary": summary,
+            "author": authorSerialized.data
+            }
+
+            sendPOSTrequest(url, data)
 
         if(request.POST["context"] == "stream"):
             return HttpResponseRedirect(reverse('user-stream-view', kwargs={ 'auth_pk': auth_pk }))
