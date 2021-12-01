@@ -174,7 +174,7 @@ def PostsList(request, auth_pk=None):
     elif request.method == 'POST':
         if newPost(request, auth_pk=request.data['auth_pk']):
             code = status.HTTP_202_ACCEPTED
-            post = Post.objects.latest()
+            post = Post.objects.latest("published")
             data = PostSerializer(post).data
         else:
             code = status.HTTP_400_BAD_REQUEST
@@ -215,7 +215,7 @@ def commentListView(request, post_pk, auth_pk=None):
     elif request.method == 'POST':
         if add_Comment(request, post_pk=request.data['Post_pk'], auth_pk=request.data['auth_pk']):
             code = status.HTTP_202_ACCEPTED
-            comment = Comments.objects.latest()
+            comment = Comments.objects.latest("published")
             data = CommentSerializer(comment).data
         else:
             code = status.HTTP_400_BAD_REQUEST
