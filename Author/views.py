@@ -151,12 +151,12 @@ def AuthorLikedView(request, auth_pk):
             if("comment" not in l["object"]):
                 # Public Post
                 post = Post.objects.get(id = l["object"])
-                if(post.visibility != 'PUBLIC'):
+                if(post.visibility.lower() != "public"):
                     continue
             else:
                 comment = Comments.objects.get(id = l["object"])
                 post = comment.Post_pk
-                if(post.visibility != 'PUBLIC'):
+                if(post.visibility.lower() != "public"):
                     continue
                 
         except Post.DoesNotExist:
@@ -417,8 +417,20 @@ def AuthorInboxView(request, auth_pk):
             return Response(serializerPost.errors, status=status.HTTP_400_BAD_REQUEST)
         
         if(request.data["type"].lower() == "like"):
+            actor_name = request.data["author"]["displayName"]
             request.data["author"] = request.data["author"]["id"]
             request.data["context"] = request.data["@context"]
+            objectType = "post"
+            if("summary" not in request.data):
+                if "comment" in request.data["object"]:
+                    objectType = "comment"
+                    post = Comments.objects.get(id = request.data["object"])
+                    postAuthor = Author.objects.get(pk = post.auth_pk_str)
+                else:
+                    post = Post.objects.get(id = request.data["object"])
+                    postAuthor = Author.objects.get(email = post.author_id)
+            
+                request.data['summary'] = actor_name + " liked " + postAuthor.displayName + "'s " + objectType
             serializerLike = LikeSerializer(data=request.data)
 
             if serializerLike.is_valid():
