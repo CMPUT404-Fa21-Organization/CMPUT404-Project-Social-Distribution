@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render
 
 from Posts.commentModel import Comments
 from .serializers import PostSerializer
-from Author.serializers import LikeSerializer
+from Author.serializers import AuthorSerializer, LikeSerializer
 from Author.models import Inbox, Like
 from .models import Post, Author
 from .form import PostForm
@@ -18,6 +18,7 @@ import uuid
 import re
 import base64
 from django.core.paginator import Paginator
+import requests
 
 # Create your views here.
 
@@ -33,7 +34,7 @@ def PostDetailView(request, post_pk, auth_pk = None):
 
 
     # TODO Add logic to check for friend
-    if(postObj.visibility == "Public" or user == postObj.author_id):
+    if(postObj.visibility.lower() == "public" or user == postObj.author_id):
     
         # If Content is image
         
@@ -70,7 +71,51 @@ def PostDetailView(request, post_pk, auth_pk = None):
     else:
         return HttpResponse(status=401)
 
+def sendPOSTrequest(url, data):
+    auth = getAuth(url)
+    headers = {'content-type': 'application/json'}
+
+    # preprocess url
+    url = url +"/"
+    url = url.replace("//", "/")
+    url = url.replace("http", "https")
+    url = url.replace(":/", "://")
+
+    x = requests.post(url, data = json.dumps(data), auth = auth, headers=headers)
+
+    if x.status_code - 300 >= 0:
+        url = url[:-1]
+        x = requests.post(url, data = json.dumps(data), auth = auth, headers=headers)
+    # print(x.json())
+
+def sendGETrequest(url):
+    auth = getAuth(url)
+
+    # preprocess url
+    url = url +"/"
+    url = url.replace("//", "/")
+    url = url.replace("http", "https")
+    url = url.replace(":/", "://")
+
+    x = requests.get(url, auth = auth)
+    if x.status_code - 300 >= 0:
+        url = url[:-1]
+        x = requests.get(url, auth = auth)
+
+    print(x.json())
+    return x.status_code, x.json()
+
+def getAuth(url):
+    if "social-dis" in url:
+        auth=('socialdistribution_t03','c404t03')
+    elif "unhindled" in url:
+        auth=('connectionsuperuser','404connection')
+    elif "cmput404f21t17" in url:
+        auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456')
+    else:
+        auth=('socialdistribution_t14','c404t14')
     
+    return auth
 
 def newLike(request, auth_pk = None, post_pk = None):
     # View to create a new like object after clicking the like button
@@ -90,17 +135,33 @@ def newLike(request, auth_pk = None, post_pk = None):
             postAuthor = Author.objects.get(email = post.author_id)
     
         summary = request.user.displayName + " liked " + postAuthor.displayName + "'s " + objectType
-        if(Like.objects.filter(auth_pk = author, object = object).count() == 0):
-            like = Like(context = context, auth_pk = author, object = object, summary = summary)
-            like.save()
+        
+        if(Inbox.objects.filter(auth_pk = postAuthor).count() != 0):
+            if(Like.objects.filter(auth_pk = author, object = object).count() == 0):
+                like = Like(context = context, auth_pk = author, object = object, summary = summary)
+                like.save()
 
-            # Send to inbox
-            if author != postAuthor:
-                inbox = Inbox.objects.get(auth_pk = postAuthor)
-                inbox.iLikes.add(like)
+                # Send to inbox
+                if author != postAuthor:
+                    inbox = Inbox.objects.get(auth_pk = postAuthor)
+                    inbox.iLikes.add(like)
+            else:
+                like = Like.objects.filter(auth_pk = author, object = object)
+                like.delete()
+
         else:
-            like = Like.objects.filter(auth_pk = author, object = object)
-            like.delete()
+            # Send like to foreign author's inbox
+            url = postAuthor.url + "/inbox/"
+            authorSerialized = AuthorSerializer(request.user, many = False)
+            data = {
+            "type": "like",
+            "@context": context,
+            "object": object,
+            "summary": summary,
+            "author": authorSerialized.data
+            }
+
+            sendPOSTrequest(url, data)
 
         if(request.POST["context"] == "stream"):
             return HttpResponseRedirect(reverse('user-stream-view', kwargs={ 'auth_pk': auth_pk }))
@@ -114,6 +175,51 @@ def newLike(request, auth_pk = None, post_pk = None):
     else:
         return HttpResponseRedirect(reverse('login'))
 
+def processLikes(request, posts):
+    # Like Stuff
+    # Calculte Number of Likes for Posts
+
+    
+    likeObjects = Like.objects.all()  
+    likes_local = LikeSerializer(likeObjects,  many=True)   
+    for post in posts:
+        if "linkedspace-staging" in post["id"]:
+            post["userLike"] = False
+            post["numLikes"] = 0
+            for like in likes_local.data:
+                if post["id"] == like["object"]:
+                    post["numLikes"] += 1
+
+        else:
+
+            post["userLike"] = False
+            post["numLikes"] = 0
+
+            code, likes = sendGETrequest(post["id"] + "/likes/")
+
+            if code - 300 < 0:
+                post["numLikes"] = len(likes)
+    
+    # Check which posts the user has already liked
+    if(request.user.is_authenticated):
+        likeObjects = Like.objects.filter(auth_pk = request.user)  
+        userLikes = LikeSerializer(likeObjects,  many=True) 
+        for post in posts:
+            if "linkedspace-staging" in post["id"]:
+                for like in userLikes.data:
+                    if post["id"] == like["object"]:
+                        post["userLike"] = True
+            else:
+                
+                code, likes = sendGETrequest(post["id"] + "/likes/")
+
+                if code - 300 < 0:
+                    for like in likes:
+                        if post["id"] == like["object"]:
+                            post["userLike"] = True
+                
+
+    return posts
 
 # TODO Better CSS for Stream
 # Non API view, Displays the users posts and github activity
@@ -127,7 +233,7 @@ def UserStreamView(request, auth_pk):
     else:
         # TODO Friend Posts in stream
         author = Author.objects.get(pk = auth_pk)
-        postsObjects = Post.objects.filter(author_id=author.pk, visibility = "Public")
+        postsObjects = Post.objects.filter(author_id=author.pk, visibility = "Public") | Post.objects.filter(author_id=author.pk, visibility = "PUBLIC")
     
     postsObjects = postsObjects.order_by('-published')
 
@@ -141,25 +247,10 @@ def UserStreamView(request, auth_pk):
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
 
-    # Like Stuff
-    # Calculte Number of Likes for Posts
-    likeObjects = Like.objects.all()  
-    likes = LikeSerializer(likeObjects,  many=True)   
-    for post in posts.data:
-        post["userLike"] = False
-        post["numLikes"] = 0
-        for like in likes.data:
-            if post["id"] == like["object"]:
-                post["numLikes"] += 1
     
-    # Check which posts the user has already liked
-    if(request.user.is_authenticated):
-        likeObjects = Like.objects.filter(auth_pk = request.user)  
-        userLikes = LikeSerializer(likeObjects,  many=True) 
-        for post in posts.data:
-            for like in userLikes.data:
-                if post["id"] == like["object"]:
-                    post["userLike"] = True
+    posts = processLikes(request, posts.data)
+
+    
 
     page_number = request.GET.get('page')
     if 'size' in request.GET:
@@ -167,7 +258,7 @@ def UserStreamView(request, auth_pk):
     else:
         page_size = 5
 
-    paginator = Paginator(posts.data, page_size)
+    paginator = Paginator(posts, page_size)
     page_obj = paginator.get_page(page_number)
 
     context = {'posts':page_obj, 'user':author}

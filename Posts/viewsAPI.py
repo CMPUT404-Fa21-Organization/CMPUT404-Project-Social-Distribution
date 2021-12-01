@@ -16,8 +16,6 @@ from Posts.commentForm import CommentForm
 import json
 import uuid
 import re
-import uuid
-import re
 import base64
 from django.db.models import Q
 import django.core
@@ -65,7 +63,7 @@ def newPost(request, uid=None, auth_pk=None):
         print(form.data)
         return False
 
-def add_Comment(request, post_pk, auth_pk=None, uid=None):
+def add_Comment(request, post_pk, auth_pk, uid=None):
     form = CommentForm(request.POST, request.FILES)
     if form.is_valid():
         published = timezone.now()
@@ -76,19 +74,23 @@ def add_Comment(request, post_pk, auth_pk=None, uid=None):
             content = base64.b64encode(request.FILES['file'].read()) #Inputfile
         else:
             content = form.cleaned_data["text"]
-        author = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'displayName', 'github',)))[0]['fields']
-        auth_pk = author["id"].split("/")[-1]
+            
+        #author_id = Author.objects.get(pk=auth_pk)
+        #id = author_id.url
+        author = json.loads(serializers.serialize('json', Author.objects.filter(pk=auth_pk), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
         
         post = Post.objects.get(pk = post_pk)
-        post_pk_str = getattr(post, 'post_pk')
+        post_pk_str = post_pk
         if uid == None:
             r_uid = uuid.uuid4().hex
             uid = re.sub('-', '', r_uid)
-        id = getattr(post, 'comments') + uid
-        comments = Comments(pk=uid, id=id, Post_pk=post, Post_pk_str = post_pk_str, auth_pk_str = auth_pk, author=author, size=10, published=published, content=content)
+        comment_id = getattr(post, 'comments') + uid
+        comments = Comments(pk=uid, id=comment_id, Post_pk=post, Post_pk_str = post_pk_str, auth_pk_str = auth_pk, author=author, size=10, published=published, content=content)
         comments.save()
+        return True
     else:
         print(request.data)   
+        return False
         
 @api_view(['GET',])
 @authentication_classes([CustomAuthentication])
@@ -109,7 +111,12 @@ def PostLikesView(request, post_pk, auth_pk):
         like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
         likes.append(like)
 
-    return Response(likes)
+    
+    response_dict = {
+        "type": "likes",
+        "items": likes
+    }
+    return Response(response_dict)
 
 @api_view(['GET',])
 def CommentLikesView(request, comment_pk, post_pk, auth_pk):
@@ -128,7 +135,11 @@ def CommentLikesView(request, comment_pk, post_pk, auth_pk):
         like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
         likes.append(like)
 
-    return Response(likes)
+    response_dict = {
+        "type": "likes",
+        "items": likes
+    }
+    return Response(response_dict)
 
 @api_view(['GET', 'POST',])
 @authentication_classes([CustomAuthentication])
@@ -202,11 +213,15 @@ def commentListView(request, post_pk, auth_pk=None):
         return Response(response_dict)
         
     elif request.method == 'POST':
-        add_Comment(request, post_pk=request.data['Post_pk'])
-        comment = Comments.objects.last()
-        serializer = CommentSerializer(comment)
+        if add_Comment(request, post_pk=request.data['Post_pk'], auth_pk=request.data['auth_pk']):
+            code = status.HTTP_202_ACCEPTED
+            comment = Comments.objects.last()
+            data = CommentSerializer(comment).data
+        else:
+            code = status.HTTP_400_BAD_REQUEST
+            data = {}
         
-        return Response(serializer.data)
+        return Response(data, code)
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE', ])
 @authentication_classes([CustomAuthentication])
