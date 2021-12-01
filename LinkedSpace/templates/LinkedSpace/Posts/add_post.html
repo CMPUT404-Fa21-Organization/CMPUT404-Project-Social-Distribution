@@ -26,11 +26,7 @@
             <input id="description" type="text" name="description" value="{{ post.description }}" class="form-control"><br>
 
             <label for="Categories">Categories:</label><br>
-            <select id="categories" name="categories" required>
-                <option value="" selected disabled hidden>{{ post.categories }}</option>
-                <option value="Web">Web</option>
-                <option value="Tutorial">Tutorial</option>
-            </select><br><br>
+            <input id="categories" type="text" name="categories" value="{{ stringified_categories }}" class="form-control"> <br>
 
             <label for="Visibility">Visibility:</label><br>
             <select id="visibility" name="visibility" required>

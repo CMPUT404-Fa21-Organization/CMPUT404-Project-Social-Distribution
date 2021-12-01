@@ -297,20 +297,23 @@ def newPost(request, auth_pk=None):
 
         published = timezone.now()
 
-        posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, categories=categories,visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
+        posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, categories=categories.split(' '),visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
         posts.save()
 
         return redirect(ManagePostsList)
     else:
-        print(form.errors)
-        print(form.data)
+        # print(form.errors)
+        # print(form.data)
         form = PostForm()
         context = {'form': form, 'user':request.user, 'add': True}
         return render(request, "LinkedSpace/Posts/add_post.html", context)
 
 def ManagePostsList(request, auth_pk=None):
-    posts = Post.objects.filter(author_id=request.user).order_by('-published')
-    # posts = Post.objects.all().order_by('-published')
+    posts = list(Post.objects.filter(author_id=request.user).order_by('-published'))
+
+    for i in range(len(posts)):
+        post = posts[i]
+        post.categories = ' '.join(post.categories)
 
     page_number = request.GET.get('page')
     if 'size' in request.GET:
@@ -320,6 +323,7 @@ def ManagePostsList(request, auth_pk=None):
 
     paginator = Paginator(posts, page_size)
     page_obj = paginator.get_page(page_number)
+
     return render(request, "LinkedSpace/Posts/manage_posts.html", {'posts': page_obj})
 
 def delete_Post(request, post_pk, auth_pk=None):
@@ -349,7 +353,7 @@ def edit_Post(request, post_pk, auth_pk=None):
 
             post.title = title
             post.description = descirption
-            post.categories = categories
+            post.categories = categories.split(' ')
             post.visibility = visibility
             post.unlisted = unlisted
             post.contentType = contentType
@@ -367,7 +371,15 @@ def edit_Post(request, post_pk, auth_pk=None):
         form = PostForm()
         post = Post.objects.get(post_pk=post_pk)
         if request.user.id == post.author['id']:
-            context = {'form': form, 'user':request.user, 'add': False, 'post': post}
+            categories_as_string = ' '.join(post.categories)
+            context = {'form': form, 'user':request.user, 'add': False, 'post': post, "stringified_categories": categories_as_string}
             return render(request, "LinkedSpace/Posts/add_post.html", context)
         else:
             return redirect(ManagePostsList)
+        # form = PostForm()
+        # post = Post.objects.get(post_pk=post_pk)
+        # if request.user.id == post.author['id']:
+        #     context = {'form': form, 'user':request.user, 'add': False, 'post': post}
+        #     return render(request, "LinkedSpace/Posts/add_post.html", context)
+        # else:
+        #     return redirect(ManagePostsList)
