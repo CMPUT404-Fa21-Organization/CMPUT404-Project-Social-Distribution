@@ -361,8 +361,12 @@ def edit_Post(request, post_pk, auth_pk=None):
             print(form.errors)
             print(form.data)
             form = PostForm()
-            context = {'form': form, 'user':request.user, 'add': True}
-            return render(request, "LinkedSpace/Posts/add_post.html", context)
+            post = Post.objects.get(post_pk=post_pk)
+            if request.user.id == post.author['id']:
+                context = {'form': form, 'user':request.user, 'add': False, 'post': post}
+                return render(request, "LinkedSpace/Posts/add_post.html", context)
+            else:
+                return redirect(ManagePostsList)
     else:
         form = PostForm()
         post = Post.objects.get(post_pk=post_pk)

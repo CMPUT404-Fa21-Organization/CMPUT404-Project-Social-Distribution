@@ -173,7 +173,7 @@ def PostsList(request, auth_pk=None):
 
     elif request.method == 'POST':
         if newPost(request, auth_pk=request.data['auth_pk']):
-            code = status.HTTP_202_ACCEPTED
+            code = status.HTTP_201_CREATED
             post = Post.objects.latest("published")
             data = PostSerializer(post).data
         else:
@@ -284,7 +284,7 @@ def PostDetail(request, post_pk, auth_pk=None):
 
     elif request.method == 'PUT':
         try:
-            code = status.HTTP_200_OK
+            code = status.HTTP_201_CREATED
             assert newPost(request, post_pk, request.data['auth_pk'])==True
             post = Post.objects.get(post_pk=post_pk)
             serializer = PostSerializer(post)
