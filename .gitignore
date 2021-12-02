@@ -17,3 +17,17 @@ venv.bak/
 
 db.sqlite3
 .nfs*
+__pycache__/permissions.cpython-38.pyc
+Author/migrations/0005_auto_20211202_0416.py
+Author/migrations/__pycache__/__init__.cpython-38.pyc
+Author/migrations/__pycache__/0001_initial.cpython-38.pyc
+Author/migrations/__pycache__/0002_initial.cpython-38.pyc
+Author/migrations/__pycache__/0003_auto_20211130_2055.cpython-38.pyc
+Author/migrations/__pycache__/0004_auto_20211201_1531.cpython-38.pyc
+Author/migrations/__pycache__/0005_auto_20211202_0416.cpython-38.pyc
+Node/migrations/__pycache__/__init__.cpython-38.pyc
+Node/migrations/__pycache__/0001_initial.cpython-38.pyc
+Posts/migrations/__pycache__/__init__.cpython-38.pyc
+Posts/migrations/__pycache__/0001_initial.cpython-38.pyc
+.gitignore
+a.txt

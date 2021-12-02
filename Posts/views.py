@@ -271,7 +271,8 @@ def newPost(request, auth_pk=None):
     if form.is_valid():
         title = form.cleaned_data['title']
         descirption = form.cleaned_data['description']
-        categories = form.cleaned_data['categories']
+        categories = form.cleaned_data['categories'].split(' ')
+        categories = [x for x in categories if x]
         visibility = form.cleaned_data['visibility']
         unlisted = form.cleaned_data['unlisted']
         contentType = form.cleaned_data['contentType']
@@ -371,6 +372,8 @@ def edit_Post(request, post_pk, auth_pk=None):
         form = PostForm()
         post = Post.objects.get(post_pk=post_pk)
         if request.user.id == post.author['id']:
+            categories = post.categories
+            print(categories)
             context = {'form': form, 'user':request.user, 'add': False, 'post': post}
             return render(request, "LinkedSpace/Posts/add_post.html", context)
         else:

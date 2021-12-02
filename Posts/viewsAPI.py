@@ -23,21 +23,24 @@ from permissions import CustomAuthentication, AccessPermission
 from django.core.paginator import Paginator
 
 def newPost(request, uid=None, auth_pk=None):
-    form = PostForm(request.POST, request.FILES)
-    if form.is_valid():
-        title = form.cleaned_data['title']
-        descirption = form.cleaned_data['description']
-        categories = form.cleaned_data['categories']
-        visibility = form.cleaned_data['visibility']
-        unlisted = form.cleaned_data['unlisted']
-        contentType = form.cleaned_data['contentType']
+    print(request.data)
+    # form = PostForm(request.POST, request.FILES)
+    # if form.is_valid():
+    try:
+        title = request.data['title']
+        descirption = request.data['description']
+        categoriesOri = request.data['categories'].split(' ')
+        categories = [x for x in categoriesOri if x]
+        visibility = request.data['visibility']
+        unlisted = request.data['unlisted']
+        contentType = request.data['contentType']
 
         if contentType == "application/app": 
             content = request.FILES['file'].read() #Inputfile
         elif contentType in ["image/png", "image/jpeg",]:
             content = base64.b64encode(request.FILES['file'].read()) #Inputfile
         else:
-            content = form.cleaned_data["text"]
+            content = request.data["text"]
 
         source = settings.SERVER_URL + "/"
         origin = settings.SERVER_URL + "/"
@@ -57,10 +60,9 @@ def newPost(request, uid=None, auth_pk=None):
         posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, categories=categories,visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
         posts.save()
         return True
-    else:
+    except Exception as e:
         print(request.data)
-        print(form.errors)
-        print(form.data)
+        print(e)
         return False
 
 def add_Comment(request, post_pk, auth_pk, uid=None):
