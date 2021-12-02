@@ -2,7 +2,8 @@ import base64
 from django.db import models
 from django.db.models.deletion import CASCADE
 from Author.models import Author
-from django.contrib.postgres.fields import ArrayField
+# from django.contrib.postgres.fields import ArrayField
+from django_postgres_extensions.models.fields import ArrayField
 from multiselectfield import MultiSelectField
 
 class Base64Field(models.TextField):
@@ -51,7 +52,8 @@ class Post(models.Model):
         ('', ''),
     )
     # categories = models.CharField(max_length=20, choices=post_categories, editable=True)
-    categories = MultiSelectField(choices=post_categories, editable=True, blank=True, null=True)
+    # categories = MultiSelectField(choices=post_categories, editable=True, blank=True, null=True)
+    categories =  ArrayField(models.CharField(max_length=200), blank=True)
     count = models.PositiveBigIntegerField(default=0)
     size = models.PositiveBigIntegerField(default=10)
 

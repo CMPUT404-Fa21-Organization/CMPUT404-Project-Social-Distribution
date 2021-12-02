@@ -26,7 +26,11 @@
             <input id="description" type="text" name="description" value="{{ post.description }}" class="form-control"><br>
 
             <label for="Categories">Categories:</label><br>
+<!-- <<<<<<< HEAD
             <input id="categories" type="text" name="categories" value="{{ post.categories }}" class="form-control"><br>
+======= -->
+            <input id="categories" type="text" name="categories" value="{{ stringified_categories }}" class="form-control"> <br>
+<!-- >>>>>>> 816dd601bc18c801f71b21dff8d2b07d7e4eca46 -->
 
             <label for="Visibility">Visibility:</label><br>
             <select id="visibility" name="visibility" required>
