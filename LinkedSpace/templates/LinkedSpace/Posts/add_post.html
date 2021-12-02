@@ -26,29 +26,25 @@
             <input id="description" type="text" name="description" value="{{ post.description }}" class="form-control"><br>
 
             <label for="Categories">Categories:</label><br>
-            <select id="categories" name="categories" required>
-                <option value="" selected disabled hidden>{{ post.categories }}</option>
-                <option value="Web">Web</option>
-                <option value="Tutorial">Tutorial</option>
-            </select><br><br>
+            <input id="categories" type="text" name="categories" value="{{ post.categories }}" class="form-control"><br>
 
             <label for="Visibility">Visibility:</label><br>
             <select id="visibility" name="visibility" required>
-                <option value="" selected disabled hidden>{{ post.visibility }}</option>
+                <option value="{{ post.visibility }}" hidden>{{ post.visibility }}</option>
                 <option value="Public">Public</option>
                 <option value="Friends">Friends</option>
              </select><br><br>
 
             <label for="Unlisted">Unlisted:</label>
             <select id="unlisted" name="unlisted">
-                <option value="" selected disabled hidden>{{ post.unlisted }}</option>
+                <option value="{{ post.unlisted }}" hidden>{{ post.unlisted }}</option>
                 <option value="False">False</option>
                 <option value="True">True</option>
              </select><br><br>
 
             <label for="ContentType">Content Type:</label><br>
             <select id="contentType" name="contentType" required>
-                <option value="" selected disabled hidden>{{ post.contentType }}</option>
+                <option value="{{ post.contentType }}" hidden>{{ post.contentType }}</option>
                 <option value="text/markdown">text/markdown</option>
                 <option value="text/plain">text/plain</option>
                 <option value="application/app">application/app</option>
@@ -58,12 +54,13 @@
              </select><br><br>
 
             <label for="Text">Text:</label><br>
-            <input id="text" type="text" name="text" class="form-control" value="{{ post.content }}"><br>
+            <textarea id="text" type="text" name="text" class="form-control">{{ post.content }}</textarea><br>
 
             <label for="file">File:</label><br>
             <input type="file" name="file" id="file"><br/><br/>
 
-            <input type="submit" value="OK" class="btn btn-primary">
+            <input type="submit" value="Submit" class="btn btn-primary">
+            <a href="{% url 'posts-manage' %}" class="btn btn-outline-danger">Cancel</a>
         </form>
     {% else %}
         <h3><a href={% url 'login' %} >Login</a></h3>

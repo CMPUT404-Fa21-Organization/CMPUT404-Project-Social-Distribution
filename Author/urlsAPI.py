@@ -1,5 +1,5 @@
-"""CMPUT404Project URL Configuration
 
+"""CMPUT404Project URL Configuration
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.2/topics/http/urls/
 Examples:
@@ -15,11 +15,12 @@ Including another URLconf
 """
 from django.urls import path
 from django.urls.conf import include
+from .api import *
 from .views import *
 
 urlpatterns = [
  
-    path('<auth_pk>/', AuthorDetailView, name='author-detail'),
+    path('<auth_pk>/', AuthorDetailAPIView),
     path('<auth_pk>/posts/', include('Posts.urlsAPI')),
     path('<auth_pk>/inbox/', AuthorInboxView, name='author-inbox'),
     path('<auth_pk>/liked/', AuthorLikedView, name='author-liked-view')

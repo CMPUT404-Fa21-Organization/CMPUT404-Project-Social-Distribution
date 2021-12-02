@@ -27,6 +27,9 @@ urlpatterns = [
     path('register/', registerView, name='register'),
     path('logout/', logoutView, name='logout'),
     path('profile/', profileView, name='author-detail'),
+    path('profile/edit/', profileEdit, name='profile-edit'),
+    path('authors/', authorsView, name='authors-view'),
+    path('authors/connection/', ForeignAuthorsFrontend, name='foreign-authors-view'),
     
 
     path('inbox/', MyInboxView, name='author-inbox-frontend'),

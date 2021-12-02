@@ -5,22 +5,32 @@
 {% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-body">
-        <h2>Your Profile</h2>
-        <hr>
-        <b>Username:</b><br/>
-        {{ user.displayName }}<br/>
-        <br/>
-        <b>Email:</b><br/>
-        {{ user.email }}<br/>
-        <br/>
-        <b>Github:</b><br/>
-        {{ git_username }}<br/>
-
-        
-
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="card" style="width: 50rem">
+            <div class="card-header text-black" style="background-color: white;">
+            <a class="btn btn-secondary float-right" href="{% url 'profile-edit'%}">Edit</a>
+            <h2 class="card-title">My Profile</h2>
+            </div>
+            <div class="card-body">
+                <h5 class="card-text">Display Name</h5>
+                <p class="card-text">{{ user.displayName }}</p>
+                <h5 class="card-text">Email</h5>
+                <p class="card-text">{{ user.email }}</p>
+                <h5 class="card-text">GitHub</h5>
+                <p class="card-text"><a href="http://github.com/{{user.github}}">{{ user.github }}</a></p>
+                <p class="text-muted">Member since<span> {{ user.date_joined }} </span></p>
+            </div>
+        </div>
+        <div class="col-6">
+            {% for message in messages %}
+                {% if 'success' in message.extra_tags %}
+                    <div class="alert alert-success">
+                {% endif %}
+                <a class="close" href="#" data-dismiss="alert">×</a>
+                    {{ message }}
+            {% endfor %}
+        </div>            
     </div>
 </div>
-
 {% endblock %}

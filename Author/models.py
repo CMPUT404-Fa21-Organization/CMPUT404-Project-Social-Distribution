@@ -63,14 +63,14 @@ class Author(AbstractBaseUser, PermissionsMixin):
 
     
 
-    auth_pk = models.CharField(primary_key=True, max_length=100, editable=False)
-    email = models.EmailField(verbose_name='email', max_length=60, unique=True)
-    id = models.CharField(max_length=200, blank=False, editable=False, unique=True)
-    type = models.CharField(max_length=30, default='author', editable=False)
-    host = models.CharField(max_length=200, default=HOST)
-    displayName = models.CharField(max_length=50, editable=True)
-    url = models.CharField(max_length=200, blank=False, editable=False)
-    github = models.CharField(max_length=200, default='', blank=True)
+    auth_pk = models.TextField(primary_key=True, max_length=500, editable=False)
+    email = models.EmailField(verbose_name='email', max_length=500, unique=True)
+    id = models.TextField(max_length=200, blank=False, editable=False, unique=True)
+    type = models.TextField(max_length=30, default='author', editable=False)
+    host = models.TextField(max_length=200, default=HOST)
+    displayName = models.TextField(max_length=500, editable=True)
+    url = models.TextField(max_length=200, blank=False, editable=False)
+    github = models.TextField(max_length=200, default='', blank=True)
 
     # Required for extending AbstractUser ...
     username = None
@@ -87,7 +87,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     def get_author_url(self):
-        return f'{HOST}author/{str(self.auth_pk)}'
+        return self.url
     
     def get_github_url(self):
         return f'http://github.com/{str(self.github)}'
@@ -108,7 +108,6 @@ class Like(models.Model):
 class Liked(models.Model):
     type = models.CharField(max_length=30, default='liked', editable=False)
     items = models.ManyToManyField(Like, default=list, blank=True)
-    
 
 class FriendRequest(models.Model):
     type = models.CharField(max_length=30, default='follow', editable=False)
@@ -141,7 +140,3 @@ class Inbox(models.Model):
 
     def get_author(self):
         return Author.objects.get(email=self.auth_pk).get_author_url()
-
-
-
-

@@ -1,0 +1,26 @@
+{% extends './base.html' %}
+
+{% block title %}
+    Authors
+{% endblock %}
+
+{% block content %}
+    <h1>Welcome to Linked Space Foreign Authors</h1>
+
+    {% for i in Foreigners %}
+        {% for j in i.items %}
+        <div class = "card">
+            <div class="card-body">
+                <a href = "{{j.url}}">{{j.displayName}}</a>
+                
+            </div>
+            
+        </div>
+        <br>
+
+        
+        
+        {% endfor %}
+        
+    {% endfor %}
+{% endblock %}

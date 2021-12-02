@@ -9,6 +9,39 @@
 {% block content %}
     <h1>All Comments</h1>
 
+    <div class = "post card">
+        <h2 class = "postTitle">{{ post.title }}</h2>
+        <hr/>
+        <p class = "postDesc">{{ post.description }}</p>
+        <div class = "postContent">
+            {% if post.isImage %}
+                <img src="data:{{ post.contentType }};base64, {{ post.image }}"/>
+            {% elif post.contentType == "text/markdown"%}
+                {% load markdownify %}
+                <p>{{ post.content |markdownify }}</p>
+            {% else %}
+                <p> {{post.content}}</p>
+            {% endif %}
+            
+            <!-- Like Button -->
+            <!-- TODO: Better CSS for Like Button -->
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+            
+            <form action='newLike/' method= 'POST' enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="context" name="context" value="post-detail">
+                <input type="hidden" id="postID" name="postID" value={{post.id}}>
+                {% if post.userLike %}
+                    <input type = "submit" value = "{{ post.numLikes }} 👍" style="color: white; background-color:blue" class = "postLikeButton-active" >
+                {% else %}
+                    <input type = "submit" value = "{{ post.numLikes }} 👍"  class = "postLikeButton-deactive">
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <br>
+
     {% for comment in comments %}
       <div class="container">
         <div class="row justify-content-center">
@@ -48,24 +81,31 @@
           </div>
         </div>
     </div>
-
-    
     {% endfor %}
-    <div class="pagination">
-        <span class="step-links">
-            {% if comments.has_previous %}
-                <a href="?page=1">&laquo; first</a>
-                <a href="?page={{ comments.previous_page_number }}">previous</a>
-            {% endif %}
-    
-            <span class="current">
-                Page {{ comments.number }} of {{ comments.paginator.num_pages }}.
-            </span>
-    
-            {% if comments.has_next %}
-                <a href="?page={{ comments.next_page_number }}">next</a>
-                <a href="?page={{ comments.paginator.num_pages }}">last &raquo;</a>
-            {% endif %}
-        </span>
+    <br>
+    <div class="row justify-content-center">
+        <a class="btn btn-primary" href="/posts/{{ post.post_pk }}/add_comment/" role="button">Add Comment</a>
     </div>
+    <br>
+    <nav aria-label="...">
+        <ul class="pagination justify-content-center">
+            {% if comments.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ comments.previous_page_number }}">Previous</a></li>
+            {% else %}
+            <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1">Previous</a></li>
+            {% endif %}
+            {% for page in comments.paginator.page_range %}
+            {% if page == comments.number %}
+            <li class="page-item active"><span class="page-link">{{ comments.number }}<span class="sr-only">(current)</span></span></li>
+            {% else %}
+            <li class="page-item"><a class="page-link" href="?page={{ page }}">{{ page }}</a></li>
+            {% endif %}
+            {% endfor %}
+            {% if comments.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ comments.next_page_number }}">Next</a></li>
+            {% else %}
+            <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
 {% endblock %}

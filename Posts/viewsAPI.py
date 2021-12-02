@@ -16,8 +16,6 @@ from Posts.commentForm import CommentForm
 import json
 import uuid
 import re
-import uuid
-import re
 import base64
 from django.db.models import Q
 import django.core
@@ -58,10 +56,12 @@ def newPost(request, uid=None, auth_pk=None):
 
         posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, categories=categories,visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
         posts.save()
+        return True
     else:
         print(request.data)
         print(form.errors)
         print(form.data)
+        return False
 
 def add_Comment(request, post_pk, auth_pk, uid=None):
     form = CommentForm(request.POST, request.FILES)
@@ -111,7 +111,12 @@ def PostLikesView(request, post_pk, auth_pk):
         like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
         likes.append(like)
 
-    return Response(likes)
+    
+    response_dict = {
+        "type": "likes",
+        "items": likes
+    }
+    return Response(response_dict)
 
 @api_view(['GET',])
 def CommentLikesView(request, comment_pk, post_pk, auth_pk):
@@ -130,7 +135,11 @@ def CommentLikesView(request, comment_pk, post_pk, auth_pk):
         like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
         likes.append(like)
 
-    return Response(likes)
+    response_dict = {
+        "type": "likes",
+        "items": likes
+    }
+    return Response(response_dict)
 
 @api_view(['GET', 'POST',])
 @authentication_classes([CustomAuthentication])
@@ -143,17 +152,35 @@ def PostsList(request, auth_pk=None):
         page_size = 5
 
     if request.method == 'GET':
-        posts = Post.objects.all()
-        paginator = Paginator(posts, page_size)
-        page_obj = paginator.get_page(page_number)
-        serializer = PostSerializer(page_obj.object_list, many=True)
+        if auth_pk:
+            try:
+                author = Author.objects.get(auth_pk=auth_pk)
+                posts = Post.objects.filter(author_id=author)
+                code = status.HTTP_200_OK
+                paginator = Paginator(posts, page_size)
+                page_obj = paginator.get_page(page_number)
+                data = PostSerializer(page_obj.object_list, many=True).data
+            except Exception as e:
+                print(e)
+                data = {}
+                code = status.HTTP_400_BAD_REQUEST
+        else:
+            code = status.HTTP_200_OK
+            posts = Post.objects.all()
+            paginator = Paginator(posts, page_size)
+            page_obj = paginator.get_page(page_number)
+            data = PostSerializer(page_obj.object_list, many=True).data
 
     elif request.method == 'POST':
-        newPost(request, auth_pk=request.data['auth_pk'])
-        post = Post.objects.last()
-        serializer = PostSerializer(post)
+        if newPost(request, auth_pk=request.data['auth_pk']):
+            code = status.HTTP_201_CREATED
+            post = Post.objects.latest("published")
+            data = PostSerializer(post).data
+        else:
+            code = status.HTTP_400_BAD_REQUEST
+            data = {}
 
-    return Response(serializer.data)
+    return Response(data, code)
 
 @api_view(['GET', 'POST',])
 @authentication_classes([CustomAuthentication])
@@ -188,7 +215,7 @@ def commentListView(request, post_pk, auth_pk=None):
     elif request.method == 'POST':
         if add_Comment(request, post_pk=request.data['Post_pk'], auth_pk=request.data['auth_pk']):
             code = status.HTTP_202_ACCEPTED
-            comment = Comments.objects.last()
+            comment = Comments.objects.latest("published")
             data = CommentSerializer(comment).data
         else:
             code = status.HTTP_400_BAD_REQUEST
@@ -236,8 +263,14 @@ def PostDetail(request, post_pk, auth_pk=None):
                 post.unlisted = request.data['unlisted']
             if 'contentType' in request.data.keys():
                 post.contentType = request.data['contentType']
-            if 'text' in request.data.keys():
-                post.content = request.data['text']
+
+            if post.contentType == "application/app": 
+                post.content = request.FILES['file'].read() #Inputfile
+            elif post.contentType in ["image/png", "image/jpeg",]:
+                post.content = base64.b64encode(request.FILES['file'].read()) #Inputfile
+            else:
+                post.content = request.data["text"]
+
             post.save()
             serializer = PostSerializer(post)
         except Exception as e:
@@ -251,8 +284,8 @@ def PostDetail(request, post_pk, auth_pk=None):
 
     elif request.method == 'PUT':
         try:
-            code = status.HTTP_200_OK
-            newPost(request, post_pk, request.data['auth_pk'])
+            code = status.HTTP_201_CREATED
+            assert newPost(request, post_pk, request.data['auth_pk'])==True
             post = Post.objects.get(post_pk=post_pk)
             serializer = PostSerializer(post)
         except Exception as e:

@@ -6,4 +6,16 @@
 
 {% block content %}
     <h1>Welcome to Linked Space Authors</h1>
+
+    {% for author in Authors %}
+        <div class = "card">
+            <div class="card-body">
+                <a href = "{{author.id}}">{{author.displayName}}</a>
+                
+            </div>
+            
+        </div>
+        <br>
+        
+    {% endfor %}
 {% endblock %}

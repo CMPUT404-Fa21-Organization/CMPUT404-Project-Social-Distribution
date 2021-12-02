@@ -1,5 +1,7 @@
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
+from django.db.models.fields import CharField
+from rest_framework.fields import EmailField
 from .models import AuthorManager, Author
 
 class CreateAuthorForm(UserCreationForm):
@@ -27,3 +29,8 @@ class CreateAuthorForm(UserCreationForm):
                            widget= forms.TextInput
                            (attrs={'class':'form-control'}))
 
+
+class EditAuthorForm(forms.ModelForm):
+    class Meta:
+        model = Author
+        fields = ('displayName', 'email', 'github')

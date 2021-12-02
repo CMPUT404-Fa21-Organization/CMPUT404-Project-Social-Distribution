@@ -1,7 +1,7 @@
 from django import forms
 from django.db.models import manager
 from django.shortcuts import redirect, render, HttpResponse, HttpResponseRedirect
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from Author.forms import CreateAuthorForm
 from Author.serializers import *
 from django.urls import reverse
@@ -12,6 +12,7 @@ from Author.serializers import *
 from django.contrib.auth import authenticate, login, logout
 from .models import *
 from Author.models import AuthorManager, Author, Followers, Inbox
+from Author.forms import EditAuthorForm
 
 # Create your views here.
 def homeView(request):
@@ -30,6 +31,23 @@ def profileView(request):
 
     else:
         return HttpResponse(render(request, 'LinkedSpace/login.html'),status=200)
+
+def profileEdit(request):
+    template_name = 'LinkedSpace/profile_edit.html'
+
+    if request.method == "POST":
+        form = EditAuthorForm(request.POST, instance=request.user)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully.', extra_tags='success')
+            return HttpResponseRedirect('/profile/')
+    else:
+        form = EditAuthorForm(instance=request.user)
+        
+        return HttpResponse(render(request, template_name, {'form':form}),status=200)
+    
+    return HttpResponse(render(request, 'LinkedSpace/profile.html'),status=200)
 
 # https://stackoverflow.com/questions/49553511/why-authenticate-return-none-for-inactive-users
 
@@ -93,4 +111,9 @@ def registerView(request):
 
 def authorsView(request):
     template_name = 'LinkedSpace/authors.html'
-    return render(request, template_name)
+
+    authorObjects = Author.objects.filter(id__icontains = "linkedspace-staging") | Author.objects.filter(id__icontains = "127.0.0.1")
+
+    context = {'Authors':authorObjects}
+
+    return HttpResponse(render(request, template_name, context),status=200)
