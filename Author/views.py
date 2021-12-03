@@ -266,11 +266,11 @@ def updateForeignAuthors():
     foreign_authors_db_obj = Author.objects.filter(url__icontains = "social-dis") | Author.objects.filter(url__icontains = "unhindled") | Author.objects.filter(url__icontains = "cmput404f21t17") 
 
     fa_list = GetForeignAuthors()
-    foreign_authors1 = fa_list[0]['items']
-    foreign_authors2 = fa_list[1]['items']
-    foreign_authors3 = fa_list[2]['items']
+    foreign_authors = []
 
-    foreign_authors = foreign_authors1 + foreign_authors2 + foreign_authors3
+    for fa in fa_list:
+        foreign_authors_temp = fa['items']
+        foreign_authors += foreign_authors_temp
 
     for fadb in foreign_authors_db_obj:
         remove = True
