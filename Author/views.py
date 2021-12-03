@@ -269,8 +269,9 @@ def updateForeignAuthors():
     foreign_authors = []
 
     for fa in fa_list:
-        foreign_authors_temp = fa['items']
-        foreign_authors += foreign_authors_temp
+        if "items" in fa:
+            foreign_authors_temp = fa['items']
+            foreign_authors += foreign_authors_temp
 
     for fadb in foreign_authors_db_obj:
         remove = True
