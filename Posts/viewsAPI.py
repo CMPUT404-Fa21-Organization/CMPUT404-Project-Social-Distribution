@@ -27,7 +27,7 @@ def newPost(request, uid=None, auth_pk=None):
     if form.is_valid():
         title = form.cleaned_data['title']
         descirption = form.cleaned_data['description']
-        categories = form.cleaned_data['categories']
+        categories = form.cleaned_data['categories'].split(' ')
         visibility = form.cleaned_data['visibility']
         unlisted = form.cleaned_data['unlisted']
         contentType = form.cleaned_data['contentType']
@@ -256,7 +256,7 @@ def PostDetail(request, post_pk, auth_pk=None):
             if 'description' in request.data.keys():
                 post.description = request.data['description']
             if 'categories' in request.data.keys():
-                post.categories = request.data['categories']
+                post.categories = request.data['categories'].split(' ')
             if 'visibility' in request.data.keys():
                 post.visibility = request.data['visibility']
             if 'unlisted' in request.data.keys():
