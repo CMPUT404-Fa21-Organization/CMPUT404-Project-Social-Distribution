@@ -264,12 +264,12 @@ def PostDetail(request, post_pk, auth_pk=None):
             if 'contentType' in request.data.keys():
                 post.contentType = request.data['contentType']
 
-            if post.contentType == "application/app": 
-                post.content = request.FILES['file'].read() #Inputfile
-            elif post.contentType in ["image/png", "image/jpeg",]:
-                post.content = base64.b64encode(request.FILES['file'].read()) #Inputfile
-            else:
-                post.content = request.data["text"]
+                if post.contentType == "application/app":
+                     post.content = request.FILES['file'].read() #Inputfile
+                elif post.contentType in ["image/png", "image/jpeg",]:
+                     post.content = base64.b64encode(request.FILES['file'].read()) #Inputfile
+                else:
+                    post.content = request.data["text"]
 
             post.save()
             serializer = PostSerializer(post)
