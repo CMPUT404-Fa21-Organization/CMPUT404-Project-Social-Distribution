@@ -203,12 +203,14 @@ def AuthorDetailView(request, auth_pk):
         # return Response(serializer.data)
         
         template_name = 'LinkedSpace/authordetail.html'
+        git_username = author.github.replace("http://github.com/", "")
 
         if request.user.is_authenticated:
-            context = {'actor':request.user, 'object': author}
+
+            context = {'actor':request.user, 'object': author, 'git_username':git_username}
 
         else:
-            context = {'object': author}
+            context = {'object': author, 'git_username':git_username}
 
         return HttpResponse(render(request, template_name, context),status=200)
 
