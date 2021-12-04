@@ -238,7 +238,6 @@ def UserStreamView(request, auth_pk):
     postsObjects = postsObjects.order_by('-published')
 
     posts = PostSerializer(postsObjects, many=True)
-    
     # If Content is image
     for post in posts.data:
         post["isImage"] = False
@@ -375,3 +374,103 @@ def edit_Post(request, post_pk, auth_pk=None):
             return render(request, "LinkedSpace/Posts/add_post.html", context)
         else:
             return redirect(ManagePostsList)
+        
+def GetForeignPosts():
+    data = []
+
+    team3 = requests.get('https://social-dis.herokuapp.com/posts', auth=('socialdistribution_t03','c404t03'))
+    if team3.status_code == 200:
+        data.append(team3.json())
+
+    team15 = requests.get('https://unhindled.herokuapp.com/service/allposts/', auth=('connectionsuperuser','404connection'))
+    if team15.status_code == 200:
+        data.append(team15.json())
+
+    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
+    if team17.status_code == 200:
+        data.append(team17.json())
+
+    return data
+
+def ForeignPostsFrontend(request):
+    if request.method == 'GET':
+        data = []
+        postsList = GetForeignPosts()
+        for i in postsList[0]['items']:
+            if 'image' in i['contentType']:
+            # if(i["contentType"] == "image/png" or i["contentType"] == "image/jpeg"):
+                i["isImage"] = True
+                index = i['content'].index('base64,')
+                imgdata = i["content"][index+7:]
+                i["image"] = imgdata
+            data.append(i)
+        for i in postsList[1]:
+            if 'image' in i['contentType']:
+            # if(i["contentType"] == "image/png" or i["contentType"] == "image/jpeg"):
+                i["isImage"] = True
+                imgdata = i["content"][2:-1]
+                i["image"] = imgdata
+            data.append(i)
+        for i in postsList[2]['items']:
+            if 'image' in i['contentType']:
+            # if(i["contentType"] == "image/png" or i["contentType"] == "image/jpeg"):
+                i["isImage"] = True
+                imgdata = i["content"][2:-1]
+                i["image"] = imgdata
+            data.append(i)
+        # for post in postsList:
+        #     print(post, "\n\n")
+            #if(post["contentType"] == "image/png" or post["contentType"] == "image/jpeg"):
+
+        page_number = request.GET.get('page')
+        if 'size' in request.GET:
+            page_size = request.GET.get('size')
+        else:
+            page_size = 5
+
+        paginator = Paginator(data, page_size)
+        page_obj = paginator.get_page(page_number)
+        
+        context = {'Posts':page_obj, 'local':False}
+
+        return render(request, 'LinkedSpace/Posts/foreignposts.html', context)
+
+def ForeignPostsComment(request, url):
+    print(request)
+        
+def LocalPosts(request):
+    # TODO Add Github API stuff here
+    
+    if(request.user.is_authenticated):
+        author = request.user
+        localposts = Post.objects.filter(id__icontains = "linkedspace-staging") | Post.objects.filter(visibility = "PUBLIC") |  Post.objects.filter(unlisted = "False")
+
+    else:
+        # TODO Friend Posts in stream
+        localposts = Post.objects.filter(id__icontains = "linkedspace-staging") | Post.objects.filter(visibility = "PUBLIC") |  Post.objects.filter(unlisted = "False")
+    
+    localposts = localposts.order_by('-published')
+
+    posts = PostSerializer(localposts, many=True)
+    
+    # If Content is image
+    for post in posts.data:
+        post["isImage"] = False
+        if(post["contentType"] == "image/png" or post["contentType"] == "image/jpeg"):
+            post["isImage"] = True
+            imgdata = post["content"][2:-1]
+            post["image"] = imgdata
+    
+    posts = processLikes(request, posts.data)
+
+    page_number = request.GET.get('page')
+    if 'size' in request.GET:
+        page_size = request.GET.get('size')
+    else:
+        page_size = 5
+
+    paginator = Paginator(posts, page_size)
+    page_obj = paginator.get_page(page_number)
+    context = {'Posts':page_obj, 'local':True}
+
+    return render(request, 'LinkedSpace/Posts/foreignposts.html', context)
