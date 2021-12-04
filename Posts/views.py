@@ -415,7 +415,8 @@ def ForeignPostsFrontend(request):
             if 'image' in i['contentType']:
             # if(i["contentType"] == "image/png" or i["contentType"] == "image/jpeg"):
                 i["isImage"] = True
-                imgdata = i["content"][2:-1]
+                index = i['content'].index('base64,')
+                imgdata = i["content"][index+7:]
                 i["image"] = imgdata
             data.append(i)
         # for post in postsList:
@@ -460,7 +461,7 @@ def LocalPosts(request):
             post["isImage"] = True
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
-    
+
     posts = processLikes(request, posts.data)
 
     page_number = request.GET.get('page')
