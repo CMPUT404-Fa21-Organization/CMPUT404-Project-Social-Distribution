@@ -1,6 +1,7 @@
 from django.core import serializers
 from django.utils import timezone
 from django.shortcuts import redirect, render
+from Posts.views import processLikes
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from .serializers import CommentSerializer, PostSerializer
@@ -171,7 +172,13 @@ def AllCommentsList(request, post_pk, auth_pk = None):
         page_size = 5
 
     comments = CommentSerializer(commentsObj, many = True)
-    post = Post.objects.get(pk = post_pk)
+    postObj = Post.objects.get(pk = post_pk)
+    post = PostSerializer(postObj)
+
+    if "image" in post.data["contentType"]:
+        post.data["isImage"] = True
+        imgdata = post.data["content"][2:-1]
+        post.data["image"] = imgdata
 
     # If Content is image
     for comment in comments.data:
@@ -179,29 +186,11 @@ def AllCommentsList(request, post_pk, auth_pk = None):
         if(comment["contentType"] == "image/png" or comment["contentType"] == "image/jpeg"):
             comment["isImage"] = True
             imgdata = comment["content"][2:-1]
-            comment["image"] = imgdata
-
-    # Like Stuff
-    # Calculte Number of Likes for comments
-    likeObjects = Like.objects.all()  
-    likes = LikeSerializer(likeObjects,  many=True)   
-    for comment in comments.data:
-        comment["userLike"] = False
-        comment["numLikes"] = 0
-        for like in likes.data:
-            if comment["id"] == like["object"]:
-                comment["numLikes"] += 1
+            comment["image"] = imgdata   
     
-    # Check which comments the user has already liked
-    if(request.user.is_authenticated):
-        likeObjects = Like.objects.filter(auth_pk = request.user)  
-        userLikes = LikeSerializer(likeObjects,  many=True) 
-        for comment in comments.data:
-            for like in userLikes.data:
-                if comment["id"] == like["object"]:
-                    comment["userLike"] = True
+    comments = processLikes(request, comments.data)
 
-    paginator = Paginator(comments.data, page_size)
+    paginator = Paginator(comments, page_size)
     page_obj = paginator.get_page(page_number)
     print("redirected to comment list html")
-    return render(request, "LinkedSpace/Posts/all_comment_list.html", {'comments': page_obj, 'post': post})
+    return render(request, "LinkedSpace/Posts/all_comment_list.html", {'comments': page_obj, 'post': post.data})
