@@ -493,15 +493,15 @@ def AuthorInboxViewFrontend(request, auth_pk):
 def GetForeignAuthors():
     data = []
 
-    team3 = requests.get('https://social-dis.herokuapp.com/authors', auth=('socialdistribution_t03','c404t03'))
+    team3 = requests.get('https://social-dis.herokuapp.com/authors?size=1000', auth=('socialdistribution_t03','c404t03'))
     if team3.status_code == 200:
         data.append(team3.json())
 
-    team15 = requests.get('https://unhindled.herokuapp.com/service/authors/', auth=('connectionsuperuser','404connection'))
+    team15 = requests.get('https://unhindled.herokuapp.com/service/authors/?size=1000', auth=('connectionsuperuser','404connection'))
     if team15.status_code == 200:
         data.append(team15.json())
 
-    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/author/', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
+    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/author/?size=1000', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
     if team17.status_code == 200:
         data.append(team17.json())
 
@@ -511,15 +511,15 @@ def GetForeignAuthors():
 def GetForeignPosts():
     data = []
 
-    team3 = requests.get('https://social-dis.herokuapp.com/posts', auth=('socialdistribution_t03','c404t03'))
+    team3 = requests.get('https://social-dis.herokuapp.com/posts?size=1000', auth=('socialdistribution_t03','c404t03'))
     if team3.status_code == 200:
         data.append(team3.json())
 
-    team15 = requests.get('https://unhindled.herokuapp.com/service/allposts/', auth=('connectionsuperuser','404connection'))
+    team15 = requests.get('https://unhindled.herokuapp.com/service/allposts/?size=1000', auth=('connectionsuperuser','404connection'))
     if team15.status_code == 200:
         data.append(team15.json())
 
-    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
+    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/?size=1000', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
     if team17.status_code == 200:
         data.append(team17.json())
 

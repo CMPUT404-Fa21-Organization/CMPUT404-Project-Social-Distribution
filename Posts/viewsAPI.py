@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core import serializers
 from django.utils import timezone
+import requests
 from Posts.commentModel import Comments
 #from Posts.commentView import add_Comment
 from rest_framework import status
@@ -11,6 +12,7 @@ from requests import get
 from .serializers import CommentSerializer, PostSerializer
 from Author.serializers import LikeSerializer
 from Author.models import Like
+from Author.views import updateForeignAuthors, GetForeignAuthors
 from .models import Post, Author
 from .form import PostForm
 from Posts.commentForm import CommentForm
@@ -67,6 +69,7 @@ def newPost(request, uid=None, auth_pk=None):
 def add_Comment(request, post_pk, auth_pk, uid=None):
     form = CommentForm(request.POST, request.FILES)
     if form.is_valid():
+        updateForeignAuthors()
         published = timezone.now()
         contentType = form.cleaned_data['contentType']
         if contentType == "application/app": 
@@ -76,10 +79,8 @@ def add_Comment(request, post_pk, auth_pk, uid=None):
         else:
             content = form.cleaned_data["text"]
             
-        #author_id = Author.objects.get(pk=auth_pk)
-        #id = author_id.url
-        author = json.loads(serializers.serialize('json', Author.objects.filter(pk=auth_pk), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
-        
+        author = json.loads(serializers.serialize('json', Author.objects.filter(email=auth_pk), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
+
         post = Post.objects.get(pk = post_pk)
         post_pk_str = post_pk
         if uid == None:
