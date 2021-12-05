@@ -353,7 +353,7 @@ def AuthorInboxView(request, auth_pk):
             if "image" in request.data["contentType"]:
                 request.data["contentType"] = "image/png"
                 request.data["content"] =  "b'" + request.data["content"].split("base64,")[-1] + "'"
-                
+
             request.data["source"] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
             serializerPost = PostSerializer(data=request.data)
             
@@ -362,6 +362,10 @@ def AuthorInboxView(request, auth_pk):
 
                     serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
                     serializerPost.validated_data["author_id"] = Author.objects.get(id=request.user.id)
+
+                    if "comments" in request.data:
+                        serializerPost.validated_data["comments"] = request.data["comments"]
+
                     r_uid = uuid.uuid4().hex
                     uid = re.sub('-', '', r_uid)
                     serializerPost.validated_data["post_pk"] = uid
@@ -378,6 +382,10 @@ def AuthorInboxView(request, auth_pk):
                     if(postSet.count() == 0):
                         serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.data["author"]["id"]), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
                         serializerPost.validated_data["author_id"] = Author.objects.get(id=request.data["author"]["id"])
+                        
+                        if "comments" in request.data:
+                            serializerPost.validated_data["comments"] = request.data["comments"]
+                        
                         r_uid = uuid.uuid4().hex
                         uid = re.sub('-', '', r_uid)
                         serializerPost.validated_data["post_pk"] = request.data["id"].split("/")[-1]

@@ -133,7 +133,7 @@ def PostsList(request, auth_pk=None):
         if auth_pk:
             try:
                 author = Author.objects.get(auth_pk=auth_pk)
-                posts = Post.objects.filter(author_id=author)
+                posts = Post.objects.filter(author_id=author, id__icontains = "linkedspace")
                 code = status.HTTP_200_OK
                 paginator = Paginator(posts, page_size)
                 page_obj = paginator.get_page(page_number)
@@ -144,7 +144,7 @@ def PostsList(request, auth_pk=None):
                 code = status.HTTP_400_BAD_REQUEST
         else:
             code = status.HTTP_200_OK
-            posts = Post.objects.all()
+            posts = Post.objects.filter(id__icontains = "linkedspace")
             paginator = Paginator(posts, page_size)
             page_obj = paginator.get_page(page_number)
             data = PostSerializer(page_obj.object_list, many=True).data
