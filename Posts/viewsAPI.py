@@ -226,6 +226,10 @@ def PostDetail(request, post_pk, auth_pk=None):
             serializer = PostSerializer(page_obj.object_list, many=True)
 
     elif request.method == 'POST':
+        if "image" in request.data["contentType"]:
+            request.data["contentType"] = "image/png"
+            request.data["content"] =  "b'" + request.data["content"].split("base64,")[-1] + "'"
+            
         try:
             code = status.HTTP_200_OK
             post = Post.objects.get(post_pk=post_pk)
