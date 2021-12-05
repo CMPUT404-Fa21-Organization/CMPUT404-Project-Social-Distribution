@@ -23,18 +23,29 @@ def APIGetFollowers(request, auth_pk):
    
 
 @api_view(['GET','PUT','DELETE'])
-# TODO Uncomment these two lines below. These were commented for easy development (viewing api results in browser).
-# @authentication_classes([CustomAuthentication])
-# @permission_classes([AccessPermission])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
 def ForeignAuthorAPI(request, auth_pk, fr_auth_pk):
     followersObj = Followers.objects.get(auth_pk = auth_pk)
 
     if request.method == "GET":
-        # TODO
-        pass
+        detail = False
+
+        foreign_author = Author.objects.get(pk = fr_auth_pk)
+
+        if foreign_author in followersObj.items.all():
+            detail = True
+            
+        response_dict = {
+            "detail": detail
+        }
+
+        return Response(response_dict)
+        
     elif request.method == "PUT":
-        # TODO
-        pass
+        foreign_author = Author.objects.get(pk = fr_auth_pk)
+        followersObj.items.add(foreign_author)
+
     elif request.method == "DELETE":
         foreign_author = Author.objects.get(pk = fr_auth_pk)
         followersObj.items.remove(foreign_author)
@@ -42,9 +53,6 @@ def ForeignAuthorAPI(request, auth_pk, fr_auth_pk):
     
     authors = FollowersSerializer(followersObj)
     return Response(authors.data, status=status.HTTP_200_OK)
-        
-
-    
 
 ###############################################################
 
