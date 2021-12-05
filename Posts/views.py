@@ -163,7 +163,10 @@ def sendGETrequest(url):
             x = requests.get(url, auth = auth)
 
     # print(x.json())
-    return x.status_code, x.json()
+    try:
+        return x.status_code, x.json()
+    except:
+        return x.status_code, x
 
 def getAuth(url):
     if "social-dis" in url:
