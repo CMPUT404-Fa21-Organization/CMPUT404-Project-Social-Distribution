@@ -32,7 +32,7 @@ from rest_framework.mixins import DestroyModelMixin
 from .models import Author
 
 from django.core.paginator import Paginator
-from Posts.views import processLikes, sendPOSTrequest
+from Posts.views import processLikes, sendGETrequest, sendPOSTrequest
 
 # Create your views here.
 def authorHome(request):
@@ -64,21 +64,10 @@ def acceptFollow(request):
         actor = Author.objects.get(id=request.POST["actorID"])
         object = Author.objects.get(id=request.POST["objectID"])
 
-        ###### REDUNDANT #################
         followersObj = Followers.objects.get(pk = object.pk)
 
         if actor not in followersObj.items.all() and actor != object:
             followersObj.items.add(actor)
-        ####################################
-
-        try:
-            followersAct = Followers.objects.get(pk = actor.pk)
-
-            if object not in followersAct.items.all() and actor != object:
-                followersAct.items.add(object)
-        except Followers.DoesNotExist:
-            # Send PUT request to foreign followers
-            pass
 
         return HttpResponseRedirect(reverse('author-inbox-frontend'))
 
@@ -88,6 +77,7 @@ def acceptFollow(request):
 def MyInboxView(request):
     # Non API view, Displays the users posts and github activity
     # TODO Better CSS for front-end of inbox
+    updateForeignAuthors()
     author = request.user
     inbox =  Inbox.objects.get(pk=author.pk)
     serializer = InboxSerializer(inbox, many=False)
@@ -245,7 +235,6 @@ def getInboxData(serializer):
             like["@context"] = l["context"]
             
             like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
-            
             likes.append(like)
 
         for f in iFollows:
@@ -253,7 +242,16 @@ def getInboxData(serializer):
             f["object"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=f["object"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
 
         for item in iPosts:
-            data["items"].append(item)
+            code, _ = sendGETrequest(item["id"])
+
+            # Check if foreign post is deleted
+            if code - 300 < 0:
+                data["items"].append(item)
+            else:
+                # delete foreign post from db
+                postToDelete = Post.objects.get(id = item["id"])
+                postToDelete.delete()
+
         for item in likes:
             data["items"].append(item)
         for item in iFollows:
@@ -277,7 +275,7 @@ def updateForeignAuthors():
     for fadb in foreign_authors_db_obj:
         remove = True
         for fa in foreign_authors:
-            if(fadb.url == fa["url"] or fa['url'].find("linkedspace-staging") != -1 or fa['url'].find("127.0.0.1:8000") != -1):
+            if(fadb.url == fa["url"] or fa['url'].find("linkedspace") != -1 or fa['url'].find("127.0.0.1:8000") != -1):
                 foreign_authors.remove(fa)
                 remove = False
 
@@ -352,6 +350,7 @@ def AuthorInboxView(request, auth_pk):
 
     if request.method == "POST":
         if(request.data["type"].lower() == "post"):
+            request.data["source"] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
             serializerPost = PostSerializer(data=request.data)
             
             if serializerPost.is_valid():

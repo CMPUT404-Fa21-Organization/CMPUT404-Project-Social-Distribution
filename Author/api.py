@@ -13,7 +13,7 @@ from django.core.paginator import Paginator
 @permission_classes([AccessPermission])
 def AuthorsListAPIView(request):
 
-    authors = Author.objects.all()
+    authors = Author.objects.filter(url__icontains = "linkedspace")
 
     page_number = request.GET.get('page')
     if 'size' in request.GET:

@@ -139,6 +139,7 @@ def sendPOSTrequest(url, data):
     url = url +"/"
     url = url.replace("//", "/")
     url = url.replace("http", "https")
+    url = url.replace("ss:", "s:")
     url = url.replace(":/", "://")
 
     x = requests.post(url, data = json.dumps(data), auth = auth, headers=headers)
@@ -146,7 +147,14 @@ def sendPOSTrequest(url, data):
     if x.status_code - 300 >= 0:
         url = url[:-1]
         x = requests.post(url, data = json.dumps(data), auth = auth, headers=headers)
-    # print(x.json())
+
+        if x.status_code - 300 >= 0:
+            url = url.replace(".com/", ".com/service/")
+            x = requests.post(url, data = json.dumps(data), auth = auth, headers=headers)
+    
+    print(x.json())
+
+    return x
 
 def sendGETrequest(url):
     auth = getAuth(url)
@@ -155,12 +163,17 @@ def sendGETrequest(url):
     url = url +"/"
     url = url.replace("//", "/")
     url = url.replace("http", "https")
+    url = url.replace("ss:", "s:")
     url = url.replace(":/", "://")
 
     x = requests.get(url, auth = auth)
     if x.status_code - 300 >= 0:
         url = url[:-1]
         x = requests.get(url, auth = auth)
+
+        if x.status_code - 300 >= 0:
+            url = url.replace(".com/", ".com/service/")
+            x = requests.get(url, auth = auth)
 
     print(x.json())
     return x.status_code, x.json()
@@ -211,6 +224,7 @@ def newLike(request, auth_pk = None, post_pk = None):
 
         else:
             # Send like to foreign author's inbox
+            # TODO TEAM 17
             url = postAuthor.url + "/inbox/"
             authorSerialized = AuthorSerializer(request.user, many = False)
             data = {
@@ -238,16 +252,16 @@ def newLike(request, auth_pk = None, post_pk = None):
 def processLikes(request, posts):
     # Like Stuff
     # Calculte Number of Likes for Posts
-
+    # TODO TEAM 17
     
     likeObjects = Like.objects.all()  
     likes_local = LikeSerializer(likeObjects,  many=True)   
     for post in posts:
-        if "linkedspace-staging" in post["id"]:
+        if "linkedspace" in post["id"]:
             post["userLike"] = False
             post["numLikes"] = 0
             for like in likes_local.data:
-                if post["id"] == like["object"]:
+                if post["id"] == like["object"] or post["origin"] == like["object"]:
                     post["numLikes"] += 1
 
         else:
@@ -258,25 +272,33 @@ def processLikes(request, posts):
             code, likes = sendGETrequest(post["id"] + "/likes/")
 
             if code - 300 < 0:
-                post["numLikes"] = len(likes)
+                if("items" in likes):
+                    post["numLikes"] = len(likes["items"])
+                else:
+                    post["numLikes"] = len(likes)
     
     # Check which posts the user has already liked
     if(request.user.is_authenticated):
         likeObjects = Like.objects.filter(auth_pk = request.user)  
         userLikes = LikeSerializer(likeObjects,  many=True) 
         for post in posts:
-            if "linkedspace-staging" in post["id"]:
+            if "linkedspace" in post["id"]:
                 for like in userLikes.data:
-                    if post["id"] == like["object"]:
+                    if post["id"] == like["object"] or post["origin"] == like["object"]:
                         post["userLike"] = True
             else:
                 
                 code, likes = sendGETrequest(post["id"] + "/likes/")
 
                 if code - 300 < 0:
-                    for like in likes:
-                        if post["id"] == like["object"]:
-                            post["userLike"] = True
+                    if "items" in likes:
+                        for like in likes["items"]:
+                            if post["id"] == like["object"]:
+                                post["userLike"] = True
+                    else:
+                        for like in likes:
+                            if post["id"] == like["object"]:
+                                post["userLike"] = True
                 
 
     return posts
@@ -309,8 +331,6 @@ def UserStreamView(request, auth_pk):
         post["categories"] = ' '.join(post["categories"]) # to format categories list for displaying correctly
     
     posts = processLikes(request, posts.data)
-
-    
 
     page_number = request.GET.get('page')
     if 'size' in request.GET:
