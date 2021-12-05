@@ -350,6 +350,10 @@ def AuthorInboxView(request, auth_pk):
 
     if request.method == "POST":
         if(request.data["type"].lower() == "post"):
+            if "image" in request.data["contentType"]:
+                request.data["contentType"] = "image/png"
+                request.data["content"] =  "b'" + request.data["content"].split("base64,")[-1] + "'"
+                
             request.data["source"] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
             serializerPost = PostSerializer(data=request.data)
             
