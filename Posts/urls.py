@@ -29,4 +29,5 @@ urlpatterns = [
     path('<post_pk>/newLike/', newLike, name= 'add-like-post'),
     path('<post_pk>/comments/', AllCommentsList, name='comment-list'),
     path('<post_pk>/comments/newLike/', newLike, name='add-like-comment'),
+    path('share/<post_pk>/', PostShare, name='post_share'),
 ]

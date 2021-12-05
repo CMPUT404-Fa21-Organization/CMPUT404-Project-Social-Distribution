@@ -8,6 +8,7 @@
 
     <div class = "post card">
         <h2 class = "postTitle">{{ post.title }}</h2>
+        <h6>By {{ post.author.displayName }}</h6>
         <hr/>
         <p class = "postDesc">{{ post.description }}</p>
         <div class = "postContent">
@@ -40,5 +41,10 @@
         <div class = "postComments">
             Comments: <a href={{ post.comments }}>{{ post.comments }}</a> 
         </div>
+        {% if post.author.displayName != user.displayName %}
+        <div class = "postShare">
+            <a class="btn btn-primary" href="{% url 'post_share' post_pk %}">Share</a> 
+        </div>
+        {% endif %}
     </div>
 {% endblock %}
