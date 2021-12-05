@@ -162,7 +162,7 @@ def sendGETrequest(url):
             url = url.replace(".com/", ".com/service/")
             x = requests.get(url, auth = auth)
 
-    print(x.json())
+    # print(x.json())
     return x.status_code, x.json()
 
 def getAuth(url):
