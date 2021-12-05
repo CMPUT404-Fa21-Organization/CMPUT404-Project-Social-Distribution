@@ -47,23 +47,7 @@ def PostDetailView(request, post_pk, auth_pk = None):
         post["categories"] = ' '.join(post["categories"]) # to format categories list for displaying correctly
 
 
-        # Like Stuff
-        # Calculte Number of Likes for Posts
-        likeObjects = Like.objects.all()  
-        likes = LikeSerializer(likeObjects,  many=True)   
-        post["userLike"] = False
-        post["numLikes"] = 0
-        for like in likes.data:
-            if post["id"] == like["object"]:
-                post["numLikes"] += 1
-        
-        # Check which posts the user has already liked
-        if(request.user.is_authenticated):
-            likeObjects = Like.objects.filter(auth_pk = request.user)  
-            userLikes = LikeSerializer(likeObjects,  many=True) 
-            for like in userLikes.data:
-                if post["id"] == like["object"]:
-                    post["userLike"] = True
+        post = processLikes(request, [post])[0]
 
 
         context = {'post':post, 'user':user, 'post_pk':post_pk}
