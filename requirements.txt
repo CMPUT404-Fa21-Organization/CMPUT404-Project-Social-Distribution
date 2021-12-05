@@ -10,6 +10,8 @@ django-heroku==0.3.1
 django-markdownify==0.9.0
 django-multiselectfield==0.1.12
 django-on-heroku==1.1.2
+django-postgres-extensions==0.9.3
+django-utils-six==2.0
 djangorestframework==3.12.4
 gunicorn==20.1.0
 idna==3.3

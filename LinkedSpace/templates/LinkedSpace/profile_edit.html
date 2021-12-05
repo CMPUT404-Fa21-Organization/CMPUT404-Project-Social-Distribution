@@ -8,7 +8,6 @@
 <div class="container">
     <form method="POST" action="">
         {% csrf_token %}
-        <div class="form-group">
             <div class="container">
                 <div class="row justify-content-center">
                     <div class="card" style="width: 50rem">
@@ -18,19 +17,20 @@
                             <h2 class="card-title">Edit Profile</h2>
                         </div>
                         <div class="card-body">
-                            <h5 class="card-text">Display Name</h5>
-                            <label type="text" >{{ form.displayName }}</label>
-    
-                            <h5 class="card-text mt-3">Email</h5>
-                            <label type="email" >{{ form.email }}</label>
-
-                            <h5 class="card-text mt-3">GitHub</h5>
-                            <label type="text" >{{ form.github }}</label>
+                            <div class="form-group">
+                                <h5 for="displayName" class="label label-default">Display Name</h5>
+                                <input type="text" class="form-control" name="displayName" value="{{ displayName }}"> <br >
+                            
+                                <h5 for="email" class="label label-default">Email</h5>
+                                <input type="email" class="form-control" name="email" value="{{ email }}"> <br >
+                            
+                                <h5 for="github" class="label label-default">GitHub</h5>
+                                <input type="text" class="form-control" name="github" value="{{ github_username }}">
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
     </form>
 </div>
 {% endblock %}

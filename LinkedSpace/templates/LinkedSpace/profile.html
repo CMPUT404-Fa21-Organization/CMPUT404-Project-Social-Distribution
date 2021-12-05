@@ -18,7 +18,7 @@
                 <h5 class="card-text">Email</h5>
                 <p class="card-text">{{ user.email }}</p>
                 <h5 class="card-text">GitHub</h5>
-                <p class="card-text"><a href="http://github.com/{{user.github}}">{{ user.github }}</a></p>
+                <p class="card-text"><a href="{{ user.github }}">{{ git_username }}</a></p>
                 <p class="text-muted">Member since<span> {{ user.date_joined }} </span></p>
             </div>
         </div>
@@ -26,6 +26,8 @@
             {% for message in messages %}
                 {% if 'success' in message.extra_tags %}
                     <div class="alert alert-success">
+                {% elif 'failure' in message.extra_tags %}
+                <div class="alert alert-danger">
                 {% endif %}
                 <a class="close" href="#" data-dismiss="alert">×</a>
                     {{ message }}

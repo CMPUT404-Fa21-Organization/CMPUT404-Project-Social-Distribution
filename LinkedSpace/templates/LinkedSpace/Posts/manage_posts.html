@@ -17,8 +17,7 @@
                 <div class="card-header text-black" style="background-color: #a2afe23b;">
                   <a href="{% url 'delete_Post' post.pk %}" class="btn btn-outline-danger btn-sm float-right">Delete</a>
                   <a href="{% url 'edit_Post' post.pk %}" class="btn btn-primary btn-sm float-right mr-2">Edit</a>
-                  <h4 class="card-title">{{ post.title }}<span style="font-size:medium"> by <a href="#">{{ post.author.displayName }}</a></span>
-                </h4>
+                  <h4 class="card-title">{{ post.title }}</h4>
                 </div>
                 <div class="card-body">
                     <p class="card-text small">Description: {{ post.description }}
@@ -27,24 +26,19 @@
                             <button type="button" class="btn btn-outline-secondary btn-sm float-right mr-2" disabled><span style="font-size:smaller;">{{ post.visibility }}</span></button>
                         </span>
                     </p>
-                    {% if post.contentType == "text/plain" %}
-                        <p>{{ post.content }}</p>
-                    {% elif post.contentType == "text/markdown" %}
-
-                        {% load markdownify %}
-                    <p class="background-color: grey;">{{ post.content |markdownify }}</p>
-                    {% elif post.contentType == "application/base64" %}
-                        <p>Some base64 file would be displayed here ...</p>
-                    {% elif post.contentType == "image/png;base64" %}
-                        <p>Some .png file would be displayed here ...</p>
-                    {% elif post.contentType == "image/jpeg;base64" %}
-                        <p>Some .jpeg file would be displayed here ...</p>
-                    {% elif post.contentType == "HTML" %}
-                        <p>HTML would be displayed here ...</p>
-                    {% endif %}
+                    {% if post.isImage %}
+                    <div class="col-md-6 col-xs-6">
+                        <img src="data:{{ post.contentType }};base64, {{ post.image }}" class="img-fluid justify-content-center"/>
+                    </div>
+                {% elif post.contentType == "text/markdown"%}
+                    {% load markdownify %}
+                        <p>{{ post.content |markdownify }}</p>
+                {% else %}
+                    <p> {{post.content}}</p>
+                {% endif %}
                 </div>
                 <div class="card-footer">
-                    <p class="card-text small"><a href="#">View comments</a>
+                    <p class="card-text small"><a href="{{ post.comments }}">View comments</a>
                         <span class="text-muted small float-right">Published: {{ post.published }}</span>
                     </p>
                 </div>

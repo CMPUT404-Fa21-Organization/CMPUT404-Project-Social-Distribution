@@ -28,7 +28,7 @@ def newPost(request, uid=None, auth_pk=None):
     if form.is_valid():
         title = form.cleaned_data['title']
         descirption = form.cleaned_data['description']
-        categories = form.cleaned_data['categories']
+        categories = form.cleaned_data['categories'].split(' ')
         visibility = form.cleaned_data['visibility']
         unlisted = form.cleaned_data['unlisted']
         contentType = form.cleaned_data['contentType']
@@ -119,28 +119,6 @@ def PostLikesView(request, post_pk, auth_pk):
     }
     return Response(response_dict)
 
-@api_view(['GET',])
-def CommentLikesView(request, comment_pk, post_pk, auth_pk):
-    comment = Comments.objects.get(pk = comment_pk)
-    author = Author.objects.get(pk = auth_pk)
-    likeObjs = Like.objects.filter(~Q(auth_pk = author), object = comment.id)
-
-    Likes = LikeSerializer(likeObjs, read_only=True, many=True)
-    likes = []
-    for l in Likes.data:
-        like = {}
-        for key in l:
-            if(key != "context"):
-                like[key] = l[key]
-        like["@context"] = l["context"]
-        like["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=l["author"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
-        likes.append(like)
-
-    response_dict = {
-        "type": "likes",
-        "items": likes
-    }
-    return Response(response_dict)
 
 @api_view(['GET', 'POST',])
 @authentication_classes([CustomAuthentication])
@@ -156,7 +134,7 @@ def PostsList(request, auth_pk=None):
         if auth_pk:
             try:
                 author = Author.objects.get(auth_pk=auth_pk)
-                posts = Post.objects.filter(author_id=author)
+                posts = Post.objects.filter(author_id=author, id__icontains = "linkedspace")
                 code = status.HTTP_200_OK
                 paginator = Paginator(posts, page_size)
                 page_obj = paginator.get_page(page_number)
@@ -167,7 +145,7 @@ def PostsList(request, auth_pk=None):
                 code = status.HTTP_400_BAD_REQUEST
         else:
             code = status.HTTP_200_OK
-            posts = Post.objects.all()
+            posts = Post.objects.filter(id__icontains = "linkedspace")
             paginator = Paginator(posts, page_size)
             page_obj = paginator.get_page(page_number)
             data = PostSerializer(page_obj.object_list, many=True).data
@@ -257,7 +235,7 @@ def PostDetail(request, post_pk, auth_pk=None):
             if 'description' in request.data.keys():
                 post.description = request.data['description']
             if 'categories' in request.data.keys():
-                post.categories = request.data['categories']
+                post.categories = request.data['categories'].split(' ')
             if 'visibility' in request.data.keys():
                 post.visibility = request.data['visibility']
             if 'unlisted' in request.data.keys():
@@ -265,12 +243,12 @@ def PostDetail(request, post_pk, auth_pk=None):
             if 'contentType' in request.data.keys():
                 post.contentType = request.data['contentType']
 
-            if post.contentType == "application/app": 
-                post.content = request.FILES['file'].read() #Inputfile
-            elif post.contentType in ["image/png", "image/jpeg",]:
-                post.content = base64.b64encode(request.FILES['file'].read()) #Inputfile
-            else:
-                post.content = request.data["text"]
+                if post.contentType == "application/app":
+                     post.content = request.FILES['file'].read() #Inputfile
+                elif post.contentType in ["image/png", "image/jpeg",]:
+                     post.content = base64.b64encode(request.FILES['file'].read()) #Inputfile
+                else:
+                    post.content = request.data["text"]
 
             post.save()
             serializer = PostSerializer(post)
