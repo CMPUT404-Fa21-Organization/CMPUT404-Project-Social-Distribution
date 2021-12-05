@@ -277,7 +277,7 @@ def updateForeignAuthors():
     for fadb in foreign_authors_db_obj:
         remove = True
         for fa in foreign_authors:
-            if(fadb.url == fa["url"] or fa['url'].find("linkedspace-staging") != -1 or fa['url'].find("127.0.0.1:8000") != -1):
+            if(fadb.url == fa["url"] or fa['url'].find("linkedspace") != -1 or fa['url'].find("127.0.0.1:8000") != -1):
                 foreign_authors.remove(fa)
                 remove = False
 
