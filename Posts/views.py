@@ -376,39 +376,37 @@ def newPost(request, auth_pk=None):
             # get authors followers list
             followers = Followers.objects.get(auth_pk=request.user).items.all() 
             for follower in followers:
-                # check for each author in followers list, if the request.user is also following them
-                # if so, then they are Friends
                 if request.user in Followers.objects.get(auth_pk=follower).items.all():
                     if follower.host == origin: # send to local friends
-                        # inbox = Inbox.objects.get(auth_pk=follower)
-                        # inbox.iPosts.add(posts)
-                        # print("sent to LOCAL:", follower.email)
-                    # else: # send to remote friends
-                    #     # print("sent to REMOTE:", follower.email)
-                    #     furl = follower.url + "/inbox/"
-                    #     print('Foreign url:', furl)
-                    #     # url = settings.SERVER_URL + "/"
-                    #     # print('Modified url:', url)
-                        hurl = 'http://127.0.0.1:8000/api/author/fdc322cacb4e44bda1ad02acc9d5300c/inbox/'
-
-                        postSerialized = PostSerializer(posts)
-                        # print(postSerialized.data)
-                        # print(json.dumps(posts))
-                        sendPOSTrequest(hurl, postSerialized.data)
-
-        # if visibility != 'Public':
-        #     postDistributer(request, visibility, origin, posts)
-
-        if visibility == 'Friends':
-            # get authors followers list
-            followers = Followers.objects.get(auth_pk=request.user).items.all() 
-            for follower in followers:
-                # check if author is also following their (local) followers
-                if follower.host == origin: # local followers
-                    if request.user in Followers.objects.get(auth_pk=follower).items.all():
                         inbox = Inbox.objects.get(auth_pk=follower)
                         inbox.iPosts.add(posts)
                         print("sent to LOCAL:", follower.email)
+                # # else: # send to remote friends
+                # #     # print("sent to REMOTE:", follower.email)
+                # #     furl = follower.url + "/inbox/"
+                # #     print('Foreign url:', furl)
+                # #     # url = settings.SERVER_URL + "/"
+                # #     # print('Modified url:', url)
+                #     hurl = 'http://127.0.0.1:8000/api/author/fdc322cacb4e44bda1ad02acc9d5300c/inbox/'
+
+                #     postSerialized = PostSerializer(posts)
+                #     # print(postSerialized.data)
+                #     # print(json.dumps(posts))
+                #     sendPOSTrequest(hurl, postSerialized.data)
+
+        # # if visibility != 'Public':
+        # #     postDistributer(request, visibility, origin, posts)
+
+        # if visibility == 'Friends':
+        #     # get authors followers list
+        #     followers = Followers.objects.get(auth_pk=request.user).items.all() 
+        #     for follower in followers:
+        #         # check if author is also following their (local) followers
+        #         if follower.host == origin: # local followers
+        #             if request.user in Followers.objects.get(auth_pk=follower).items.all():
+        #                 inbox = Inbox.objects.get(auth_pk=follower)
+        #                 inbox.iPosts.add(posts)
+        #                 print("sent to LOCAL:", follower.email)
             
 
         return redirect(ManagePostsList)
