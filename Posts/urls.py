@@ -12,13 +12,16 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls.conf import path
+from django.urls.conf import path, re_path
 from Posts.views import *
 from Posts.commentView import *
 
 urlpatterns = [
     # All the NON-API Views
     path('', UserStreamView, name='user-stream-view'),
+    path('connection/', ForeignPostsFrontend, name='foreign-posts-view'),
+    path('connection/addComment/', ForeignPostsComment, name='foreign-posts-comment'),
+    path('local/', LocalPosts, name='local-posts-view'),
     path('newLike/', newLike, name='add-like'),
     path('manage/', ManagePostsList, name='posts-manage'),
     path('add_post/', newPost, name='add_post'),

@@ -1,0 +1,96 @@
+{% extends '../base.html' %}
+
+{% block title %}
+    Posts
+{% endblock %}
+
+{% block content %}
+    {% if local %}
+        <h1>Welcome to Local Posts </h1>
+    {% else %}
+        <h1>Welcome to Foreign Posts </h1>
+    {% endif %}
+
+    {% for post in Posts %}
+        {% comment %} {% for post in i.items %} {% endcomment %}
+            <div class = "post card">
+                <a href={{post.id}} style="color: black;">
+                    <h2 class = "postTitle">{{ post.title }}</h3>
+                </a>
+                <hr/>
+                <p class = "postDesc">{{ post.description }}</p>
+                <div class = "postContent">
+                    {% if post.isImage %}
+                        <img src="data:{{ post.contentType }};base64, {{ post.image }}"/>
+                    {% elif post.contentType == "text/markdown"%}
+                        {% load markdownify %}
+                        <p>{{ post.content |markdownify }}</p>
+                    {% else %}
+                        <p> {{post.content}}</p>
+                    {% endif %}
+                    
+                    <!-- Like Button -->
+                    <!-- TODO: Better CSS for Like Button -->
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+                    
+                    <form action='newLike/' method= 'POST' enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" id="context" name="context" value="stream">
+                        <input type="hidden" id="postID" name="postID" value={{post.id}}>
+                        {% if post.userLike %}
+                            <input type = "submit" value = "{{ post.numLikes }} 👍" style="color: white; background-color:blue" class = "postLikeButton-active" >
+                        {% else %}
+                            <input type = "submit" value = "{{ post.numLikes }} 👍"  class = "postLikeButton-deactive">
+                        {% endif %}
+                    </form>
+                    
+                    
+                </div>
+                <div class = "postComments">
+                    
+                    <form action="{% url 'foreign-posts-comment' %}" method= 'GET' enctype="multipart/form-data">
+                        Comments:</p>
+                        {% for comment in post.allcomments%}
+                            <div class="card-body">
+                                {% if comment.contentType == "text/plain" %}
+                                    <p>{{ comment.comment }}</p>
+                                {% elif comment.contentType == "text/markdown" %}
+                                    {% load markdownify %}
+                                <p class="background-color: grey;">{{ comment.comment |markdownify }}</p>
+                                {% elif comment.contentType == "application/base64" %}
+                                    <p>Some base64 file would be displayed here ...</p>
+                                {% elif comment.isImage %}
+                                    <img src="data:{{ comment.contentType }};base64, {{ comment.image }}"/>
+                                {% elif comment.contentType == "HTML" %}
+                                    <p>HTML would be displayed here ...</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        <br><input type="submit" value="ADD COMMENT">
+                    </form>
+                </div>
+            </div>
+        {% comment %} {% endfor %} {% endcomment %}
+    {% endfor %}
+    <nav aria-label="...">
+        <ul class="pagination justify-content-center">
+            {% if posts.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ posts.previous_page_number }}">Previous</a></li>
+            {% else %}
+            <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1">Previous</a></li>
+            {% endif %}
+            {% for page in posts.paginator.page_range %}
+            {% if page == posts.number %}
+            <li class="page-item active"><span class="page-link">{{ posts.number }}<span class="sr-only">(current)</span></span></li>
+            {% else %}
+            <li class="page-item"><a class="page-link" href="?page={{ page }}">{{ page }}</a></li>
+            {% endif %}
+            {% endfor %}
+            {% if posts.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ posts.next_page_number }}">Next</a></li>
+            {% else %}
+            <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endblock %}

@@ -6,6 +6,7 @@ from Posts.commentModel import Comments
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
+from django.shortcuts import HttpResponse, render
 from requests import get
 from .serializers import CommentSerializer, PostSerializer
 from Author.serializers import LikeSerializer
@@ -353,3 +354,4 @@ def connection(request, auth_id=None):
         data.append(team17.json())
 
     return Response({'connection': data})
+
