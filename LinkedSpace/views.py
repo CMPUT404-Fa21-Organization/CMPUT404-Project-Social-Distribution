@@ -39,13 +39,30 @@ def profileEdit(request):
         form = EditAuthorForm(request.POST, instance=request.user)
 
         if form.is_valid():
+            github_username = form.cleaned_data['github']
+            displayName = form.cleaned_data['displayName']
+            email = form.cleaned_data['email']
+
+            request.user.github = "http://github.com/" + github_username
+            request.user.displayName = displayName
+            request.user.email = email
+
             form.save()
             messages.success(request, 'Profile updated successfully.', extra_tags='success')
             return HttpResponseRedirect('/profile/')
+        else:
+            messages.success(request, 'Profile could not be updated.', extra_tags='failure')
+            return HttpResponseRedirect('/profile/')
     else:
         form = EditAuthorForm(instance=request.user)
+        git_url = request.user.github
+        displayName = request.user.displayName
+        email = request.user.email
+
+        gituser = git_url.replace("http://github.com/", "")
+        context = {'form':form, 'github_username':gituser, 'displayName':displayName, 'email':email}
         
-        return HttpResponse(render(request, template_name, {'form':form}),status=200)
+        return HttpResponse(render(request, template_name, context),status=200)
     
     return HttpResponse(render(request, 'LinkedSpace/profile.html'),status=200)
 
