@@ -2,6 +2,7 @@ from django.contrib import auth
 from django.db import connection
 from django.http.response import HttpResponseRedirect, HttpResponseRedirectBase
 from django.shortcuts import render
+from CMPUT404Project import settings
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -95,6 +96,7 @@ def MyInboxView(request):
     
     # If Content is image
     for post in posts:
+        post["localid"] = settings.SERVER_URL + "/author/" + str(request.user.pk) + "/posts/" + post["id"].split("/")[-1]
         post["isImage"] = False
         if(post["contentType"] == "image/png" or post["contentType"] == "image/jpeg"):
             post["isImage"] = True

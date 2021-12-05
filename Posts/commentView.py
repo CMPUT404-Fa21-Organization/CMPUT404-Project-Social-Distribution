@@ -173,12 +173,12 @@ def AllCommentsList(request, post_pk, auth_pk = None):
 
     comments = CommentSerializer(commentsObj, many = True)
     postObj = Post.objects.get(pk = post_pk)
-    post = PostSerializer(postObj)
+    post = PostSerializer(postObj).data
 
-    if "image" in post.data["contentType"]:
-        post.data["isImage"] = True
-        imgdata = post.data["content"][2:-1]
-        post.data["image"] = imgdata
+    if "image" in post["contentType"]:
+        post["isImage"] = True
+        imgdata = post["content"][2:-1]
+        post["image"] = imgdata
 
     # If Content is image
     for comment in comments.data:
@@ -188,9 +188,10 @@ def AllCommentsList(request, post_pk, auth_pk = None):
             imgdata = comment["content"][2:-1]
             comment["image"] = imgdata   
     
+    post = processLikes(request, [post])[0]
     comments = processLikes(request, comments.data)
 
     paginator = Paginator(comments, page_size)
     page_obj = paginator.get_page(page_number)
     print("redirected to comment list html")
-    return render(request, "LinkedSpace/Posts/all_comment_list.html", {'comments': page_obj, 'post': post.data})
+    return render(request, "LinkedSpace/Posts/all_comment_list.html", {'comments': page_obj, 'post': post})
