@@ -142,8 +142,8 @@ def sendPOSTrequest(url, data):
     url = url.replace("ss:", "s:")
     url = url.replace(":/", "://")
 
-    print("data: ", data)
-    print("url", url)
+    # print("data: ", data)
+    # print("url", url)
 
     x = requests.post(url, data = json.dumps(data), auth = auth, headers=headers)
 
@@ -155,7 +155,7 @@ def sendPOSTrequest(url, data):
             url = url.replace(".com/", ".com/service/")
             x = requests.post(url, data = json.dumps(data), auth = auth, headers=headers)
     
-    print("response", x.json())
+    # print("response",x.json())
 
     return x
 
@@ -296,11 +296,11 @@ def processLikes(request, posts):
                 if code - 300 < 0:
                     if "items" in likes:
                         for like in likes["items"]:
-                            if post["id"] == like["object"]:
+                            if post["id"] == like["object"] or post["origin"] == like["object"]:
                                 post["userLike"] = True
                     else:
                         for like in likes:
-                            if post["id"] == like["object"]:
+                            if post["id"] == like["object"] or post["origin"] == like["object"]:
                                 post["userLike"] = True
                 
 
