@@ -43,6 +43,9 @@ def PostDetailView(request, post_pk, auth_pk = None):
             post["isImage"] = True
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
+        
+        post["categories"] = ' '.join(post["categories"]) # to format categories list for displaying correctly
+
 
         # Like Stuff
         # Calculte Number of Likes for Posts
