@@ -142,6 +142,9 @@ def sendPOSTrequest(url, data):
     url = url.replace("ss:", "s:")
     url = url.replace(":/", "://")
 
+    print("data: ", data)
+    print("url", url)
+
     x = requests.post(url, data = json.dumps(data), auth = auth, headers=headers)
 
     if x.status_code - 300 >= 0:
@@ -152,7 +155,7 @@ def sendPOSTrequest(url, data):
             url = url.replace(".com/", ".com/service/")
             x = requests.post(url, data = json.dumps(data), auth = auth, headers=headers)
     
-    print(x.json())
+    print("response", x.json())
 
     return x
 
