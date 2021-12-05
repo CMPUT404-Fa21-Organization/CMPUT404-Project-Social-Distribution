@@ -139,6 +139,7 @@ def sendPOSTrequest(url, data):
     url = url +"/"
     url = url.replace("//", "/")
     url = url.replace("http", "https")
+    url = url.replace("ss:", "s:")
     url = url.replace(":/", "://")
 
     x = requests.post(url, data = json.dumps(data), auth = auth, headers=headers)
