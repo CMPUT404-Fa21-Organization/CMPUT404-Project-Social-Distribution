@@ -298,7 +298,7 @@ def updateForeignAuthors():
             new_author.validated_data["id"] = fa["id"]
             new_author.validated_data["url"] = fa["url"]
             new_author.validated_data["email"] = fa["id"]
-            new_author.validated_data["auth_pk"] = fa["id"]
+            new_author.validated_data["auth_pk"] = fa["id"].split("/")[-1]
             
             new_author.save()
 
