@@ -69,15 +69,6 @@ def acceptFollow(request):
         if actor not in followersObj.items.all() and actor != object:
             followersObj.items.add(actor)
 
-        # try:
-        #     followersAct = Followers.objects.get(pk = actor.pk)
-
-        #     if object not in followersAct.items.all() and actor != object:
-        #         followersAct.items.add(object)
-        # except Followers.DoesNotExist:
-        #     # Send PUT request to foreign followers
-        #     pass
-
         return HttpResponseRedirect(reverse('author-inbox-frontend'))
 
     else:
@@ -251,7 +242,7 @@ def getInboxData(serializer):
             f["object"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=f["object"]), fields=('type', 'id', 'displayName', 'host', 'url', 'github',)))[0]['fields']
 
         for item in iPosts:
-            code, _ = sendGETrequest(item["url"])
+            code, _ = sendGETrequest(item["id"])
 
             # Check if foreign post is deleted
             if code - 300 < 0:
