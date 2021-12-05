@@ -264,7 +264,7 @@ def processLikes(request, posts):
             post["userLike"] = False
             post["numLikes"] = 0
             for like in likes_local.data:
-                if post["id"] == like["object"] or post["origin"] == like["object"]:
+                if post["id"] == like["object"]:
                     post["numLikes"] += 1
 
         else:
@@ -287,7 +287,7 @@ def processLikes(request, posts):
         for post in posts:
             if "linkedspace" in post["id"]:
                 for like in userLikes.data:
-                    if post["id"] == like["object"] or post["origin"] == like["object"]:
+                    if post["id"] == like["object"]:
                         post["userLike"] = True
             else:
                 
@@ -296,11 +296,11 @@ def processLikes(request, posts):
                 if code - 300 < 0:
                     if "items" in likes:
                         for like in likes["items"]:
-                            if post["id"] == like["object"] or post["origin"] == like["object"]:
+                            if post["id"] == like["object"]:
                                 post["userLike"] = True
                     else:
                         for like in likes:
-                            if post["id"] == like["object"] or post["origin"] == like["object"]:
+                            if post["id"] == like["object"]:
                                 post["userLike"] = True
                 
 
