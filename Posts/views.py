@@ -43,6 +43,9 @@ def PostDetailView(request, post_pk, auth_pk = None):
             post["isImage"] = True
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
+        
+        post["categories"] = ' '.join(post["categories"]) # to format categories list for displaying correctly
+
 
         # Like Stuff
         # Calculte Number of Likes for Posts
@@ -303,7 +306,7 @@ def UserStreamView(request, auth_pk):
             post["isImage"] = True
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
-
+        post["categories"] = ' '.join(post["categories"]) # to format categories list for displaying correctly
     
     posts = processLikes(request, posts.data)
 
@@ -367,11 +370,16 @@ def newPost(request, auth_pk=None):
 
 def ManagePostsList(request, auth_pk=None):
     posts = list(Post.objects.filter(author_id=request.user).order_by('-published'))
-
-    for i in range(len(posts)):
-        post = posts[i]
-        post.categories = ' '.join(post.categories)
-
+    
+    # If Content is image
+    for post in posts:
+        post.isImage = False
+        if(post.contentType == "image/png" or post.contentType == "image/jpeg"):
+            post.isImage = True
+            imgdata = post.content[2:-1]
+            post.image = imgdata
+        post.categories = ' '.join(post.categories) # to format categories list for displaying correctly
+    
     page_number = request.GET.get('page')
     if 'size' in request.GET:
         page_size = request.GET.get('size')

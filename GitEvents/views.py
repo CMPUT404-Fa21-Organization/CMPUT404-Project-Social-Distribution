@@ -107,13 +107,13 @@ def gitPost(request, event_id):
                 break
 
         title = "Shared GitHub Activity: " + event['type']
-        descirption = event['created_at']
-        categories = 'web'
-        visibility = 'PUBLIC'
+        descirption = "GitHub event from " + event['created_at']
+        categories = ['GitHub']
+        visibility = 'Public'
         unlisted = False
         contentType = 'text/plain'
-        print(type(event['actor']['display_login']))
-        print(event["repo"], type(event["repo"]))
+        # print(type(event['actor']['display_login']))
+        # print(event["repo"], type(event["repo"]))
 
         content = event['actor']['display_login'] + " made changes to " + event["repo"]['name']
         source = settings.SERVER_URL + "/"
