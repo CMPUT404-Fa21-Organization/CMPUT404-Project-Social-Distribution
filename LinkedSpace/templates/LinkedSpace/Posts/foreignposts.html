@@ -49,9 +49,24 @@
                 <div class = "postComments">
                     
                     <form action="{% url 'foreign-posts-comment' %}" method= 'GET' enctype="multipart/form-data">
-                        Comments:
-                        <textarea id="text" type="text" name="text"></textarea><input type="submit" value="ADD COMMENT">
-                        <br><a href={{ post.comments }}>{{ post.comments }}</a>
+                        Comments:</p>
+                        {% for comment in post.allcomments%}
+                            <div class="card-body">
+                                {% if comment.contentType == "text/plain" %}
+                                    <p>{{ comment.comment }}</p>
+                                {% elif comment.contentType == "text/markdown" %}
+                                    {% load markdownify %}
+                                <p class="background-color: grey;">{{ comment.comment |markdownify }}</p>
+                                {% elif comment.contentType == "application/base64" %}
+                                    <p>Some base64 file would be displayed here ...</p>
+                                {% elif comment.isImage %}
+                                    <img src="data:{{ comment.contentType }};base64, {{ comment.image }}"/>
+                                {% elif comment.contentType == "HTML" %}
+                                    <p>HTML would be displayed here ...</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        <br><input type="submit" value="ADD COMMENT">
                     </form>
                 </div>
             </div>

@@ -396,32 +396,61 @@ def ForeignPostsFrontend(request):
     if request.method == 'GET':
         data = []
         postsList = GetForeignPosts()
+        
+        # team 3
         for i in postsList[0]['items']:
+            # if post is image
             if 'image' in i['contentType']:
-            # if(i["contentType"] == "image/png" or i["contentType"] == "image/jpeg"):
                 i["isImage"] = True
                 index = i['content'].index('base64,')
                 imgdata = i["content"][index+7:]
                 i["image"] = imgdata
+            # change source and origin
+            i['source'] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
+            # get comments 
+            comment = requests.get(i['comments'], auth=('socialdistribution_t03','c404t03'))
+            try:
+                i["allcomments"] = comment.json()['comments']
+            except:
+                print(comment.status_code)
+            
+            # append into data
             data.append(i)
+            
+        # team 15
         for i in postsList[1]:
             if 'image' in i['contentType']:
-            # if(i["contentType"] == "image/png" or i["contentType"] == "image/jpeg"):
                 i["isImage"] = True
                 imgdata = i["content"][2:-1]
                 i["image"] = imgdata
+            # change source and origin
+            i['source'] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
+            # get comments 
+            cut = (len('https://unhindled.herokuapp.com'))
+            first = i['comments'][0:cut] + '/service/'
+            second = i['comments'][cut+1:]
+            url = first + second
+            comment = requests.get(url, auth=('connectionsuperuser','404connection'))
+            #if comment.json()['comments']
+            try:
+                i["allcomments"] = comment.json()['comments']
+            except:
+                print(comment.status_code)
+                
+            # append to data
             data.append(i)
+            
+        # team 17
+        # need to implement comment once they have correct comment url
         for i in postsList[2]['items']:
             if 'image' in i['contentType']:
-            # if(i["contentType"] == "image/png" or i["contentType"] == "image/jpeg"):
                 i["isImage"] = True
                 index = i['content'].index('base64,')
                 imgdata = i["content"][index+7:]
                 i["image"] = imgdata
+            # change source and origin
+            i['source'] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
             data.append(i)
-        # for post in postsList:
-        #     print(post, "\n\n")
-            #if(post["contentType"] == "image/png" or post["contentType"] == "image/jpeg"):
 
         page_number = request.GET.get('page')
         if 'size' in request.GET:
