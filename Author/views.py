@@ -2,6 +2,7 @@ from django.contrib import auth
 from django.db import connection
 from django.http.response import HttpResponseRedirect, HttpResponseRedirectBase
 from django.shortcuts import render
+from CMPUT404Project import settings
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -95,6 +96,7 @@ def MyInboxView(request):
     
     # If Content is image
     for post in posts:
+        post["localid"] = settings.SERVER_URL + "/author/" + str(request.user.pk) + "/posts/" + post["id"].split("/")[-1]
         post["isImage"] = False
         if(post["contentType"] == "image/png" or post["contentType"] == "image/jpeg"):
             post["isImage"] = True
@@ -298,7 +300,7 @@ def updateForeignAuthors():
             new_author.validated_data["id"] = fa["id"]
             new_author.validated_data["url"] = fa["url"]
             new_author.validated_data["email"] = fa["id"]
-            new_author.validated_data["auth_pk"] = fa["id"]
+            new_author.validated_data["auth_pk"] = fa["id"].split("/")[-1]
             
             new_author.save()
 
@@ -529,15 +531,15 @@ def GetForeignPosts():
 def AuthorsConnection(request, auth_id=None):
     data = []
 
-    team3 = requests.get('https://social-dis.herokuapp.com/authors', auth=('socialdistribution_t03','c404t03'))
+    team3 = requests.get('https://social-dis.herokuapp.com/authors?size=1000', auth=('socialdistribution_t03','c404t03'))
     if team3.status_code == 200:
         data.append(team3.json())
 
-    team15 = requests.get('https://unhindled.herokuapp.com/service/authors/', auth=('connectionsuperuser','404connection'))
+    team15 = requests.get('https://unhindled.herokuapp.com/service/authors/?size=1000', auth=('connectionsuperuser','404connection'))
     if team15.status_code == 200:
         data.append(team15.json())
 
-    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/author/', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
+    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/author/?size=1000', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
     if team17.status_code == 200:
         data.append(team17.json())
 

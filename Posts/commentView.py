@@ -1,6 +1,7 @@
 from django.core import serializers
 from django.utils import timezone
 from django.shortcuts import redirect, render
+from Posts.views import processLikes
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from .serializers import CommentSerializer, PostSerializer
@@ -98,6 +99,7 @@ def AllCommentsList(request, post_pk, auth_pk = None):
     post = Post.objects.filter(pk = post_pk)
     posts = PostSerializer(post, many=True)
 
+
     # If Content is image
     for post in posts.data:
         post["isImage"] = False
@@ -115,28 +117,11 @@ def AllCommentsList(request, post_pk, auth_pk = None):
         if(comment["contentType"] == "image/png" or comment["contentType"] == "image/jpeg"):
             comment["isImage"] = True
             imgdata = comment["content"][2:-1]
-            comment["image"] = imgdata
-
-    # Like Stuff
-    # Calculte Number of Likes for comments
-    likeObjects = Like.objects.all()  
-    likes = LikeSerializer(likeObjects,  many=True)   
-    for comment in comments.data:
-        comment["userLike"] = False
-        comment["numLikes"] = 0
-        for like in likes.data:
-            if comment["id"] == like["object"]:
-                comment["numLikes"] += 1
+            comment["image"] = imgdata   
     
-    # Check which comments the user has already liked
-    if(request.user.is_authenticated):
-        likeObjects = Like.objects.filter(auth_pk = request.user)  
-        userLikes = LikeSerializer(likeObjects,  many=True) 
-        for comment in comments.data:
-            for like in userLikes.data:
-                if comment["id"] == like["object"]:
-                    comment["userLike"] = True
+    post = processLikes(request, [post])[0]
+    comments = processLikes(request, comments.data)
 
-    paginator = Paginator(comments.data, page_size)
+    paginator = Paginator(comments, page_size)
     page_obj = paginator.get_page(page_number)
     return render(request, "LinkedSpace/Posts/all_comment_list.html", {'comments': page_obj, 'post': post_data})

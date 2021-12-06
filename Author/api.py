@@ -1,12 +1,60 @@
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 import requests
 from rest_framework.response import Response
-from .models import Author
+from .models import Author, Followers
 from rest_framework import status
-from .serializers import AuthorSerializer
+from .serializers import AuthorSerializer, FollowersSerializer
 from permissions import CustomAuthentication, AccessPermission
 from django.core.paginator import Paginator
 
+
+
+################ FOLLOWERS API ##############################
+
+@api_view(['GET',])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
+def APIGetFollowers(request, auth_pk):
+    followersObj = Followers.objects.get(auth_pk = auth_pk)
+    authors = FollowersSerializer(followersObj)
+
+    return Response(authors.data, status=status.HTTP_200_OK)
+
+   
+
+@api_view(['GET','PUT','DELETE'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
+def ForeignAuthorAPI(request, auth_pk, fr_auth_pk):
+    followersObj = Followers.objects.get(auth_pk = auth_pk)
+
+    if request.method == "GET":
+        detail = False
+
+        foreign_author = Author.objects.get(pk = fr_auth_pk)
+
+        if foreign_author in followersObj.items.all():
+            detail = True
+            
+        response_dict = {
+            "detail": detail
+        }
+
+        return Response(response_dict)
+        
+    elif request.method == "PUT":
+        foreign_author = Author.objects.get(pk = fr_auth_pk)
+        followersObj.items.add(foreign_author)
+
+    elif request.method == "DELETE":
+        foreign_author = Author.objects.get(pk = fr_auth_pk)
+        followersObj.items.remove(foreign_author)
+
+    
+    authors = FollowersSerializer(followersObj)
+    return Response(authors.data, status=status.HTTP_200_OK)
+
+###############################################################
 
 @api_view(['GET',])
 @authentication_classes([CustomAuthentication])
