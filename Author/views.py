@@ -83,6 +83,7 @@ def MyInboxView(request):
     inbox =  Inbox.objects.get(pk=author.pk)
     serializer = InboxSerializer(inbox, many=False)
     data = getInboxData(serializer)
+
     items = data["items"]
 
     posts = [i for i in items if i["type"] == "post"]
@@ -247,7 +248,7 @@ def getInboxData(serializer):
             code, _ = sendGETrequest(item["id"])
 
             # Check if foreign post is deleted
-            if code - 300 < 0:
+            if code - 300 < 0 or "friend" in item["visibility"].lower():
                 data["items"].append(item)
             else:
                 # delete foreign post from db
@@ -294,6 +295,8 @@ def updateForeignAuthors():
 
         newIDs.append(fa["id"])
         
+        if "github" not in fa or not fa["github"]:
+            fa["github"] = "https://github.com/"
         new_author = AuthorSerializer(data = fa)
 
         if new_author.is_valid():
@@ -352,10 +355,14 @@ def AuthorInboxView(request, auth_pk):
 
     if request.method == "POST":
         if(request.data["type"].lower() == "post"):
+            if "visibility" not in request.data:
+                request.data["visibility"] = "Public"
             if "image" in request.data["contentType"]:
                 request.data["contentType"] = "image/png"
                 request.data["content"] =  "b'" + request.data["content"].split("base64,")[-1] + "'"
-
+            
+            if "categories" not in request.data or isinstance(request.data["categories"], str):
+                request.data["categories"] = ["Web"]
             request.data["source"] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
             serializerPost = PostSerializer(data=request.data)
             
@@ -382,7 +389,7 @@ def AuthorInboxView(request, auth_pk):
                     postSet = Post.objects.filter(id= request.data["id"])
                         
                     if(postSet.count() == 0):
-                        serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.data["author"]["id"]), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
+                        serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id__icontains=request.data["author"]["id"]), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
                         serializerPost.validated_data["author_id"] = Author.objects.get(id=request.data["author"]["id"])
                         
                         if "comments" in request.data:
