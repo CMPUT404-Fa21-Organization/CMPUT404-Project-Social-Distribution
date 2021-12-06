@@ -380,6 +380,7 @@ def newPost(request, auth_pk=None):
                         inbox = Inbox.objects.get(auth_pk=follower)
                         post = Post.objects.get(pk = uid)
                         inbox.iPosts.add(post)
+                        print(inbox.iPosts.all())
                         print("sent to LOCAL:", follower.email)
                 # # else: # send to remote friends
                 # #     # print("sent to REMOTE:", follower.email)
