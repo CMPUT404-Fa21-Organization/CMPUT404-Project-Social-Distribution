@@ -631,10 +631,10 @@ def ForeignPostsFrontend(request):
 
             data.append(i)
 
-        posts = PostSerializer(data, many = True)
+        # posts = PostSerializer(data, many = True)
 
-        if posts.is_valid():
-            posts.save()
+        # if posts.is_valid():
+        #     posts.save()
             
         page_number = request.GET.get('page')
         if 'size' in request.GET:
