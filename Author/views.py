@@ -2,6 +2,7 @@ from django.contrib import auth
 from django.db import connection
 from django.http.response import HttpResponseRedirect, HttpResponseRedirectBase
 from django.shortcuts import render
+from CMPUT404Project import settings
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -82,6 +83,7 @@ def MyInboxView(request):
     inbox =  Inbox.objects.get(pk=author.pk)
     serializer = InboxSerializer(inbox, many=False)
     data = getInboxData(serializer)
+
     items = data["items"]
 
     posts = [i for i in items if i["type"] == "post"]
@@ -95,6 +97,7 @@ def MyInboxView(request):
     
     # If Content is image
     for post in posts:
+        post["localid"] = settings.SERVER_URL + "/author/" + str(request.user.pk) + "/posts/" + post["id"].split("/")[-1]
         post["isImage"] = False
         if(post["contentType"] == "image/png" or post["contentType"] == "image/jpeg"):
             post["isImage"] = True
@@ -245,7 +248,7 @@ def getInboxData(serializer):
             code, _ = sendGETrequest(item["id"])
 
             # Check if foreign post is deleted
-            if code - 300 < 0:
+            if code - 300 < 0 or "friend" in item["visibility"].lower():
                 data["items"].append(item)
             else:
                 # delete foreign post from db
@@ -292,13 +295,15 @@ def updateForeignAuthors():
 
         newIDs.append(fa["id"])
         
+        if "github" not in fa or not fa["github"]:
+            fa["github"] = "https://github.com/"
         new_author = AuthorSerializer(data = fa)
 
         if new_author.is_valid():
             new_author.validated_data["id"] = fa["id"]
             new_author.validated_data["url"] = fa["url"]
             new_author.validated_data["email"] = fa["id"]
-            new_author.validated_data["auth_pk"] = fa["id"]
+            new_author.validated_data["auth_pk"] = fa["id"].split("/")[-1]
             
             new_author.save()
 
@@ -350,10 +355,14 @@ def AuthorInboxView(request, auth_pk):
 
     if request.method == "POST":
         if(request.data["type"].lower() == "post"):
+            if "visibility" not in request.data:
+                request.data["visibility"] = "Public"
             if "image" in request.data["contentType"]:
                 request.data["contentType"] = "image/png"
                 request.data["content"] =  "b'" + request.data["content"].split("base64,")[-1] + "'"
-
+            
+            if "categories" not in request.data or isinstance(request.data["categories"], str):
+                request.data["categories"] = ["Web"]
             request.data["source"] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
             serializerPost = PostSerializer(data=request.data)
             
@@ -380,7 +389,7 @@ def AuthorInboxView(request, auth_pk):
                     postSet = Post.objects.filter(id= request.data["id"])
                         
                     if(postSet.count() == 0):
-                        serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.data["author"]["id"]), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
+                        serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id__icontains=request.data["author"]["id"]), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
                         serializerPost.validated_data["author_id"] = Author.objects.get(id=request.data["author"]["id"])
                         
                         if "comments" in request.data:
@@ -493,15 +502,15 @@ def AuthorInboxViewFrontend(request, auth_pk):
 def GetForeignAuthors():
     data = []
 
-    team3 = requests.get('https://social-dis.herokuapp.com/authors', auth=('socialdistribution_t03','c404t03'))
+    team3 = requests.get('https://social-dis.herokuapp.com/authors?size=1000', auth=('socialdistribution_t03','c404t03'))
     if team3.status_code == 200:
         data.append(team3.json())
 
-    team15 = requests.get('https://unhindled.herokuapp.com/service/authors/', auth=('connectionsuperuser','404connection'))
+    team15 = requests.get('https://unhindled.herokuapp.com/service/authors/?size=1000', auth=('connectionsuperuser','404connection'))
     if team15.status_code == 200:
         data.append(team15.json())
 
-    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/author/', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
+    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/author/?size=1000', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
     if team17.status_code == 200:
         data.append(team17.json())
 
@@ -511,15 +520,15 @@ def GetForeignAuthors():
 def GetForeignPosts():
     data = []
 
-    team3 = requests.get('https://social-dis.herokuapp.com/posts', auth=('socialdistribution_t03','c404t03'))
+    team3 = requests.get('https://social-dis.herokuapp.com/posts?size=1000', auth=('socialdistribution_t03','c404t03'))
     if team3.status_code == 200:
         data.append(team3.json())
 
-    team15 = requests.get('https://unhindled.herokuapp.com/service/allposts/', auth=('connectionsuperuser','404connection'))
+    team15 = requests.get('https://unhindled.herokuapp.com/service/allposts/?size=1000', auth=('connectionsuperuser','404connection'))
     if team15.status_code == 200:
         data.append(team15.json())
 
-    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
+    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/?size=1000', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
     if team17.status_code == 200:
         data.append(team17.json())
 
@@ -529,15 +538,15 @@ def GetForeignPosts():
 def AuthorsConnection(request, auth_id=None):
     data = []
 
-    team3 = requests.get('https://social-dis.herokuapp.com/authors', auth=('socialdistribution_t03','c404t03'))
+    team3 = requests.get('https://social-dis.herokuapp.com/authors?size=1000', auth=('socialdistribution_t03','c404t03'))
     if team3.status_code == 200:
         data.append(team3.json())
 
-    team15 = requests.get('https://unhindled.herokuapp.com/service/authors/', auth=('connectionsuperuser','404connection'))
+    team15 = requests.get('https://unhindled.herokuapp.com/service/authors/?size=1000', auth=('connectionsuperuser','404connection'))
     if team15.status_code == 200:
         data.append(team15.json())
 
-    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/author/', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
+    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/author/?size=1000', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
     if team17.status_code == 200:
         data.append(team17.json())
 

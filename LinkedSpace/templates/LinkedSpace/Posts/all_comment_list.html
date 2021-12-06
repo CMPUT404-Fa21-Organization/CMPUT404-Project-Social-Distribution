@@ -9,13 +9,15 @@
 {% block content %}
     <h1>All Comments</h1>
 
-    <div class = "post card">
-        <h2 class = "postTitle">{{ post.title }}</h2>
+    <div class = class="card" style="width: 50rem;">
+        <div class="card-header text-black" style="background-color: #3372964f;">
+            <h4 class="card-title"><a href="{{ post.id }}" style="color: black;">{{ post.title }}</a><span style="font-size:medium"> by <a href="{{post.author.url}}">{{ post.author.displayName }}</a></span></h4>
+        </div>
         <hr/>
-        <p class = "postDesc">{{ post.description }}</p>
+        <p class = "postDesc">Description: {{ post.description }}</p>
         <div class = "postContent">
             {% if post.isImage %}
-                <img src="data:{{ post.contentType }};base64, {{ post.image }}"/>
+                <img src="data:{{ post.contentType }};base64, {{ post.image }}" class="img-fluid justify-content-center"/>
             {% elif post.contentType == "text/markdown"%}
                 {% load markdownify %}
                 <p>{{ post.content |markdownify }}</p>
@@ -44,7 +46,7 @@
 
     {% for comment in comments %}
       <div class="container">
-        <div class="row justify-content-center">
+        <div class="row justify-content-left">
           <div class="mt-3">
               <div class="card" style="width: 50rem;">
                 <div class="card-header text-black" style="background-color: #a2afe23b;">
@@ -58,11 +60,14 @@
                     {% elif comment.contentType == "application/base64" %}
                         <p>Some base64 file would be displayed here ...</p>
                     {% elif comment.isImage %}
-                        <img src="data:{{ comment.contentType }};base64, {{ comment.image }}"/>
+                        <img src="data:{{ comment.contentType }};base64, {{ comment.image }}" class="img-fluid justify-content-center"/>
                     {% elif comment.contentType == "HTML" %}
                         <p>HTML would be displayed here ...</p>
                     {% endif %}
+                    <p>by: {{comment.author.displayName }}</p>
+                    <p class="text-muted small float-right">Published: {{ comment.published }}</p>
                 </div>
+                
                 <!-- Like Button -->
                 <!-- TODO: Better CSS for Like Button -->
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -84,7 +89,7 @@
     {% endfor %}
     <br>
     <div class="row justify-content-center">
-        <a class="btn btn-primary" href="/posts/{{ post.post_pk }}/add_comment/" role="button">Add Comment</a>
+        <a class="btn btn-primary" href="/posts/{{ post.post_pk_str}}/add_comment/" role="button">Add Comment</a>
     </div>
     <br>
     <nav aria-label="...">
