@@ -295,7 +295,7 @@ def updateForeignAuthors():
 
         newIDs.append(fa["id"])
         
-        if not fa["github"]:
+        if "github" not in fa or not fa["github"]:
             fa["github"] = "https://github.com/"
         new_author = AuthorSerializer(data = fa)
 

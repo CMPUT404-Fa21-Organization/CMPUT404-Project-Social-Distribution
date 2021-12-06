@@ -4,6 +4,7 @@ from django.http.response import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
 from django.shortcuts import redirect, render
+from requests.models import MissingSchema
 
 from Posts.commentModel import Comments
 from .serializers import PostSerializer
@@ -234,6 +235,10 @@ def newLike(request, auth_pk = None, post_pk = None):
             return HttpResponseRedirect(reverse('comment-list', kwargs={ 'post_pk': post_pk }))
         elif(request.POST["context"] == "post-detail"):
             return HttpResponseRedirect(reverse('post-detail-view', kwargs={ 'post_pk': post_pk }))
+        elif(request.POST["context"] == "post-local"):
+            return HttpResponseRedirect(reverse('local-posts-view'))
+        elif(request.POST["context"] == "post-foreign"):
+            return HttpResponseRedirect(reverse('foreign-posts-view'))
         else:
             return HttpResponseRedirect(reverse('author-inbox-frontend'))
 
@@ -260,13 +265,16 @@ def processLikes(request, posts):
             post["userLike"] = False
             post["numLikes"] = 0
 
-            code, likes = sendGETrequest(post["id"] + "/likes/")
+            try:
+                code, likes = sendGETrequest(post["id"] + "/likes/")
 
-            if code - 300 < 0:
-                if("items" in likes):
-                    post["numLikes"] = len(likes["items"])
-                else:
-                    post["numLikes"] = len(likes)
+                if code - 300 < 0:
+                    if("items" in likes):
+                        post["numLikes"] = len(likes["items"])
+                    else:
+                        post["numLikes"] = len(likes)
+            except MissingSchema:
+                pass
     
     # Check which posts the user has already liked
     if(request.user.is_authenticated):
@@ -278,18 +286,24 @@ def processLikes(request, posts):
                     if post["id"] == like["object"]:
                         post["userLike"] = True
             else:
-                
-                code, likes = sendGETrequest(post["id"] + "/likes/")
 
-                if code - 300 < 0:
-                    if "items" in likes:
-                        for like in likes["items"]:
-                            if post["id"] == like["object"]:
-                                post["userLike"] = True
-                    else:
-                        for like in likes:
-                            if post["id"] == like["object"]:
-                                post["userLike"] = True
+                try:
+                
+                    code, likes = sendGETrequest(post["id"] + "/likes/")
+
+                    if code - 300 < 0:
+                        if "items" in likes:
+                            for like in likes["items"]:
+                                if post["id"] == like["object"]:
+                                    post["userLike"] = True
+                        else:
+                            for like in likes:
+                                if post["id"] == like["object"]:
+                                    post["userLike"] = True
+
+                except MissingSchema:
+                    pass
+    
                 
 
     return posts
@@ -548,6 +562,10 @@ def ForeignPostsFrontend(request):
     if request.method == 'GET':
         data = []
         postsList = GetForeignPosts()
+
+        postsList[0]['items'] = processLikes(request, postsList[0]['items'])
+        postsList[1] = processLikes(request, postsList[1])
+        postsList[2]['items'] = processLikes(request, postsList[2]['items'])
         
         # team 3
         for i in postsList[0]['items']:
@@ -614,6 +632,11 @@ def ForeignPostsFrontend(request):
 
             data.append(i)
 
+        posts = PostSerializer(data, many = True)
+
+        if posts.is_valid():
+            posts.save()
+            
         page_number = request.GET.get('page')
         if 'size' in request.GET:
             page_size = request.GET.get('size')
