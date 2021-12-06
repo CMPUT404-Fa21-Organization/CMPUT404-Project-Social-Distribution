@@ -355,10 +355,14 @@ def AuthorInboxView(request, auth_pk):
 
     if request.method == "POST":
         if(request.data["type"].lower() == "post"):
+            if "visibility" not in request.data:
+                request.data["visibility"] = "Public"
             if "image" in request.data["contentType"]:
                 request.data["contentType"] = "image/png"
                 request.data["content"] =  "b'" + request.data["content"].split("base64,")[-1] + "'"
-
+            
+            if "categories" not in request.data or isinstance(request.data["categories"], str):
+                request.data["categories"] = ["Web"]
             request.data["source"] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
             serializerPost = PostSerializer(data=request.data)
             
@@ -385,7 +389,7 @@ def AuthorInboxView(request, auth_pk):
                     postSet = Post.objects.filter(id= request.data["id"])
                         
                     if(postSet.count() == 0):
-                        serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.data["author"]["id"]), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
+                        serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id__icontains=request.data["author"]["id"]), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
                         serializerPost.validated_data["author_id"] = Author.objects.get(id=request.data["author"]["id"])
                         
                         if "comments" in request.data:
