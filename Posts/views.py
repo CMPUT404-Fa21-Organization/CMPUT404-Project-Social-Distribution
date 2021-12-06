@@ -8,7 +8,7 @@ from django.shortcuts import redirect, render
 from Posts.commentModel import Comments
 from .serializers import PostSerializer
 from Author.serializers import AuthorSerializer, LikeSerializer
-from Author.models import Inbox, Like
+from Author.models import Inbox, Like, Followers
 from .models import Post, Author
 from .form import PostForm
 import json
@@ -123,6 +123,7 @@ def sendPOSTrequest(url, data):
     url = url +"/"
     url = url.replace("//", "/")
     url = url.replace("http", "https")
+    url = url.replace("httpss", "https")
     url = url.replace("ss:", "s:")
     url = url.replace(":/", "://")
 
@@ -370,6 +371,44 @@ def newPost(request, auth_pk=None):
         posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, categories=categories.split(' '),visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
         posts.save()
 
+        # print(visibility) # Public, Friends
+        if visibility == 'Friends':
+            # get authors followers list
+            followers = Followers.objects.get(auth_pk=request.user).items.all() 
+            for follower in followers:
+                if request.user in Followers.objects.get(auth_pk=follower).items.all():
+                    if follower.host == origin: # send to local friends
+                        inbox = Inbox.objects.get(auth_pk=follower)
+                        inbox.iPosts.add(posts)
+                        print("sent to LOCAL:", follower.email)
+                # # else: # send to remote friends
+                # #     # print("sent to REMOTE:", follower.email)
+                # #     furl = follower.url + "/inbox/"
+                # #     print('Foreign url:', furl)
+                # #     # url = settings.SERVER_URL + "/"
+                # #     # print('Modified url:', url)
+                #     hurl = 'http://127.0.0.1:8000/api/author/fdc322cacb4e44bda1ad02acc9d5300c/inbox/'
+
+                #     postSerialized = PostSerializer(posts)
+                #     # print(postSerialized.data)
+                #     # print(json.dumps(posts))
+                #     sendPOSTrequest(hurl, postSerialized.data)
+
+        # # if visibility != 'Public':
+        # #     postDistributer(request, visibility, origin, posts)
+
+        # if visibility == 'Friends':
+        #     # get authors followers list
+        #     followers = Followers.objects.get(auth_pk=request.user).items.all() 
+        #     for follower in followers:
+        #         # check if author is also following their (local) followers
+        #         if follower.host == origin: # local followers
+        #             if request.user in Followers.objects.get(auth_pk=follower).items.all():
+        #                 inbox = Inbox.objects.get(auth_pk=follower)
+        #                 inbox.iPosts.add(posts)
+        #                 print("sent to LOCAL:", follower.email)
+            
+
         return redirect(ManagePostsList)
     else:
         # print(form.errors)
@@ -377,6 +416,37 @@ def newPost(request, auth_pk=None):
         form = PostForm()
         context = {'form': form, 'user':request.user, 'add': True}
         return render(request, "LinkedSpace/Posts/add_post.html", context)
+
+# """
+#     Helper function to distribute posts to Inboxes corresponding
+#     to the post preferences set by the Author of the post.
+# """
+# def postDistributer(req, visibility, origin, post):
+#     """Case: Public Post --> do nothing"""
+#     """Case: Followers Post --> (?)"""
+#     """Case: Friends Post"""
+#     """Case: Private Post"""
+#     if visibility == 'Friends':
+#         # get authors followers list
+#         followers = Followers.objects.get(auth_pk=req.user).items.all() 
+#         for follower in followers:
+#             # check if author is also following their (local) followers
+#             if follower.host == origin: # local followers
+#                 if req.user in Followers.objects.get(auth_pk=follower).items.all():
+#                     inbox = Inbox.objects.get(auth_pk=follower)
+#                     inbox.iPosts.add(post)
+#                     print("sent to LOCAL:", follower.email)
+        # else: # check if author is also following their (remote) follower
+        #     # following = sendGETrequest(follower.host)
+        #     # if req.user in following: # check if author is also following their (foreign) followers
+        #     #     furl = follower.url + "/inbox/"
+        #     #     print('Foreign url:', furl)
+        #     #     # url = settings.SERVER_URL + "/"
+        #     #     # print('Modified url:', url)
+        #     #     # hurl = 'http://127.0.0.1:8000/api/author/fdc322cacb4e44bda1ad02acc9d5300c/inbox/'
+
+        #     #     postSerialized = PostSerializer(post)
+        #     #     sendPOSTrequest(furl, postSerialized.data)
 
 def ManagePostsList(request, auth_pk=None):
     posts = list(Post.objects.filter(author_id=request.user).order_by('-published'))
