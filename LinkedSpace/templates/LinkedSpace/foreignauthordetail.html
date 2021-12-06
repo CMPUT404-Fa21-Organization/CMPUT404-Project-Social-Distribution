@@ -1,0 +1,43 @@
+{% extends './base.html' %}
+
+{% block title %}
+    Profile
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="card" style="width: 50rem">
+            <div class="card-body">
+                <h2>Profile</h2>
+                <hr>
+                <h5 class="card-text">Display Name</h5>
+                <p class="card-text">{{ foreignDisplay }}</p>
+                <h5 class="card-text">GitHub</h5>
+                <p class="card-text"><a href="{{ foreigngithub }}">{{ foreigngithub }}</a></p>
+                <hr>
+                <div>
+                <form method="POST" action='follow/' style = 'display: inline'>
+                    {% csrf_token %}
+                    <input id="foreignID" type="hidden" name="foreignID" class="form-control" value="{{foreignID}" >
+                    <button type="submit" class="btn btn-primary">Follow</button>
+                </form> 
+
+                <form method="POST" action='unfriend/' style = 'display: inline; float:right;'>
+                    {% csrf_token %}
+                    <input id="frontend" type="hidden" name="frontend" class="form-control" value="yes" >
+                    <input id="type" type="hidden" name="type" class="form-control" value="follow" >
+                    <input id="actor" type="hidden" name="actor" class="form-control" value="{{ actor.id }}" >
+                    <input id="object" type="hidden" name="object" class="form-control" value="{{ object.id }}" >
+                    <button type="submit" class="btn btn-danger">Unfriend</button>
+                </form> 
+            </div>
+                
+        
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
