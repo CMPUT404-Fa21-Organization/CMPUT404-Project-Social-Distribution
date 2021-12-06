@@ -685,7 +685,7 @@ def ForeignPostsFrontend(request):
                     i["image"] = imgdata
                 # change source and add team number and id
                 i['source'] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
-                i['teamID'] = "3/" + i["id"].split("/")[-1]
+                i['teamID'] = "03" + i["id"].split("/")[-1]
                 # get comments 
                 comment = requests.get(i['comments'], auth=('socialdistribution_t03','c404t03'))
                 try:
@@ -706,7 +706,7 @@ def ForeignPostsFrontend(request):
                     i["image"] = imgdata
                 # change source and origin
                 i['source'] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
-                i['teamID'] = "15/" + i["id"].split("/")[-1]
+                i['teamID'] = "15" + i["id"].split("/")[-1]
                 # get comments 
                 url = i['comments']
                 comment = requests.get(url, auth=('connectionsuperuser','404connection'))
@@ -754,8 +754,8 @@ def ForeignPostsFrontend(request):
 
         return render(request, 'LinkedSpace/Posts/foreignposts.html', context)
 
-def ForeignPostsComment(request, team_pk, post_pk):
-    print("hi")
+def ForeignPostsComment(request, post_pk):
+    print("post_pk")
         
 def LocalPosts(request):
     # TODO Add Github API stuff here
