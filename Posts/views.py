@@ -361,6 +361,8 @@ def newPost(request, auth_pk=None):
         id = request.user.id
         author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
 
+        print(author)
+
         r_uid = uuid.uuid4().hex
         uid = re.sub('-', '', r_uid)
         id = id + '/posts/' + uid + "/"
@@ -379,7 +381,8 @@ def newPost(request, auth_pk=None):
                 if request.user in Followers.objects.get(auth_pk=follower).items.all():
                     if follower.host == origin: # send to local friends
                         inbox = Inbox.objects.get(auth_pk=follower)
-                        inbox.iPosts.add(posts)
+                        post = Post.objects.get(pk = uid)
+                        inbox.iPosts.add(post)
                         print("sent to LOCAL:", follower.email)
                 # # else: # send to remote friends
                 # #     # print("sent to REMOTE:", follower.email)
