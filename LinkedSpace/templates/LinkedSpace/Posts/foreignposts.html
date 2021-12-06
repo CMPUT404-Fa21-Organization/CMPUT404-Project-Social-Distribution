@@ -12,6 +12,7 @@
     {% for post in Posts %}
         <div class="card" style="width: 50rem;">
             <div class="card-header text-black" style="background-color: #3372964f;">
+                <button type="button" class="btn btn-secondary btn-sm float-right font-size: small" disabled><span style="font-size:smaller;">from {{ post.origin }}</span></button>
                 <h4 class="card-title"><a href="{{ post.id }}" style="color: black;">{{ post.title }}</a><span style="font-size:medium"> by <a href="{{post.author.url}}">{{ post.author.displayName }}</a></span></h4>
             </div>
             <hr/>
