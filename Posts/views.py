@@ -1,3 +1,4 @@
+import django
 from django.conf import settings
 from django.core import serializers
 from django.http.response import HttpResponse, HttpResponseRedirect
@@ -21,7 +22,74 @@ import base64
 from django.core.paginator import Paginator
 import requests
 
+
 # Create your views here.
+
+def GetForeignAuthors():
+    data = []
+
+    team3 = requests.get('https://social-dis.herokuapp.com/authors?size=1000', auth=('socialdistribution_t03','c404t03'))
+    if team3.status_code == 200:
+        data.append(team3.json())
+
+    team15 = requests.get('https://unhindled.herokuapp.com/service/authors/?size=1000', auth=('connectionsuperuser','404connection'))
+    if team15.status_code == 200:
+        data.append(team15.json())
+
+    team17 = requests.get('https://cmput404f21t17.herokuapp.com/service/connect/public/author/?size=1000', auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
+    if team17.status_code == 200:
+        data.append(team17.json())
+
+    return data
+
+def updateForeignAuthors():
+    ############ CONNECTION STUFF ###############
+
+    foreign_authors_db_obj = Author.objects.filter(url__icontains = "social-dis") | Author.objects.filter(url__icontains = "unhindled") | Author.objects.filter(url__icontains = "cmput404f21t17") 
+
+    fa_list = GetForeignAuthors()
+    foreign_authors1 = fa_list[0]['items']
+    foreign_authors2 = fa_list[1]['items']
+    foreign_authors3 = fa_list[2]['items']
+
+    foreign_authors = foreign_authors1 + foreign_authors2 + foreign_authors3
+
+    for fadb in foreign_authors_db_obj:
+        remove = True
+        for fa in foreign_authors:
+            if(fadb.url == fa["url"] or fa['url'].find("linkedspace") != -1 or fa['url'].find("127.0.0.1:8000") != -1):
+                foreign_authors.remove(fa)
+                remove = False
+
+        if(remove):
+            fadb.delete()
+
+    newIDs = []
+    
+    for fa in foreign_authors:
+        fa["id"] = fa["url"]
+
+        if fa["id"] in newIDs:
+            continue
+
+        newIDs.append(fa["id"])
+        
+        if "github" not in fa or not fa["github"]:
+            fa["github"] = "https://github.com/"
+        new_author = AuthorSerializer(data = fa)
+
+        if new_author.is_valid():
+            new_author.validated_data["id"] = fa["id"]
+            new_author.validated_data["url"] = fa["url"]
+            new_author.validated_data["email"] = fa["id"]
+            new_author.validated_data["auth_pk"] = fa["id"].split("/")[-1]
+            
+            new_author.save()
+
+        else:
+            print(new_author.errors)
+    
+    ##############################################
 
 def PostDetailView(request, post_pk, auth_pk = None):
 
@@ -139,6 +207,10 @@ def sendPOSTrequest(url, data):
         if x.status_code - 300 >= 0:
             url = url.replace(".com/", ".com/service/")
             x = requests.post(url, data = json.dumps(data), auth = auth, headers=headers)
+
+            if x.status_code - 300 >= 0:
+                url += "/"
+                x = requests.post(url, data = json.dumps(data), auth = auth, headers=headers)
     
     # print("response",x.json())
 
@@ -162,6 +234,10 @@ def sendGETrequest(url):
         if x.status_code - 300 >= 0:
             url = url.replace(".com/", ".com/service/")
             x = requests.get(url, auth = auth)
+
+            if x.status_code - 300 >= 0:
+                url += "/"
+                x = requests.post(url, auth = auth)
 
     # print(x.json())
     try:
@@ -558,6 +634,7 @@ def GetForeignPosts():
     return data 
 
 def ForeignPostsFrontend(request):
+    updateForeignAuthors()
     if request.method == 'GET':
         data = []
         postsList = GetForeignPosts()
@@ -566,6 +643,39 @@ def ForeignPostsFrontend(request):
         postsList[1] = processLikes(request, postsList[1])
         postsList[2]['items'] = processLikes(request, postsList[2]['items'])
         
+        fr_POSTS = postsList[0]['items'] + postsList[2]['items'] + postsList[1]
+
+        for b in range(len(fr_POSTS)):
+            d = fr_POSTS[b]
+            c = d["content"]
+            if "visibility" not in d:
+                d["visibility"] = "Public"
+            if "image" in d["contentType"]:
+                d["contentType"] = "image/png"
+                d["content"] =  "b'" + d["content"].split("base64,")[-1] + "'"
+            if "categories" not in d or isinstance(d["categories"], str):
+                d["categories"] = ["Web"]
+            d["source"] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
+            serializerPost = PostSerializer(data=d)
+            
+            d["content"] = c
+            if serializerPost.is_valid():
+                    postSet = Post.objects.filter(id= d["id"])
+                        
+                    if(postSet.count() == 0):
+                        serializerPost.validated_data["author"] = d["author"]
+                        serializerPost.validated_data["author_id"] = Author.objects.get(id__icontains=d["author"]["id"])
+                        
+                        if "comments" in d:
+                            serializerPost.validated_data["comments"] = d["comments"]
+                        
+                        serializerPost.validated_data["post_pk"] = d["id"].split("/")[-1]
+                        serializerPost.validated_data["id"] = d["id"]
+
+                        serializerPost.save()
+
+            else:
+                print(serializerPost.errors)
         # team 3
         for i in postsList[0]['items']:
             # if post is image
@@ -635,6 +745,7 @@ def ForeignPostsFrontend(request):
 
         # if posts.is_valid():
         #     posts.save()
+        
             
         page_number = request.GET.get('page')
         if 'size' in request.GET:
