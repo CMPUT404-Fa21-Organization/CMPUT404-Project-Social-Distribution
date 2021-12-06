@@ -19,7 +19,7 @@
                 <div>
                 <form method="POST" action='follow/' style = 'display: inline'>
                     {% csrf_token %}
-                    <input id="foreignID" type="hidden" name="foreignID" class="form-control" value="{{foreignID}" >
+                    <input id="foreignID" type="hidden" name="foreignID" class="form-control" value="{{ foreignID }}" >
                     <button type="submit" class="btn btn-primary">Follow</button>
                 </form> 
 

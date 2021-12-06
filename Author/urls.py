@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.urls import path
 from django.urls.conf import include
+
+from LinkedSpace.views import homeView
 from .views import *
 
 urlpatterns = [

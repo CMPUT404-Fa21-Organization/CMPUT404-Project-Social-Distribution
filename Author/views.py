@@ -573,4 +573,12 @@ def ForeignAuthorsFrontendDetail(request):
 
 def followForeignAuthor(request):
     if request.method == 'POST':
+
+        # if 'social-dis' in request.POST['foreignID']:
+        #     GETlink = request.POST['foreignID'] + '/followers/' + 
+
+
+
+
+            
         return HttpResponse(render(template_name='LinkedSpace/home.html', request=request), status = 200)
