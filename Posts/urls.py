@@ -25,6 +25,7 @@ urlpatterns = [
     path('newLike/', newLike, name='add-like'),
     path('manage/', ManagePostsList, name='posts-manage'),
     path('add_post/', newPost, name='add_post'),
+    path('add_post/<auth_pk>', PrivatePostView, name='add_private_post'),
     path('edit/<post_pk>/', edit_Post, name='edit_Post'),
     path('delete/<post_pk>/', delete_Post, name='delete_Post'),
     path('<post_pk>/add_comment/', add_Comment, name='add_comment'),
