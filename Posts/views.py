@@ -667,7 +667,11 @@ def ForeignPostsFrontend(request):
         postsList = []
 
         for i in range(len(postsList_)):
-            postsList.append(processLikes(request, postsList_[i]['items']))
+            if "items" in postsList[i]:
+                postsList.append(processLikes(request, postsList_[i]['items']))
+            else:
+                postsList.append(processLikes(request, postsList_[i]))
+
             fr_POSTS += postsList[i]
 
         for b in range(len(fr_POSTS)):
