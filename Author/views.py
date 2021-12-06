@@ -248,12 +248,10 @@ def getInboxData(serializer):
             code, _ = sendGETrequest(item["id"])
 
             # Check if foreign post is deleted
-            if code - 300 < 0:
+            if code - 300 < 0 or "friend" in item["visibility"].lower():
                 data["items"].append(item)
             else:
                 # delete foreign post from db
-                print("\n\nwwwoooooooooohoooooooooooooooo\n\n")
-                print(_)
                 postToDelete = Post.objects.get(id = item["id"])
                 postToDelete.delete()
 
