@@ -83,7 +83,7 @@ def MyInboxView(request):
     inbox =  Inbox.objects.get(pk=author.pk)
     serializer = InboxSerializer(inbox, many=False)
     data = getInboxData(serializer)
-    
+
     items = data["items"]
 
     posts = [i for i in items if i["type"] == "post"]
@@ -252,6 +252,8 @@ def getInboxData(serializer):
                 data["items"].append(item)
             else:
                 # delete foreign post from db
+                print("\n\nwwwoooooooooohoooooooooooooooo\n\n")
+                print(_)
                 postToDelete = Post.objects.get(id = item["id"])
                 postToDelete.delete()
 
