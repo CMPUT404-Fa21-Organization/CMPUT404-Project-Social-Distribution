@@ -86,12 +86,7 @@ def PostShare(request, post_pk, auth_pk=None):
             unlisted = form.cleaned_data['unlisted']
             contentType = form.cleaned_data['contentType']
 
-            if contentType == "application/app": 
-                content = request.FILES['file'].read() #Inputfile
-            elif contentType in ["image/png", "image/jpeg",]:
-                content = base64.b64encode(request.FILES['file'].read()) #Inputfile
-            else:
-                content = form.cleaned_data["text"]
+            content = form.cleaned_data["text"]
 
             source = settings.SERVER_URL + "/"
             origin = settings.SERVER_URL + "/"
