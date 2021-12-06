@@ -40,6 +40,7 @@
                         <input type = "submit" value = "{{ post.numLikes }} 👍"  class = "postLikeButton-deactive">
                     {% endif %}
                 </form>
+                <p class="text-muted small float-right">Published: {{ post.published }}</p>
             </div>
         </div>
 
@@ -79,6 +80,7 @@
                             <input type = "submit" value = "{{ comment.numLikes }} 👍"  class = "postLikeButton-deactive">
                         {% endif %}
                     </form>
+                    <p class="text-muted small float-right">Published: {{ post.published }}</p>
                 </div>
             </div>
         {% endfor %}

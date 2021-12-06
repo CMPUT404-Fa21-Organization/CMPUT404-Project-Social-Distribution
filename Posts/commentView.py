@@ -99,7 +99,6 @@ def AllCommentsList(request, post_pk, auth_pk = None):
     post = Post.objects.filter(pk = post_pk)
     posts = PostSerializer(post, many=True)
 
-
     # If Content is image
     for post in posts.data:
         post["isImage"] = False
