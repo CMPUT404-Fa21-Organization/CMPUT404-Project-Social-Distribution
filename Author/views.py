@@ -83,6 +83,7 @@ def MyInboxView(request):
     inbox =  Inbox.objects.get(pk=author.pk)
     serializer = InboxSerializer(inbox, many=False)
     data = getInboxData(serializer)
+    
     items = data["items"]
 
     posts = [i for i in items if i["type"] == "post"]
@@ -294,6 +295,8 @@ def updateForeignAuthors():
 
         newIDs.append(fa["id"])
         
+        if not fa["github"]:
+            fa["github"] = "https://github.com/"
         new_author = AuthorSerializer(data = fa)
 
         if new_author.is_valid():
