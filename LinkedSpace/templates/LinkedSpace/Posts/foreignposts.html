@@ -30,7 +30,7 @@
                 <!-- TODO: Better CSS for Like Button -->
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
                 
-                <form action='newLike/' method= 'POST' enctype="multipart/form-data">
+                <!-- <form action='newLike/' method= 'POST' enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" id="context" name="context" value="post-foreign">
                     <input type="hidden" id="postID" name="postID" value={{post.id}}>
@@ -39,7 +39,8 @@
                     {% else %}
                         <input type = "submit" value = "{{ post.numLikes }} 👍"  class = "postLikeButton-deactive">
                     {% endif %}
-                </form>
+                </form> -->
+
                 <p class="text-muted small float-right">Published: {{ post.published }}</p>
             </div>
         </div>
@@ -53,10 +54,10 @@
                     </div>
                     <div class="card-body">
                         {% if comment.contentType == "text/plain" %}
-                            <p>{{ comment.comment }}</p>
+                            <p>{{ comment.comment }}{{ comment.text }}</p>
                         {% elif comment.contentType == "text/markdown" %}
                             {% load markdownify %}
-                        <p class="background-color: grey;">{{ comment.comment |markdownify }}</p>
+                        <p class="background-color: grey;">{{ comment.comment |markdownify }}{{ comment.text |markdownify }}</p>
                         {% elif comment.contentType == "application/base64" %}
                             <p>Some base64 file would be displayed here ...</p>
                         {% elif comment.isImage %}
@@ -69,17 +70,6 @@
                     <!-- Like Button -->
                     <!-- TODO: Better CSS for Like Button -->
                     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-                    
-                    <form action='newLike/' method= 'POST' enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <input type="hidden" id="context" name="context" value="comments">
-                        <input type="hidden" id="postID" name="postID" value={{comment.id}}>
-                        {% if comment.userLike %}
-                            <input type = "submit" value = "{{ comment.numLikes }} 👍" style="color: white; background-color:blue" class = "postLikeButton-active" >
-                        {% else %}
-                            <input type = "submit" value = "{{ comment.numLikes }} 👍"  class = "postLikeButton-deactive">
-                        {% endif %}
-                    </form>
                     <p class="text-muted small float-right">Published: {{ post.published }}</p>
                 </div>
             </div>
