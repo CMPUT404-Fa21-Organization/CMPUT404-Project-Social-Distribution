@@ -754,7 +754,7 @@ def ForeignPostsFrontend(request):
 
         return render(request, 'LinkedSpace/Posts/foreignposts.html', context)
 
-def ForeignPostsComment(request, url):
+def ForeignPostsComment(request, team_pk, post_pk):
     print("hi")
         
 def LocalPosts(request):
