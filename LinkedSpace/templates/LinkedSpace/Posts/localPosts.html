@@ -42,16 +42,6 @@
                                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
                                 
                                 <span>
-                                    <form action='newLike/' method= 'POST' enctype="multipart/form-data">
-                                        {% csrf_token %}
-                                        <input type="hidden" id="context" name="context" value="stream">
-                                        <input type="hidden" id="postID" name="postID" value={{post.id}}>
-                                        {% if post.userLike %}
-                                            <input type = "submit" value = "{{ post.numLikes }} 👍" style="color: white; background-color:blue" class = "postLikeButton-active float-left" >
-                                        {% else %}
-                                            <input type = "submit" value = "{{ post.numLikes }} 👍"  class = "postLikeButton-deactive float-left">
-                                        {% endif %}
-                                    </form>
                                     <p class="card-text small float-left ml-3"><a href="{{ post.comments }}">View comments</a></p>
                                     <p class="text-muted small float-right">Published: {{ post.published }}</p>
                                 </span>
