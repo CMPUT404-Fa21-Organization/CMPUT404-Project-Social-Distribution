@@ -349,7 +349,16 @@ def processLikes(request, posts):
                     else:
                         post["numLikes"] = len(likes)
             except MissingSchema:
-                pass
+                try:
+                    code, likes = sendGETrequest(post["origin"] + "/likes/")
+
+                    if code - 300 < 0:
+                        if("items" in likes):
+                            post["numLikes"] = len(likes["items"])
+                        else:
+                            post["numLikes"] = len(likes)
+                except:
+                    pass
     
     # Check which posts the user has already liked
     if(request.user.is_authenticated):
@@ -377,7 +386,22 @@ def processLikes(request, posts):
                                     post["userLike"] = True
 
                 except MissingSchema:
-                    pass
+                    try:
+                
+                        code, likes = sendGETrequest(post["origin"] + "/likes/")
+
+                        if code - 300 < 0:
+                            if "items" in likes:
+                                for like in likes["items"]:
+                                    if post["origin"] == like["object"]:
+                                        post["userLike"] = True
+                            else:
+                                for like in likes:
+                                    if post["origin"] == like["object"]:
+                                        post["userLike"] = True
+
+                    except:
+                        pass
     
                 
 
@@ -636,14 +660,15 @@ def GetForeignPosts():
 def ForeignPostsFrontend(request):
     updateForeignAuthors()
     if request.method == 'GET':
-        data = []
-        postsList = GetForeignPosts()
+        postsList_ = GetForeignPosts()
 
-        postsList[0]['items'] = processLikes(request, postsList[0]['items'])
-        postsList[1] = processLikes(request, postsList[1])
-        postsList[2]['items'] = processLikes(request, postsList[2]['items'])
-        
-        fr_POSTS = postsList[0]['items'] + postsList[2]['items'] + postsList[1]
+        fr_POSTS = []
+        data = []
+        postsList = []
+
+        for i in range(len(postsList_)):
+            postsList.append(processLikes(request, postsList_[i]['items']))
+            fr_POSTS += postsList[i]
 
         for b in range(len(fr_POSTS)):
             d = fr_POSTS[b]
@@ -676,75 +701,72 @@ def ForeignPostsFrontend(request):
 
             else:
                 print(serializerPost.errors)
+
         # team 3
-        for i in postsList[0]['items']:
-            # if post is image
-            if 'image' in i['contentType']:
-                i["isImage"] = True
-                index = i['content'].index('base64,')
-                imgdata = i["content"][index+7:]
-                i["image"] = imgdata
-            # change source and add team number and id
-            i['source'] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
-            i['teamID'] = "3/" + i["id"].split("/")[-1]
-            # get comments 
-            comment = requests.get(i['comments'], auth=('socialdistribution_t03','c404t03'))
-            try:
-                i["allcomments"] = comment.json()['comments']
-            except:
-                print(comment.status_code)
-            
-            # append into data
-            data.append(i)
+        if 0 in range(-len(postsList), len(postsList)):
+            for i in postsList[0]:
+                # if post is image
+                if 'image' in i['contentType']:
+                    i["isImage"] = True
+                    index = i['content'].index('base64,')
+                    imgdata = i["content"][index+7:]
+                    i["image"] = imgdata
+                # change source and add team number and id
+                i['source'] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
+                i['teamID'] = "3/" + i["id"].split("/")[-1]
+                # get comments 
+                comment = requests.get(i['comments'], auth=('socialdistribution_t03','c404t03'))
+                try:
+                    i["allcomments"] = comment.json()['comments']
+                except:
+                    print(comment.status_code)
+                
+                # append into data
+                data.append(i)
             
         # team 15
-        for i in postsList[1]:
-            if 'image' in i['contentType']:
-                i["isImage"] = True
-                imgdata = i["content"][2:-1]
-                i["image"] = imgdata
-            # change source and origin
-            i['source'] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
-            i['teamID'] = "15/" + i["id"].split("/")[-1]
-            # get comments 
-            cut = (len('https://unhindled.herokuapp.com'))
-            first = i['comments'][0:cut] + '/service/'
-            second = i['comments'][cut+1:]
-            url = first + second
-            comment = requests.get(url, auth=('connectionsuperuser','404connection'))
-            #if comment.json()['comments']
-            try:
-                i["allcomments"] = comment.json()['comments']
-            except:
-                print(comment.status_code)
-                
-            # append to data
-            data.append(i)
-        
+        if 1 in range(-len(postsList), len(postsList)):
+            for i in postsList[1]:
+                if 'image' in i['contentType']:
+                    i["isImage"] = True
+                    index = i['content'].index('base64,')
+                    imgdata = i["content"][index+7:]
+                    i["image"] = imgdata
+                # change source and origin
+                i['source'] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
+                i['teamID'] = "15/" + i["id"].split("/")[-1]
+                # get comments 
+                url = i['comments']
+                comment = requests.get(url, auth=('connectionsuperuser','404connection'))
+                #if comment.json()['comments']
+                try:
+                    i["allcomments"] = comment.json()['comments']
+                except:
+                    print(comment.status_code)
+                    
+                # append to data
+                data.append(i)
+            
         # team 17
         # need to implement comment once they have correct comment url
-        for i in postsList[2]['items']:
-            if 'image' in i['contentType']:
-                i["isImage"] = True
-                index = i['content'].index('base64,')
-                imgdata = i["content"][index+7:]
-                i["image"] = imgdata
-            # change source and origin
-            i['source'] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
-            i['teamID'] = "17/" + i["id"]
-            # get comments
-            comment = requests.get(i['comments'], auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
-            try:
-                i["allcomments"] = comment.json()
-            except:
-                print(comment.status_code)
+        if 2 in range(-len(postsList), len(postsList)):
+            for i in postsList[2]:
+                if 'image' in i['contentType']:
+                    i["isImage"] = True
+                    index = i['content'].index('base64,')
+                    imgdata = i["content"][index+7:]
+                    i["image"] = imgdata
+                # change source and origin
+                i['source'] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
+                i['teamID'] = "17/" + i["id"]
+                # get comments
+                comment = requests.get(i['comments'], auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
+                try:
+                    i["allcomments"] = comment.json()
+                except:
+                    print(comment.status_code)
 
-            data.append(i)
-
-        # posts = PostSerializer(data, many = True)
-
-        # if posts.is_valid():
-        #     posts.save()
+                data.append(i)
         
             
         page_number = request.GET.get('page')
