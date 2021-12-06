@@ -350,11 +350,11 @@ def processLikes(request, posts):
                     if code - 300 < 0:
                         if "items" in likes:
                             for like in likes["items"]:
-                                if post["id"] == like["object"]:
+                                if request.user.url == like["author"]["url"]:
                                     post["userLike"] = True
                         else:
                             for like in likes:
-                                if post["id"] == like["object"]:
+                                if request.user.url == like["author"]["url"]:
                                     post["userLike"] = True
 
                 except MissingSchema:
@@ -365,11 +365,11 @@ def processLikes(request, posts):
                         if code - 300 < 0:
                             if "items" in likes:
                                 for like in likes["items"]:
-                                    if post["origin"] == like["object"]:
+                                    if request.user.url == like["author"]["url"]:
                                         post["userLike"] = True
                             else:
                                 for like in likes:
-                                    if post["origin"] == like["object"]:
+                                    if request.user.url == like["author"]["url"]:
                                         post["userLike"] = True
 
                     except:
