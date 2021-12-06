@@ -17,7 +17,7 @@
         <p class = "postDesc">Description: {{ post.description }}</p>
         <div class = "postContent">
             {% if post.isImage %}
-                <img src="data:{{ post.contentType }};base64, {{ post.image }}"/>
+                <img src="data:{{ post.contentType }};base64, {{ post.image }}" class="img-fluid justify-content-center"/>
             {% elif post.contentType == "text/markdown"%}
                 {% load markdownify %}
                 <p>{{ post.content |markdownify }}</p>
@@ -60,7 +60,7 @@
                     {% elif comment.contentType == "application/base64" %}
                         <p>Some base64 file would be displayed here ...</p>
                     {% elif comment.isImage %}
-                        <img src="data:{{ comment.contentType }};base64, {{ comment.image }}"/>
+                        <img src="data:{{ comment.contentType }};base64, {{ comment.image }}" class="img-fluid justify-content-center"/>
                     {% elif comment.contentType == "HTML" %}
                         <p>HTML would be displayed here ...</p>
                     {% endif %}

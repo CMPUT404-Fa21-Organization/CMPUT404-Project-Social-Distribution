@@ -24,6 +24,7 @@ from django.db.models import Q
 import django.core
 from permissions import CustomAuthentication, AccessPermission
 from django.core.paginator import Paginator
+import traceback
 
 def newPost(request, uid=None, auth_pk=None):
     form = PostForm(request.POST, request.FILES)
@@ -78,8 +79,8 @@ def add_Comment(request, post_pk, auth_pk, uid=None):
             content = base64.b64encode(request.FILES['file'].read()) #Inputfile
         else:
             content = form.cleaned_data["text"]
-            
-        author = json.loads(serializers.serialize('json', Author.objects.filter(email=auth_pk), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
+              
+        author_id = json.loads(serializers.serialize('json', Author.objects.filter(email=auth_pk), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
 
         post = Post.objects.get(pk = post_pk)
         post_pk_str = post_pk
@@ -87,7 +88,7 @@ def add_Comment(request, post_pk, auth_pk, uid=None):
             r_uid = uuid.uuid4().hex
             uid = re.sub('-', '', r_uid)
         comment_id = getattr(post, 'comments') + uid
-        comments = Comments(pk=uid, id=comment_id, Post_pk=post, Post_pk_str = post_pk_str, auth_pk_str = auth_pk, author=author, size=10, published=published, content=content)
+        comments = Comments(pk=uid, id=comment_id, Post_pk=post, Post_pk_str = post_pk_str, auth_pk_str = auth_pk, author=author_id, size=10, published=published, contentType=contentType, content=content)
         comments.save()
         return True
     else:

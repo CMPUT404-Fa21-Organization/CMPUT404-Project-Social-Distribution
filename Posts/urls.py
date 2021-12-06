@@ -20,7 +20,7 @@ urlpatterns = [
     # All the NON-API Views
     path('', UserStreamView, name='user-stream-view'),
     path('connection/', ForeignPostsFrontend, name='foreign-posts-view'),
-    path('connection/addComment/', ForeignPostsComment, name='foreign-posts-comment'),
+    path('connection/<team_pk>/<post_pk>/addcomment', ForeignPostsComment, name='foreign-posts-comment'),
     path('local/', LocalPosts, name='local-posts-view'),
     path('newLike/', newLike, name='add-like'),
     path('manage/', ManagePostsList, name='posts-manage'),
