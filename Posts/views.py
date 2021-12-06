@@ -75,56 +75,33 @@ def PostDetailView(request, post_pk, auth_pk = None):
         return HttpResponse(status=401)
 
 def PostShare(request, post_pk, auth_pk=None):
-    if request.method == 'POST':
-        post = Post.objects.get(post_pk=post_pk)
-        form = PostForm(request.POST, request.FILES)
-        if form.is_valid() and request.user.id != post.author['id']:
-            title = form.cleaned_data['title']
-            descirption = form.cleaned_data['description'] + " (Shared from " + post.author['displayName'] + ")"
-            categories = form.cleaned_data['categories']
-            visibility = form.cleaned_data['visibility']
-            unlisted = form.cleaned_data['unlisted']
-            contentType = form.cleaned_data['contentType']
+    og_post = Post.objects.get(post_pk=post_pk)
+    title = og_post.title
+    description = og_post.description + " (Shared from " + og_post.author['displayName'] + ")"
+    categories = og_post.categories
+    visibility = og_post.visibility
+    unlisted = og_post.unlisted
+    contentType = og_post.contentType
+    content = og_post.content
 
-            content = form.cleaned_data["text"]
+    source = settings.SERVER_URL + "/"
+    origin = settings.SERVER_URL + "/"
 
-            source = settings.SERVER_URL + "/"
-            origin = settings.SERVER_URL + "/"
+    author_id = request.user
+    id = request.user.id
+    author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
 
-            author_id = request.user
-            id = request.user.id
-            author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
+    r_uid = uuid.uuid4().hex
+    uid = re.sub('-', '', r_uid)
+    id = id + '/posts/' + uid + "/"
+    comments_id = id + "comments/"
 
-            r_uid = uuid.uuid4().hex
-            uid = re.sub('-', '', r_uid)
-            id = id + '/posts/' + uid + "/"
-            comments_id = id + "comments/"
+    published = timezone.now()
 
-            published = timezone.now()
+    new_post = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=description, contentType=contentType, count=0, size=10, categories=categories, visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
+    new_post.save()
 
-            posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, categories=categories.split(' '),visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
-            posts.save()
-
-            return redirect(ManagePostsList)
-        else:
-            print(form.errors)
-            print(form.data)
-            form = PostForm()
-            post = Post.objects.get(post_pk=post_pk)
-            if request.user.id == post.author['id']:
-                context = {'form': form, 'user':request.user, 'add': True, 'post': post}
-                return render(request, "LinkedSpace/Posts/add_post.html", context)
-            else:
-                return redirect(ManagePostsList)
-    else:
-        form = PostForm()
-        post = Post.objects.get(post_pk=post_pk)
-        if request.user.id != post.author['id']:
-            categories_as_string = ' '.join(post.categories)
-            context = {'form': form, 'user':request.user, 'add': True, 'post': post, "stringified_categories": categories_as_string}
-            return render(request, "LinkedSpace/Posts/add_post.html", context)
-        else:
-            return redirect(ManagePostsList)
+    return redirect(ManagePostsList)
 
 def sendPOSTrequest(url, data):
     auth = getAuth(url)
