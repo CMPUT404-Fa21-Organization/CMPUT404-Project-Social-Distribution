@@ -27,7 +27,6 @@ def PostDetailView(request, post_pk, auth_pk = None):
     user = None
     if(request.user.is_authenticated):
         user = request.user
-
     postObj = Post.objects.get(pk = post_pk)
     postSeririaliezed = PostSerializer(postObj, many=False)
     post = postSeririaliezed.data
@@ -298,7 +297,7 @@ def processLikes(request, posts):
 # Non API view, Displays the users posts and github activity
 def UserStreamView(request, auth_pk):
     # TODO Add Github API stuff here
-    
+
     if(request.user.is_authenticated and request.user.pk == auth_pk):
         author = request.user
         postsObjects = Post.objects.filter(author_id=author.pk) # | Post.objects.filter(visibility = "PUBLIC")
@@ -636,11 +635,11 @@ def LocalPosts(request):
     
     if(request.user.is_authenticated):
         author = request.user
-        localposts = Post.objects.filter(id__icontains = "linkedspace-staging") | Post.objects.filter(visibility = "PUBLIC") |  Post.objects.filter(unlisted = "False")
+        localposts = Post.objects.filter(id__icontains = "linkedspace-staging") & Post.objects.filter(visibility = "Public") & Post.objects.filter(unlisted = "False")
 
     else:
         # TODO Friend Posts in stream
-        localposts = Post.objects.filter(id__icontains = "linkedspace-staging") | Post.objects.filter(visibility = "PUBLIC") |  Post.objects.filter(unlisted = "False")
+        localposts = Post.objects.filter(id__icontains = "linkedspace-staging") & Post.objects.filter(visibility = "Public") & Post.objects.filter(unlisted = "False")
     
     localposts = localposts.order_by('-published')
 
