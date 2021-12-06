@@ -1,15 +1,18 @@
 from django.conf import settings
 from django.core import serializers
 from django.utils import timezone
+import requests
 from Posts.commentModel import Comments
 #from Posts.commentView import add_Comment
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
+from django.shortcuts import HttpResponse, render
 from requests import get
 from .serializers import CommentSerializer, PostSerializer
 from Author.serializers import LikeSerializer
 from Author.models import Like
+from Author.views import updateForeignAuthors, GetForeignAuthors
 from .models import Post, Author
 from .form import PostForm
 from Posts.commentForm import CommentForm
@@ -21,6 +24,7 @@ from django.db.models import Q
 import django.core
 from permissions import CustomAuthentication, AccessPermission
 from django.core.paginator import Paginator
+import traceback
 
 def newPost(request, uid=None, auth_pk=None):
     form = PostForm(request.POST, request.FILES)
@@ -66,6 +70,7 @@ def newPost(request, uid=None, auth_pk=None):
 def add_Comment(request, post_pk, auth_pk, uid=None):
     form = CommentForm(request.POST, request.FILES)
     if form.is_valid():
+        updateForeignAuthors()
         published = timezone.now()
         contentType = form.cleaned_data['contentType']
         if contentType == "application/app": 
@@ -74,18 +79,16 @@ def add_Comment(request, post_pk, auth_pk, uid=None):
             content = base64.b64encode(request.FILES['file'].read()) #Inputfile
         else:
             content = form.cleaned_data["text"]
-            
-        #author_id = Author.objects.get(pk=auth_pk)
-        #id = author_id.url
-        author = json.loads(serializers.serialize('json', Author.objects.filter(pk=auth_pk), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
-        
+              
+        author_id = json.loads(serializers.serialize('json', Author.objects.filter(email=auth_pk), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
+
         post = Post.objects.get(pk = post_pk)
         post_pk_str = post_pk
         if uid == None:
             r_uid = uuid.uuid4().hex
             uid = re.sub('-', '', r_uid)
         comment_id = getattr(post, 'comments') + uid
-        comments = Comments(pk=uid, id=comment_id, Post_pk=post, Post_pk_str = post_pk_str, auth_pk_str = auth_pk, author=author, size=10, published=published, content=content)
+        comments = Comments(pk=uid, id=comment_id, Post_pk=post, Post_pk_str = post_pk_str, auth_pk_str = auth_pk, author=author_id, size=10, published=published, contentType=contentType, content=content)
         comments.save()
         return True
     else:
@@ -353,3 +356,4 @@ def connection(request, auth_id=None):
         data.append(team17.json())
 
     return Response({'connection': data})
+
