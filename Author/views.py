@@ -492,10 +492,7 @@ def AuthorInboxViewFrontend(request, auth_pk):
             inbox =  Inbox.objects.get(pk=auth_pk)
             inbox.iFollows.add(FriendRequest.objects.create(summary=summary, type = type, actor = actor, object = objectauthor))
             
-            followersObj = Followers.objects.get(pk = objectauthor.pk)
-
-            if actor not in followersObj.items.all() and actor != objectauthor:
-                followersObj.items.add(actor)
+            
             
             return HttpResponseRedirect('/authors')
 
@@ -562,5 +559,26 @@ def ForeignAuthorsFrontend(request):
         return HttpResponse(render(template_name='LinkedSpace/foreignauthors.html', request=request, context= context), status = 200)
         
 
-    
 
+
+def ForeignAuthorsFrontendDetail(request):
+    if request.method == 'POST':
+
+        context = {'foreignDisplay' : request.POST['foreignDisplay'], 'foreigngithub': request.POST['foreigngithub'], 'foreignID': request.POST['foreignID']}
+
+
+        
+        return HttpResponse(render(template_name='LinkedSpace/foreignauthordetail.html', request=request,context= context), status = 200)
+
+
+def followForeignAuthor(request):
+    if request.method == 'POST':
+
+        # if 'social-dis' in request.POST['foreignID']:
+        #     GETlink = request.POST['foreignID'] + '/followers/' + 
+
+
+
+
+            
+        return HttpResponse(render(template_name='LinkedSpace/home.html', request=request), status = 200)
