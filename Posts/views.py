@@ -756,6 +756,10 @@ def ForeignPostsFrontend(request):
 
 def ForeignPostsComment(request, post_pk):
     print("post_pk")
+    foreignPOsts = GetForeignPosts()
+    print(foreignPOsts)
+    for post in foreignPOsts:
+        print(post)
         
 def LocalPosts(request):
     # TODO Add Github API stuff here
