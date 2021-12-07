@@ -347,6 +347,10 @@ def connection(request, auth_id=None):
     if team3.status_code == 200:
         data.append(team3.json())
 
+    team14 = get('https://linkedspace-staging.herokuapp.com/api/posts/', auth=('socialdistribution_t14','c404t14'))
+    if team14.status_code == 200:
+        data.append(team14.json())
+
     team15 = get('https://unhindled.herokuapp.com/service/allposts/', auth=('connectionsuperuser','404connection'))
     if team15.status_code == 200:
         data.append(team15.json())
