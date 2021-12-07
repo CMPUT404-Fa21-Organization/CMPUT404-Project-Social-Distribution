@@ -482,16 +482,15 @@ def postDistributor(req, visibility, origin, uid, to_user=None):
             if req.user in Followers.objects.get(auth_pk=follower).items.all():
                 if follower.host == origin: # send to local friends
                     inbox = Inbox.objects.get(auth_pk=follower)
-                    
                     inbox.iPosts.add(post)
                     # print(inbox.iPosts.all())
                     # print("sent to LOCAL:", follower.email)
                 else: # check if author is following foreign authors
-
                     follow_url = follower.id + "/followers/" + req.user.auth_pk
+                    data = sendGETrequest(follow_url)
                     # follow_url = "http://127.0.0.1:8000/author/7fcd83f088a941578ab31132f191de56" + "/followers/" + req.user.auth_pk
                     # print(follow_url)
-                    if sendGETrequest(follow_url): # if author is following foreign author
+                    if data["detail"]: # if author is following foreign author
                         postSerialized = PostSerializer(post)
                         inbox_url = follower.id + '/inbox'
                         # inbox_url = "http://127.0.0.1:8000/author/7fcd83f088a941578ab31132f191de56" + '/inbox'
@@ -504,21 +503,27 @@ def postDistributor(req, visibility, origin, uid, to_user=None):
         to_author = Author.objects.get(pk=to_user)
         if to_author.host == origin: # send to local author inbox
             inbox = Inbox.objects.get(auth_pk=to_author)
-            
             inbox.iPosts.add(post)
             # print(inbox.iPosts.all())
             # print("sent to LOCAL:", to_author.email)
         else: # send to foreign author inbox
-            follow_url = follower.id + "/followers/" + req.user.auth_pk
-            # follow_url = "http://127.0.0.1:8000/author/7fcd83f088a941578ab31132f191de56" + "/followers/" + req.user.auth_pk
-            # print(follow_url)
-            if sendGETrequest(follow_url): # if author is following foreign author
+            to_url = to_author.id + "/followers/" + req.user.auth_pk
+            data = sendGETrequest(to_url)
+            if data["detail"]:
                 postSerialized = PostSerializer(post)
-                inbox_url = follower.id + '/inbox'
-                # inbox_url = "http://127.0.0.1:8000/author/7fcd83f088a941578ab31132f191de56" + '/inbox'
-                # print(inbox_url)
+                inbox_url = to_author.id + '/inbox'
                 sendPOSTrequest(inbox_url, postSerialized.data)
-                # print("sent to FOREIGN:", follower.email)
+                # to_url = "http://127.0.0.1:8000/api/author/7fcd83f088a941578ab31132f191de56" + '/followers/' + req.user.auth_pk
+                # to_url = "https://linkedspace-staging.herokuapp.com/api/author/4ed9968bede94f149f17a1001764f9dd/followers/f90d3e62c77d4117add66718aad5955e"
+                # # follow_url = "http://127.0.0.1:8000/author/7fcd83f088a941578ab31132f191de56" + "/followers/" + req.user.auth_pk
+                # # print(follow_url)
+                # if sendGETrequest(to_url): # if author is following foreign author
+                #     postSerialized = PostSerializer(post)
+                #     # inbox_url = to_author.id + '/inbox'
+                #     inbox_url = "http://127.0.0.1:8000/author/7fcd83f088a941578ab31132f191de56" + '/inbox'
+                #     # print(inbox_url)
+                #     sendPOSTrequest(inbox_url, postSerialized.data)
+                #     # print("sent to FOREIGN:", follower.email)
 
 
 def ManagePostsList(request, auth_pk=None):
@@ -603,13 +608,14 @@ def PrivatePostView(request, auth_pk):
     form = PostForm(request.POST, request.FILES)
 
     if form.is_valid():
+        # print("POST IS VALID IN PRIVATE POST VIEW")
         title = form.cleaned_data['title']
         descirption = form.cleaned_data['description']
         categories = form.cleaned_data['categories']
-        visibility = form.cleaned_data['visibility']
-        # visibility = 'Private'
-        unlisted = form.cleaned_data['unlisted']
-        # unlisted = False
+        # visibility = form.cleaned_data['visibility']
+        visibility = 'Private'
+        # unlisted = form.cleaned_data['unlisted']
+        unlisted = False
         contentType = form.cleaned_data['contentType']
 
         if contentType == "application/app": 
@@ -645,7 +651,7 @@ def PrivatePostView(request, auth_pk):
         # print(form.data)
         form = PostForm()
         context = {'form': form, 'user':request.user, 'add': True}
-        return render(request, "LinkedSpace/Posts/add_post.html", context)
+        return render(request, "LinkedSpace/Posts/private_post.html", context)
         
 def GetForeignPosts():
     data = []
@@ -818,6 +824,7 @@ def LocalPosts(request):
             post["isImage"] = True
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
+        post["categories"] = ' '.join(post["categories"])
 
     posts = processLikes(request, posts.data)
 
