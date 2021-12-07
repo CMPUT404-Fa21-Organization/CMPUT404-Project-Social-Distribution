@@ -21,6 +21,8 @@ from permissions import CustomAuthentication, AccessPermission
 from django.core.paginator import Paginator
 
 @api_view(['GET',])
+@authentication_classes([CustomAuthentication])
+@permission_classes([AccessPermission])
 def CommentLikesView(request, comment_pk, post_pk, auth_pk):
     comment = Comments.objects.get(pk = comment_pk)
     author = Author.objects.get(pk = auth_pk)

@@ -30,6 +30,9 @@ urlpatterns = [
     path('profile/edit/', profileEdit, name='profile-edit'),
     path('authors/', authorsView, name='authors-view'),
     path('authors/connection/', ForeignAuthorsFrontend, name='foreign-authors-view'),
+    path('authors/connection/detail/', ForeignAuthorsFrontendDetail, name='foreign-authors-view-detail'),
+    path('authors/connection/detail/follow/', followForeignAuthor, name='foreign-authors-follow'),
+    path('authors/connection/detail/unfriend/', followForeignAuthor, name='foreign-authors-unfriend'),
     
 
     path('inbox/', MyInboxView, name='author-inbox-frontend'),

@@ -248,7 +248,7 @@ def getInboxData(serializer):
             code, _ = sendGETrequest(item["id"])
 
             # Check if foreign post is deleted
-            if code - 300 < 0 or "friend" in item["visibility"].lower():
+            if code - 300 < 0 or ( "friend" in item["visibility"].lower() ) or ( "private" in item["visibility"].lower() ):
                 data["items"].append(item)
             else:
                 # delete foreign post from db
@@ -295,7 +295,7 @@ def updateForeignAuthors():
 
         newIDs.append(fa["id"])
         
-        if not fa["github"]:
+        if "github" not in fa or not fa["github"]:
             fa["github"] = "https://github.com/"
         new_author = AuthorSerializer(data = fa)
 
@@ -355,10 +355,14 @@ def AuthorInboxView(request, auth_pk):
 
     if request.method == "POST":
         if(request.data["type"].lower() == "post"):
+            if "visibility" not in request.data:
+                request.data["visibility"] = "Public"
             if "image" in request.data["contentType"]:
                 request.data["contentType"] = "image/png"
                 request.data["content"] =  "b'" + request.data["content"].split("base64,")[-1] + "'"
-
+            
+            if "categories" not in request.data or isinstance(request.data["categories"], str):
+                request.data["categories"] = ["Web"]
             request.data["source"] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
             serializerPost = PostSerializer(data=request.data)
             
@@ -385,7 +389,7 @@ def AuthorInboxView(request, auth_pk):
                     postSet = Post.objects.filter(id= request.data["id"])
                         
                     if(postSet.count() == 0):
-                        serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id=request.data["author"]["id"]), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
+                        serializerPost.validated_data["author"] = json.loads(django.core.serializers.serialize('json', Author.objects.filter(id__icontains=request.data["author"]["id"]), fields=('type', 'id', 'host', 'url', 'github',)))[0]['fields']
                         serializerPost.validated_data["author_id"] = Author.objects.get(id=request.data["author"]["id"])
                         
                         if "comments" in request.data:
@@ -488,10 +492,7 @@ def AuthorInboxViewFrontend(request, auth_pk):
             inbox =  Inbox.objects.get(pk=auth_pk)
             inbox.iFollows.add(FriendRequest.objects.create(summary=summary, type = type, actor = actor, object = objectauthor))
             
-            followersObj = Followers.objects.get(pk = objectauthor.pk)
-
-            if actor not in followersObj.items.all() and actor != objectauthor:
-                followersObj.items.add(actor)
+            
             
             return HttpResponseRedirect('/authors')
 
@@ -558,5 +559,26 @@ def ForeignAuthorsFrontend(request):
         return HttpResponse(render(template_name='LinkedSpace/foreignauthors.html', request=request, context= context), status = 200)
         
 
-    
 
+
+def ForeignAuthorsFrontendDetail(request):
+    if request.method == 'POST':
+
+        context = {'foreignDisplay' : request.POST['foreignDisplay'], 'foreigngithub': request.POST['foreigngithub'], 'foreignID': request.POST['foreignID']}
+
+
+        
+        return HttpResponse(render(template_name='LinkedSpace/foreignauthordetail.html', request=request,context= context), status = 200)
+
+
+def followForeignAuthor(request):
+    if request.method == 'POST':
+
+        # if 'social-dis' in request.POST['foreignID']:
+        #     GETlink = request.POST['foreignID'] + '/followers/' + 
+
+
+
+
+            
+        return HttpResponse(render(template_name='LinkedSpace/home.html', request=request), status = 200)
