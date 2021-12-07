@@ -509,13 +509,13 @@ def postDistributor(req, visibility, origin, uid, to_user=None):
             # print(inbox.iPosts.all())
             # print("sent to LOCAL:", to_author.email)
         else: # send to foreign author inbox
-            follow_url = follower.id + "/followers/" + req.user.auth_pk
+            to_url = to_author.id + "/followers/" + req.user.auth_pk
             # follow_url = "http://127.0.0.1:8000/author/7fcd83f088a941578ab31132f191de56" + "/followers/" + req.user.auth_pk
             # print(follow_url)
-            if sendGETrequest(follow_url): # if author is following foreign author
+            if sendGETrequest(to_url): # if author is following foreign author
                 postSerialized = PostSerializer(post)
-                inbox_url = follower.id + '/inbox'
-                # inbox_url = "http://127.0.0.1:8000/author/7fcd83f088a941578ab31132f191de56" + '/inbox'
+                # inbox_url = to_author.id + '/inbox'
+                inbox_url = "http://127.0.0.1:8000/author/7fcd83f088a941578ab31132f191de56" + '/inbox'
                 # print(inbox_url)
                 sendPOSTrequest(inbox_url, postSerialized.data)
                 # print("sent to FOREIGN:", follower.email)
@@ -603,13 +603,14 @@ def PrivatePostView(request, auth_pk):
     form = PostForm(request.POST, request.FILES)
 
     if form.is_valid():
+        # print("POST IS VALID IN PRIVATE POST VIEW")
         title = form.cleaned_data['title']
         descirption = form.cleaned_data['description']
         categories = form.cleaned_data['categories']
-        visibility = form.cleaned_data['visibility']
-        # visibility = 'Private'
-        unlisted = form.cleaned_data['unlisted']
-        # unlisted = False
+        # visibility = form.cleaned_data['visibility']
+        visibility = 'Private'
+        # unlisted = form.cleaned_data['unlisted']
+        unlisted = False
         contentType = form.cleaned_data['contentType']
 
         if contentType == "application/app": 
@@ -645,7 +646,7 @@ def PrivatePostView(request, auth_pk):
         # print(form.data)
         form = PostForm()
         context = {'form': form, 'user':request.user, 'add': True}
-        return render(request, "LinkedSpace/Posts/add_post.html", context)
+        return render(request, "LinkedSpace/Posts/private_post.html", context)
         
 def GetForeignPosts():
     data = []
@@ -818,6 +819,7 @@ def LocalPosts(request):
             post["isImage"] = True
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
+        post["categories"] = ' '.join(post["categories"])
 
     posts = processLikes(request, posts.data)
 

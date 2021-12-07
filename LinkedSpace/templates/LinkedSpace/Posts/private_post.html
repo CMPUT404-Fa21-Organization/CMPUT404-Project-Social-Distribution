@@ -1,0 +1,71 @@
+{% extends '../base.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block title %}
+    {% if add %}
+        Add Post
+    {% else %}
+        Edit Post
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% if add %}
+        <h1>Welcome to Linked Space Add Post</h1>
+    {% else %}
+        <h1>Welcome to Linked Space Edit Post</h1>
+    {% endif %}
+    {% if user.is_authenticated %}
+        <form action='' method= 'POST' enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="Title">Title:</label><br>
+            <input id="title" type="text" name="title" value="{{ post.title }}" class="form-control"> <br>
+
+            <label for="Description">Description:</label><br>
+            <input id="description" type="text" name="description" value="{{ post.description }}" class="form-control"><br>
+
+            <label for="Categories">Categories:</label><br>
+<!-- <<<<<<< HEAD
+            <input id="categories" type="text" name="categories" value="{{ post.categories }}" class="form-control"><br>
+======= -->
+            <input id="categories" type="text" name="categories" value="{{ stringified_categories }}" class="form-control"> <br>
+<!-- >>>>>>> 816dd601bc18c801f71b21dff8d2b07d7e4eca46 -->
+
+            <label for="Visibility">Visibility:</label><br>
+            <select id="visibility" name="visibility" required>
+                <option value="Private" hidden>Private</option>
+                <option value="Private">Private</option>
+             </select><br><br>
+
+            <label for="Unlisted">Unlisted:</label>
+            <select id="unlisted" name="unlisted">
+                <option value="{{ post.unlisted }}" hidden>{{ post.unlisted }}</option>
+                <option value="False">False</option>
+                <option value="True">True</option>
+             </select><br><br>
+
+            <label for="ContentType">Content Type:</label><br>
+            <select id="contentType" name="contentType" required>
+                <option value="{{ post.contentType }}" hidden>{{ post.contentType }}</option>
+                <option value="text/markdown">text/markdown</option>
+                <option value="text/plain">text/plain</option>
+                <option value="application/app">application/app</option>
+                <option value="image/png">image/png</option>
+                <option value="image/jpeg">image/jpeg</option>
+                <option value="HTML">HTML</option>
+             </select><br><br>
+
+            <label for="Text">Text:</label><br>
+            <textarea id="text" type="text" name="text" class="form-control">{{ post.content }}</textarea><br>
+
+            <label for="file">File:</label><br>
+            <input type="file" name="file" id="file"><br/><br/>
+
+            <input type="submit" value="Submit" class="btn btn-primary">
+            <a href="{% url 'posts-manage' %}" class="btn btn-outline-danger">Cancel</a>
+        </form>
+    {% else %}
+        <h3><a href={% url 'login' %} >Login</a></h3>
+    {% endif %}
+{% endblock %}
