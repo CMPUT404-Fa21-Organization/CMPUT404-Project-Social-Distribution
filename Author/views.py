@@ -103,6 +103,7 @@ def MyInboxView(request):
             post["isImage"] = True
             imgdata = post["content"][2:-1]
             post["image"] = imgdata
+        post["categories"] = ' '.join(post["categories"])
 
     
     
