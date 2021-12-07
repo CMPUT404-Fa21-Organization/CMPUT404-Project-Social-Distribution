@@ -11,7 +11,16 @@
         {% for j in i.items %}
         <div class = "card">
             <div class="card-body">
-                <a href = "{{j.url}}">{{j.displayName}}</a>
+
+                <form method="POST" action='detail/'>
+                    {% csrf_token %}
+                    <input id="foreignID" type="hidden" name="foreignID" class="form-control" value="{{j.id}}" >
+                    <input id="foreignDisplay" type="hidden" name="foreignDisplay" class="form-control" value="{{j.displayName}}" >
+                    <input id="foreigngithub" type="hidden" name="foreigngithub" class="form-control" value="{{j.github}}" >
+                    
+                    <button type="submit" class="btn btn-link">{{j.displayName}}</button>
+
+                </form>
                 
             </div>
             

@@ -195,6 +195,7 @@ def sendGETrequest(url):
     url = url +"/"
     url = url.replace("//", "/")
     url = url.replace("http", "https")
+    url = url.replace("httpss", "https")
     url = url.replace("ss:", "s:")
     url = url.replace(":/", "://")
 
@@ -350,11 +351,11 @@ def processLikes(request, posts):
                     if code - 300 < 0:
                         if "items" in likes:
                             for like in likes["items"]:
-                                if post["id"] == like["object"]:
+                                if request.user.url == like["author"]["url"]:
                                     post["userLike"] = True
                         else:
                             for like in likes:
-                                if post["id"] == like["object"]:
+                                if request.user.url == like["author"]["url"]:
                                     post["userLike"] = True
 
                 except MissingSchema:
@@ -365,11 +366,11 @@ def processLikes(request, posts):
                         if code - 300 < 0:
                             if "items" in likes:
                                 for like in likes["items"]:
-                                    if post["origin"] == like["object"]:
+                                    if request.user.url == like["author"]["url"]:
                                         post["userLike"] = True
                             else:
                                 for like in likes:
-                                    if post["origin"] == like["object"]:
+                                    if request.user.url == like["author"]["url"]:
                                         post["userLike"] = True
 
                     except:
@@ -455,45 +456,8 @@ def newPost(request, auth_pk=None):
         posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, categories=categories.split(' '),visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
         posts.save()
 
-        # print(visibility) # Public, Friends
         if visibility == 'Friends':
-            # get authors followers list
-            followers = Followers.objects.get(auth_pk=request.user).items.all() 
-            for follower in followers:
-                if request.user in Followers.objects.get(auth_pk=follower).items.all():
-                    if follower.host == origin: # send to local friends
-                        inbox = Inbox.objects.get(auth_pk=follower)
-                        post = Post.objects.get(pk = uid)
-                        inbox.iPosts.add(post)
-                        print(inbox.iPosts.all())
-                        print("sent to LOCAL:", follower.email)
-                # # else: # send to remote friends
-                # #     # print("sent to REMOTE:", follower.email)
-                # #     furl = follower.url + "/inbox/"
-                # #     print('Foreign url:', furl)
-                # #     # url = settings.SERVER_URL + "/"
-                # #     # print('Modified url:', url)
-                #     hurl = 'http://127.0.0.1:8000/api/author/fdc322cacb4e44bda1ad02acc9d5300c/inbox/'
-
-                #     postSerialized = PostSerializer(posts)
-                #     # print(postSerialized.data)
-                #     # print(json.dumps(posts))
-                #     sendPOSTrequest(hurl, postSerialized.data)
-
-        # # if visibility != 'Public':
-        # #     postDistributer(request, visibility, origin, posts)
-
-        # if visibility == 'Friends':
-        #     # get authors followers list
-        #     followers = Followers.objects.get(auth_pk=request.user).items.all() 
-        #     for follower in followers:
-        #         # check if author is also following their (local) followers
-        #         if follower.host == origin: # local followers
-        #             if request.user in Followers.objects.get(auth_pk=follower).items.all():
-        #                 inbox = Inbox.objects.get(auth_pk=follower)
-        #                 inbox.iPosts.add(posts)
-        #                 print("sent to LOCAL:", follower.email)
-            
+            postDistributor(request, visibility, origin, uid)
 
         return redirect(ManagePostsList)
     else:
@@ -503,36 +467,59 @@ def newPost(request, auth_pk=None):
         context = {'form': form, 'user':request.user, 'add': True}
         return render(request, "LinkedSpace/Posts/add_post.html", context)
 
-# """
-#     Helper function to distribute posts to Inboxes corresponding
-#     to the post preferences set by the Author of the post.
-# """
-# def postDistributer(req, visibility, origin, post):
-#     """Case: Public Post --> do nothing"""
-#     """Case: Followers Post --> (?)"""
-#     """Case: Friends Post"""
-#     """Case: Private Post"""
-#     if visibility == 'Friends':
-#         # get authors followers list
-#         followers = Followers.objects.get(auth_pk=req.user).items.all() 
-#         for follower in followers:
-#             # check if author is also following their (local) followers
-#             if follower.host == origin: # local followers
-#                 if req.user in Followers.objects.get(auth_pk=follower).items.all():
-#                     inbox = Inbox.objects.get(auth_pk=follower)
-#                     inbox.iPosts.add(post)
-#                     print("sent to LOCAL:", follower.email)
-        # else: # check if author is also following their (remote) follower
-        #     # following = sendGETrequest(follower.host)
-        #     # if req.user in following: # check if author is also following their (foreign) followers
-        #     #     furl = follower.url + "/inbox/"
-        #     #     print('Foreign url:', furl)
-        #     #     # url = settings.SERVER_URL + "/"
-        #     #     # print('Modified url:', url)
-        #     #     # hurl = 'http://127.0.0.1:8000/api/author/fdc322cacb4e44bda1ad02acc9d5300c/inbox/'
+"""
+    Helper function to distribute posts to Inboxes corresponding
+    to the post preferences set by the Author of the post.
+"""
+def postDistributor(req, visibility, origin, uid, to_user=None):
 
-        #     #     postSerialized = PostSerializer(post)
-        #     #     sendPOSTrequest(furl, postSerialized.data)
+    post = Post.objects.get(pk = uid)
+
+    if visibility == 'Friends':
+        # get authors followers list
+        followers = Followers.objects.get(auth_pk=req.user).items.all() 
+        for follower in followers:
+            if req.user in Followers.objects.get(auth_pk=follower).items.all():
+                if follower.host == origin: # send to local friends
+                    inbox = Inbox.objects.get(auth_pk=follower)
+                    
+                    inbox.iPosts.add(post)
+                    # print(inbox.iPosts.all())
+                    # print("sent to LOCAL:", follower.email)
+                else: # check if author is following foreign authors
+
+                    follow_url = follower.id + "/followers/" + req.user.auth_pk
+                    # follow_url = "http://127.0.0.1:8000/author/7fcd83f088a941578ab31132f191de56" + "/followers/" + req.user.auth_pk
+                    # print(follow_url)
+                    if sendGETrequest(follow_url): # if author is following foreign author
+                        postSerialized = PostSerializer(post)
+                        inbox_url = follower.id + '/inbox'
+                        # inbox_url = "http://127.0.0.1:8000/author/7fcd83f088a941578ab31132f191de56" + '/inbox'
+                        # print(inbox_url)
+                        sendPOSTrequest(inbox_url, postSerialized.data)
+                        # print("sent to FOREIGN:", follower.email)
+
+
+    if visibility == 'Private':
+        to_author = Author.objects.get(pk=to_user)
+        if to_author.host == origin: # send to local author inbox
+            inbox = Inbox.objects.get(auth_pk=to_author)
+            
+            inbox.iPosts.add(post)
+            # print(inbox.iPosts.all())
+            # print("sent to LOCAL:", to_author.email)
+        else: # send to foreign author inbox
+            follow_url = follower.id + "/followers/" + req.user.auth_pk
+            # follow_url = "http://127.0.0.1:8000/author/7fcd83f088a941578ab31132f191de56" + "/followers/" + req.user.auth_pk
+            # print(follow_url)
+            if sendGETrequest(follow_url): # if author is following foreign author
+                postSerialized = PostSerializer(post)
+                inbox_url = follower.id + '/inbox'
+                # inbox_url = "http://127.0.0.1:8000/author/7fcd83f088a941578ab31132f191de56" + '/inbox'
+                # print(inbox_url)
+                sendPOSTrequest(inbox_url, postSerialized.data)
+                # print("sent to FOREIGN:", follower.email)
+
 
 def ManagePostsList(request, auth_pk=None):
     posts = list(Post.objects.filter(author_id=request.user).order_by('-published'))
@@ -611,6 +598,54 @@ def edit_Post(request, post_pk, auth_pk=None):
             return render(request, "LinkedSpace/Posts/add_post.html", context)
         else:
             return redirect(ManagePostsList)
+
+def PrivatePostView(request, auth_pk):
+    form = PostForm(request.POST, request.FILES)
+
+    if form.is_valid():
+        title = form.cleaned_data['title']
+        descirption = form.cleaned_data['description']
+        categories = form.cleaned_data['categories']
+        visibility = form.cleaned_data['visibility']
+        # visibility = 'Private'
+        unlisted = form.cleaned_data['unlisted']
+        # unlisted = False
+        contentType = form.cleaned_data['contentType']
+
+        if contentType == "application/app": 
+            content = request.FILES['file'].read() #Inputfile
+        elif contentType in ["image/png", "image/jpeg",]:
+            content = base64.b64encode(request.FILES['file'].read()) #Inputfile
+        else:
+            content = form.cleaned_data["text"]
+
+        source = settings.SERVER_URL + "/"
+        origin = settings.SERVER_URL + "/"
+
+        author_id = request.user
+        id = request.user.id
+        author = json.loads(serializers.serialize('json', Author.objects.filter(id=request.user.id), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
+
+        r_uid = uuid.uuid4().hex
+        uid = re.sub('-', '', r_uid)
+        id = id + '/posts/' + uid + "/"
+        comments_id = id + "comments/"
+
+        published = timezone.now()
+
+        posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, categories=categories.split(' '),visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
+        posts.save()
+
+        vis = 'Private'
+        postDistributor(request, vis, origin, uid, auth_pk)
+
+        return redirect(ManagePostsList)
+    else:
+        # print(form.errors)
+        # print(form.data)
+        form = PostForm()
+        context = {'form': form, 'user':request.user, 'add': True}
+        return render(request, "LinkedSpace/Posts/add_post.html", context)
         
 def GetForeignPosts():
     data = []
@@ -639,7 +674,11 @@ def ForeignPostsFrontend(request):
         postsList = []
 
         for i in range(len(postsList_)):
-            postsList.append(processLikes(request, postsList_[i]['items']))
+            if "items" in postsList_[i]:
+                postsList.append(processLikes(request, postsList_[i]['items']))
+            else:
+                postsList.append(processLikes(request, postsList_[i]))
+
             fr_POSTS += postsList[i]
 
         for b in range(len(fr_POSTS)):
