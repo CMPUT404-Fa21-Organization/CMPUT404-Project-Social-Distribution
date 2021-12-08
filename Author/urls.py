@@ -24,5 +24,6 @@ urlpatterns = [
     path('<auth_pk>/posts/', include('Posts.urls')),
     path('<auth_pk>/', AuthorDetailView, name='author-detail'),
     path('<auth_pk>/inbox/', AuthorInboxViewFrontend, name='author-inbox'),
+    path('<auth_pk>/unfriend/', unfriendLocalAuthor, name='author-unfriend'),
 
 ]
