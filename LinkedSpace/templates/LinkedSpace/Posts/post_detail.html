@@ -15,7 +15,7 @@
                         {% if post.author.displayName != user.displayName %}
                             <a class="btn btn-primary float-right mr-2" href="{% url 'post_share' post_pk %}">Share</a> 
                         {% endif %}
-                        <h4 class="card-title"><a href="{{ post.id }}" style="color: black;">{{ post.title }}</a><span style="font-size:medium"> by <a href="{{post.author.url}}">{{ post.author.displayName }}</a></span></h4>
+                        <h4 class="card-title">{{ post.title }}<span style="font-size:medium"> by <a href="{{post.author.url}}">{{ post.author.displayName }}</a></span></h4>
                     </div>
                         <div class="card-body">
                             <p class="card-text small">Description: {{ post.description }}

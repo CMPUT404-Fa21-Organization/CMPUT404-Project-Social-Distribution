@@ -104,16 +104,39 @@ def PostDetailView(request, post_pk, auth_pk = None):
     # TODO Add logic to check for friend
     if(postObj.visibility.lower() == "public" or user == postObj.author_id):
     
-        # If Content is image
-        
-        post["isImage"] = False
-        if(post["contentType"] == "image/png" or post["contentType"] == "image/jpeg"):
-            post["isImage"] = True
-            imgdata = post["content"][2:-1]
-            post["image"] = imgdata
-        
-        post["categories"] = ' '.join(post["categories"]) # to format categories list for displaying correctly
+        # resolve team 03 image formatting
+        if 'social-dis' in post["id"]:
+            if 'image' in post['contentType']:
+                post["isImage"] = True
+                index = post['content'].index('base64,')
+                imgdata = post["content"][index+7:]
+                post["image"] = imgdata
 
+        # resolve team 15 image formatting
+        if 'undhindled' in post["id"]:
+            if 'image' in post['contentType']:
+                post["isImage"] = True
+                index = post['content'].index('base64,')
+                imgdata = post["content"][index+7:]
+                post["image"] = imgdata
+
+        # resolve team 17 image formatting
+        if 'cmput404f21t17' in post["origin"]:
+            if 'image' in post['contentType']:
+                post["isImage"] = True
+                index = post['content'].index('base64,')
+                imgdata = post["content"][index+7:]
+                post["image"] = imgdata
+
+        if 'linkedspace-staging' in post["id"]:
+            # If Content is image
+            post["isImage"] = False
+            if(post["contentType"] == "image/png" or post["contentType"] == "image/jpeg"):
+                post["isImage"] = True
+                imgdata = post["content"][2:-1]
+                post["image"] = imgdata
+
+        post["categories"] = ' '.join(post["categories"]) # to format categories list for displaying correctly
 
         post = processLikes(request, [post])[0]
 
@@ -276,6 +299,22 @@ def newLike(request, auth_pk = None, post_pk = None):
             }
 
             sendPOSTrequest(url, data)
+
+            try:
+                url = post.id + "/likes/"
+                sendPOSTrequest(url, data)
+
+            except:
+                pass
+
+            try:
+                url= post.origin + "/likes/"
+                sendPOSTrequest(url, data)
+            except:
+                pass
+
+
+
 
         if(request.POST["context"] == "stream"):
             return HttpResponseRedirect(reverse('user-stream-view', kwargs={ 'auth_pk': auth_pk }))
@@ -567,9 +606,9 @@ def edit_Post(request, post_pk, auth_pk=None):
             unlisted = form.cleaned_data['unlisted']
             contentType = form.cleaned_data['contentType']
 
-            if contentType == "application/app": 
+            if contentType == "application/app" and form.cleaned_data["text"] == "": 
                 content = request.FILES['file'].read() #Inputfile
-            elif contentType in ["image/png", "image/jpeg",]:
+            elif contentType in ["image/png", "image/jpeg",] and form.cleaned_data["text"] == "":
                 content = base64.b64encode(request.FILES['file'].read()) #Inputfile
             else:
                 content = form.cleaned_data["text"]
@@ -708,8 +747,8 @@ def ForeignPostsFrontend(request):
                         serializerPost.validated_data["author"] = d["author"]
                         serializerPost.validated_data["author_id"] = Author.objects.get(id__icontains=d["author"]["id"])
                         
-                        if "comments" in d:
-                            serializerPost.validated_data["comments"] = d["comments"]
+                        # if "comments" in d:
+                        #     serializerPost.validated_data["comments"] = d["comments"]
                         
                         serializerPost.validated_data["post_pk"] = d["id"].split("/")[-1]
                         serializerPost.validated_data["id"] = d["id"]
@@ -732,11 +771,11 @@ def ForeignPostsFrontend(request):
                 i['source'] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
                 i['teamID'] = "3/" + i["id"].split("/")[-1]
                 # get comments 
-                comment = requests.get(i['comments'], auth=('socialdistribution_t03','c404t03'))
-                try:
-                    i["allcomments"] = comment.json()['comments']
-                except:
-                    print(comment.status_code)
+                # comment = requests.get(i['comments'], auth=('socialdistribution_t03','c404t03'))
+                # try:
+                #     i["allcomments"] = comment.json()['comments']
+                # except:
+                #     print(comment.status_code)
                 
                 # append into data
                 data.append(i)
@@ -753,13 +792,13 @@ def ForeignPostsFrontend(request):
                 i['source'] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
                 i['teamID'] = "15/" + i["id"].split("/")[-1]
                 # get comments 
-                url = i['comments']
-                comment = requests.get(url, auth=('connectionsuperuser','404connection'))
+                # url = i['comments']
+                # comment = requests.get(url, auth=('connectionsuperuser','404connection'))
                 #if comment.json()['comments']
-                try:
-                    i["allcomments"] = comment.json()['comments']
-                except:
-                    print(comment.status_code)
+                # try:
+                #     i["allcomments"] = comment.json()['comments']
+                # except:
+                #     print(comment.status_code)
                     
                 # append to data
                 data.append(i)
@@ -777,11 +816,11 @@ def ForeignPostsFrontend(request):
                 i['source'] = "https://linkedspace-staging.herokuapp.com/posts/connection/"
                 i['teamID'] = "17/" + i["id"]
                 # get comments
-                comment = requests.get(i['comments'], auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
-                try:
-                    i["allcomments"] = comment.json()
-                except:
-                    print(comment.status_code)
+                # comment = requests.get(i['comments'], auth=('4cbe2def-feaa-4bb7-bce5-09490ebfd71a','123456'))
+                # try:
+                #     i["allcomments"] = comment.json()
+                # except:
+                #     print(comment.status_code)
 
                 data.append(i)
         
@@ -791,6 +830,32 @@ def ForeignPostsFrontend(request):
             page_size = request.GET.get('size')
         else:
             page_size = 5
+
+        for post in data:
+            post["categories"] =  ' '.join(post["categories"])
+            post["fid"] = post["id"]
+            if 'social-dis' in post["id"]:
+                post["author"]["url"] = post["author"]["url"].replace("https://social-dis.herokuapp.com/", "https://linkedspace-staging.herokuapp.com/")
+                post["comments"] = post["comments"].replace("https://social-dis.herokuapp.com/", "https://linkedspace-staging.herokuapp.com/")
+                post["id"] = post["id"].replace("https://social-dis.herokuapp.com/", "https://linkedspace-staging.herokuapp.com/")
+            
+            if 'unhindled' in post["id"]:
+                post["author"]["url"] = post["author"]["url"].replace("https://unhindled.herokuapp.com/", "https://linkedspace-staging.herokuapp.com/")
+                post["comments"] = post["comments"].replace("https://unhindled.herokuapp.com/", "https://linkedspace-staging.herokuapp.com/")
+                post["id"] = post["id"].replace("https://unhindled.herokuapp.com/", "https://linkedspace-staging.herokuapp.com/")
+            
+
+                # http://127.0.0.1:8000/posts/connection/a8134b65-cc8f-4a3d-9473-3e77dc7583bf
+            if 'cmput404f21t17' in post["origin"]:
+                # print("HELLO TEAM 17 POSTS =================")
+                # print(post["author"]["url"])
+                # post["author"]["url"] = "https://linkedspace-staging.herokuapp.com/author/" + post["author"]["id"] + '/posts/' + post["id"]
+                post["author"]["url"] = post["author"]["url"].replace("https://cmput404f21t17.herokuapp.com/service/", "https://linkedspace-staging.herokuapp.com/")
+                post["comments"] = post["comments"].replace("https://cmput404f21t17.herokuapp.com/", "https://linkedspace-staging.herokuapp.com/")
+                # post["id"] = post["id"].replace("https://cmput404f21t17.herokuapp.com/", "https://linkedspace-staging.herokuapp.com/")
+                post["id"] = "https://linkedspace-staging.herokuapp.com/author/" + post["author"]["id"] + '/posts/' + post["id"]
+
+
 
         paginator = Paginator(data, page_size)
         page_obj = paginator.get_page(page_number)

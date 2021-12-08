@@ -13,6 +13,7 @@ from django.contrib.auth import authenticate, login, logout
 from .models import *
 from Author.models import AuthorManager, Author, Followers, Inbox
 from Author.forms import EditAuthorForm
+from django.core.paginator import Paginator
 
 # Create your views here.
 def homeView(request):
@@ -134,6 +135,15 @@ def authorsView(request):
 
     authorObjects = Author.objects.filter(id__icontains = "linkedspace-staging") | Author.objects.filter(id__icontains = "127.0.0.1")
 
-    context = {'Authors':authorObjects}
+    page_number = request.GET.get('page')
+    if 'size' in request.GET:
+        page_size = request.GET.get('size')
+    else:
+        page_size = 10
+
+    paginator = Paginator(authorObjects, page_size)
+    page_obj = paginator.get_page(page_number)
+
+    context = {'Authors':page_obj}
 
     return HttpResponse(render(request, template_name, context),status=200)
