@@ -833,6 +833,7 @@ def ForeignPostsFrontend(request):
 
         for post in data:
             post["categories"] =  ' '.join(post["categories"])
+            post["fid"] = post["id"]
             if 'social-dis' in post["id"]:
                 post["author"]["url"] = post["author"]["url"].replace("https://social-dis.herokuapp.com/", "https://linkedspace-staging.herokuapp.com/")
                 post["comments"] = post["comments"].replace("https://social-dis.herokuapp.com/", "https://linkedspace-staging.herokuapp.com/")
