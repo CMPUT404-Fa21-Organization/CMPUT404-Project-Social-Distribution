@@ -22,6 +22,20 @@
                 <p class="text-muted">Member since<span> {{ user.date_joined }} </span></p>
             </div>
         </div>
+        <br/><br/>
+        <div class="card" style="width: 50rem; margin-top:20px;">
+            <div class="card-header text-black" style="background-color: white;">
+            <h2 class="card-title">Followers</h2>
+            </div>
+            <div class="card-body">
+                {% for f in followers %}
+                <p><b>{{f.displayName}}</b> located at <a href = "{{f.id}}">{{f.id}}</a>
+                    </p>
+                    
+                {% endfor %}
+            </div>
+        </div>
+
         <div class="col-6">
             {% for message in messages %}
                 {% if 'success' in message.extra_tags %}

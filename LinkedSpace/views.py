@@ -27,7 +27,10 @@ def profileView(request):
 
         user = Author.objects.get(email = request.user.email)
         git_username = user.github.replace("http://github.com/", "")
-        context = {'user':user, 'git_username':git_username}
+
+        followers = Followers(auth_pk = user)
+
+        context = {'user':user, 'git_username':git_username, 'followers': followers.items.all()}
         return HttpResponse(render(request, template_name, context),status=200)
 
     else:
