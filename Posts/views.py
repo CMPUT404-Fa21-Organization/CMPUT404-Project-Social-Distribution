@@ -590,9 +590,9 @@ def edit_Post(request, post_pk, auth_pk=None):
             unlisted = form.cleaned_data['unlisted']
             contentType = form.cleaned_data['contentType']
 
-            if contentType == "application/app": 
+            if contentType == "application/app" and form.cleaned_data["text"] == "": 
                 content = request.FILES['file'].read() #Inputfile
-            elif contentType in ["image/png", "image/jpeg",]:
+            elif contentType in ["image/png", "image/jpeg",] and form.cleaned_data["text"] == "":
                 content = base64.b64encode(request.FILES['file'].read()) #Inputfile
             else:
                 content = form.cleaned_data["text"]
