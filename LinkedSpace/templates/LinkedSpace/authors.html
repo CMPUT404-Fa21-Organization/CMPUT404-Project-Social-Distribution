@@ -18,4 +18,26 @@
         <br>
         
     {% endfor %}
+    <br >
+    <nav aria-label="...">
+        <ul class="pagination justify-content-center">
+            {% if Authors.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ Authors.previous_page_number }}">Previous</a></li>
+            {% else %}
+            <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1">Previous</a></li>
+            {% endif %}
+            {% for page in Authors.paginator.page_range %}
+            {% if page == Authors.number %}
+            <li class="page-item active"><span class="page-link">{{ Authors.number }}<span class="sr-only">(current)</span></span></li>
+            {% else %}
+            <li class="page-item"><a class="page-link" href="?page={{ page }}">{{ page }}</a></li>
+            {% endif %}
+            {% endfor %}
+            {% if Authors.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ Authors.next_page_number }}">Next</a></li>
+            {% else %}
+            <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
 {% endblock %}

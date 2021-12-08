@@ -64,20 +64,20 @@
         <br >
         <nav aria-label="...">
             <ul class="pagination justify-content-center">
-                {% if posts.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page={{ posts.previous_page_number }}">Previous</a></li>
+                {% if Posts.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ Posts.previous_page_number }}">Previous</a></li>
                 {% else %}
                 <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1">Previous</a></li>
                 {% endif %}
-                {% for page in posts.paginator.page_range %}
-                {% if page == posts.number %}
-                <li class="page-item active"><span class="page-link">{{ posts.number }}<span class="sr-only">(current)</span></span></li>
+                {% for page in Posts.paginator.page_range %}
+                {% if page == Posts.number %}
+                <li class="page-item active"><span class="page-link">{{ Posts.number }}<span class="sr-only">(current)</span></span></li>
                 {% else %}
                 <li class="page-item"><a class="page-link" href="?page={{ page }}">{{ page }}</a></li>
                 {% endif %}
                 {% endfor %}
-                {% if posts.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ posts.next_page_number }}">Next</a></li>
+                {% if Posts.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ Posts.next_page_number }}">Next</a></li>
                 {% else %}
                 <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1">Next</a></li>
                 {% endif %}
