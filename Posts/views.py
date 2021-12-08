@@ -300,6 +300,22 @@ def newLike(request, auth_pk = None, post_pk = None):
 
             sendPOSTrequest(url, data)
 
+            try:
+                url = post.id + "/likes/"
+                sendPOSTrequest(url, data)
+
+            except:
+                pass
+
+            try:
+                url= post.origin + "/likes/"
+                sendPOSTrequest(url, data)
+            except:
+                pass
+
+
+
+
         if(request.POST["context"] == "stream"):
             return HttpResponseRedirect(reverse('user-stream-view', kwargs={ 'auth_pk': auth_pk }))
         elif(request.POST["context"] == "comments"):
