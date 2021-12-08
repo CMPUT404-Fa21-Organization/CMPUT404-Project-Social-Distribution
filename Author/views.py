@@ -1,7 +1,7 @@
 from django.contrib import auth
 from django.db import connection
-from django.http.response import HttpResponseRedirect, HttpResponseRedirectBase
-from django.shortcuts import render
+from django.http.response import Http404, HttpResponseNotFound, HttpResponseRedirect, HttpResponseRedirectBase
+from django.shortcuts import redirect, render
 from CMPUT404Project import settings
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
@@ -583,3 +583,22 @@ def followForeignAuthor(request):
 
             
         return HttpResponse(render(template_name='LinkedSpace/home.html', request=request), status = 200)
+
+def unfriendLocalAuthor(request, auth_pk):
+    if request.method == "POST":
+
+        current_user = request.user
+        followersObj = Followers.objects.get(auth_pk = auth_pk)
+        
+
+        foreign_author = Author.objects.get(pk = current_user.pk)
+ 
+        if foreign_author in followersObj.items.all():
+            followersObj.items.remove(foreign_author)
+            HttpResponse(status = 200)
+            return redirect('/')
+
+        else:
+            return HttpResponseNotFound('<h1>Follower does not exist.</h1><br/>Go <a href = "/">Home</a>')
+
+        
