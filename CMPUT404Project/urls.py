@@ -32,7 +32,7 @@ urlpatterns = [
     path('authors/connection/', ForeignAuthorsFrontend, name='foreign-authors-view'),
     path('authors/connection/detail/', ForeignAuthorsFrontendDetail, name='foreign-authors-view-detail'),
     path('authors/connection/detail/follow/', followForeignAuthor, name='foreign-authors-follow'),
-    path('authors/connection/detail/unfriend/', followForeignAuthor, name='foreign-authors-unfriend'),
+    path('authors/connection/detail/unfriend/', unfollowForeignAuthor, name='foreign-authors-unfriend'),
     
 
     path('inbox/', MyInboxView, name='author-inbox-frontend'),

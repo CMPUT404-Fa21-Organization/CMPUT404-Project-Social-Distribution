@@ -1,7 +1,7 @@
 from django.contrib import auth
 from django.db import connection
-from django.http.response import HttpResponseRedirect, HttpResponseRedirectBase
-from django.shortcuts import render
+from django.http.response import Http404, HttpResponseNotFound, HttpResponseRedirect, HttpResponseRedirectBase
+from django.shortcuts import redirect, render
 from CMPUT404Project import settings
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
@@ -534,6 +534,7 @@ def GetForeignPosts():
 
 @api_view(['GET',])
 def AuthorsConnection(request, auth_id=None):
+    updateForeignAuthors()
     data = []
 
     team3 = requests.get('https://social-dis.herokuapp.com/authors?size=1000', auth=('socialdistribution_t03','c404t03'))
@@ -552,6 +553,7 @@ def AuthorsConnection(request, auth_id=None):
 
 @api_view(['GET',])
 def ForeignAuthorsFrontend(request):
+    updateForeignAuthors()
     if request.method == 'GET':
         authorList = GetForeignAuthors()
 
@@ -573,13 +575,106 @@ def ForeignAuthorsFrontendDetail(request):
 
 
 def followForeignAuthor(request):
+    updateForeignAuthors()
     if request.method == 'POST':
 
+        if request.user.is_authenticated:
+    
+
+            actor = Author.objects.get(pk = request.user.pk)
+            objectauthor = Author.objects.get(id = request.POST['foreignID'])
+
+            print(actor)
+            print(objectauthor)
+            
+
+            try:
+                followers = Followers(auth_pk = objectauthor)
+                followers.save()
+
+            except:
+                followers = Followers.objects.get(auth_pk = objectauthor)
+
+            if actor not in followers.items.all() and actor != objectauthor:
+                followers.items.add(actor)
+
+            
+            return HttpResponseRedirect('/authors')
+
         # if 'social-dis' in request.POST['foreignID']:
-        #     GETlink = request.POST['foreignID'] + '/followers/' + 
+        #     url = request.POST['foreignID'] + '/inbox/'
+        #     remote_author = requests.get(request.POST['foreignID'], auth=('socialdistribution_t03','c404t03')).json()
+
+        # elif 'unhindled' in request.POST['foreignID']:
+        #     url = 'https://unhindled.herokuapp.com/service/author/' + request.POST['foreignID'].split('/')[4] + '/inbox/'
+        #     autho = 'https://unhindled.herokuapp.com/service/author/' + request.POST['foreignID'].split('/')[4] + '/'
+        #     print(autho)
+        #     remote_author = requests.get(autho, auth=('connectionsuperuser','404connection')).json()
+        
+        # local_author = Author.objects.get(pk = request.user.pk)
+
+        # print(AuthorSerializer(instance=local_author).data)
+        
+        # myobj = {
+        #     "type": "Follow",
+        #     "summary": request.user.displayName + "wants to follow " + request.POST['foreignDisplay'],
+        #     "actor": AuthorSerializer(instance=local_author).data,
+        #     "object": remote_author
+        # }
+
+        # print(myobj)
+
+        # if 'social-dis' in request.POST['foreignID']:
+        #     x = requests.post(url, data = myobj,auth=('socialdistribution_t03','c404t03'))
+        #     print(x.status_code)
+
+        # elif 'unhindled' in request.POST['foreignID']:
+        #     x = requests.post(url, data = myobj,auth=('connectionsuperuser','404connection'))
+        #     print(x.status_code)
+
 
 
 
 
             
         return HttpResponse(render(template_name='LinkedSpace/home.html', request=request), status = 200)
+
+def unfriendLocalAuthor(request, auth_pk):
+    if request.method == "POST":
+
+        current_user = request.user
+        followersObj = Followers.objects.get(auth_pk = auth_pk)
+        
+
+        foreign_author = Author.objects.get(pk = current_user.pk)
+ 
+        if foreign_author in followersObj.items.all():
+            followersObj.items.remove(foreign_author)
+            HttpResponse(status = 200)
+            return redirect('/')
+
+        else:
+            return HttpResponseNotFound('<h1>Follower does not exist.</h1><br/>Go <a href = "/">Home</a>')
+
+def unfollowForeignAuthor(request):
+    if request.method == "POST":
+    
+        current_user = request.user
+        remote_user = Author.objects.get(id = request.POST['foreignID'])
+
+        try:
+            followersObj = Followers.objects.get(auth_pk = remote_user)
+        except:
+            followersObj = Followers(auth_pk = remote_user)
+            followersObj.save()
+        
+
+        foreign_author = Author.objects.get(pk = current_user.pk)
+ 
+        if foreign_author in followersObj.items.all():
+            followersObj.items.remove(foreign_author)
+            HttpResponse(status = 200)
+            return redirect('/')
+
+        else:
+            return HttpResponseNotFound('<h1>Follower does not exist.</h1><br/>Go <a href = "/">Home</a>')

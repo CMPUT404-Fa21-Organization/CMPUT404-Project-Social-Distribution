@@ -20,15 +20,13 @@
                 <form method="POST" action='follow/' style = 'display: inline'>
                     {% csrf_token %}
                     <input id="foreignID" type="hidden" name="foreignID" class="form-control" value="{{ foreignID }}" >
+                    <input id="foreignDisplay" type="hidden" name="foreignDisplay" class="form-control" value="{{ foreignDisplay }}" >
                     <button type="submit" class="btn btn-primary">Follow</button>
                 </form> 
 
                 <form method="POST" action='unfriend/' style = 'display: inline; float:right;'>
                     {% csrf_token %}
-                    <input id="frontend" type="hidden" name="frontend" class="form-control" value="yes" >
-                    <input id="type" type="hidden" name="type" class="form-control" value="follow" >
-                    <input id="actor" type="hidden" name="actor" class="form-control" value="{{ actor.id }}" >
-                    <input id="object" type="hidden" name="object" class="form-control" value="{{ object.id }}" >
+                    <input id="foreignID" type="hidden" name="foreignID" class="form-control" value="{{ foreignID }}" >
                     <button type="submit" class="btn btn-danger">Unfriend</button>
                 </form> 
             </div>
