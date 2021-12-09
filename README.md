@@ -6,6 +6,7 @@
 * mparasha
 * poulomi
 * xinjian
+* bholm
 
 ## Description of Project
 
@@ -43,6 +44,7 @@ Can be found on [Wiki -> API Documentation](https://github.com/CMPUT404-Fa21-Org
 * FriendRequest
 * Inbox
 * Post
+* Comment
 
 ## Architecture
 
