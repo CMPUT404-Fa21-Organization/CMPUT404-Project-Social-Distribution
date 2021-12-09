@@ -16,7 +16,7 @@ class PostForm(forms.Form):
                     )
     contentType = forms.CharField(max_length=20, required=True,
             widget=forms.Select(choices=content_type, attrs={'class':'dropdown-item', 'style':'width:20%; background-color:#ededed;'}))
-    text = forms.CharField(required=False, widget= forms.Textarea)
+    text = forms.CharField(required=False, widget=forms.Textarea)
     file = forms.FileField(required=False)
 
 

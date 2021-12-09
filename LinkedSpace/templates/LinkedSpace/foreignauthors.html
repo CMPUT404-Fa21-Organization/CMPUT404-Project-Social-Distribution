@@ -1,0 +1,35 @@
+{% extends './base.html' %}
+
+{% block title %}
+    Authors
+{% endblock %}
+
+{% block content %}
+    <h1>Welcome to Linked Space Foreign Authors</h1>
+
+    {% for i in Foreigners %}
+        {% for j in i.items %}
+        <div class = "card">
+            <div class="card-body">
+
+                <form method="POST" action='detail/'>
+                    {% csrf_token %}
+                    <input id="foreignID" type="hidden" name="foreignID" class="form-control" value="{{j.id}}" >
+                    <input id="foreignDisplay" type="hidden" name="foreignDisplay" class="form-control" value="{{j.displayName}}" >
+                    <input id="foreigngithub" type="hidden" name="foreigngithub" class="form-control" value="{{j.github}}" >
+                    
+                    <button type="submit" class="btn btn-link">{{j.displayName}}</button>
+
+                </form>
+                
+            </div>
+            
+        </div>
+        <br>
+
+        
+        
+        {% endfor %}
+        
+    {% endfor %}
+{% endblock %}

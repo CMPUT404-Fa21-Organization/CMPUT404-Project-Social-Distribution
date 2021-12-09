@@ -1,0 +1,36 @@
+{% extends './base.html' %}
+
+{% block title %}
+    Edit Profile
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <form method="POST" action="">
+        {% csrf_token %}
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="card" style="width: 50rem">
+                        <div class="card-header text-black" style="background-color: white;">
+                            <a href="{% url 'author-detail' %}" class="btn btn-outline-danger btn-med float-right">Cancel</a>
+                            <button class="btn btn-primary btn-med float-right mr-2" type="submit">Save</button>
+                            <h2 class="card-title">Edit Profile</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <h5 for="displayName" class="label label-default">Display Name</h5>
+                                <input type="text" class="form-control" name="displayName" value="{{ displayName }}"> <br >
+                            
+                                <h5 for="email" class="label label-default">Email</h5>
+                                <input type="email" class="form-control" name="email" value="{{ email }}"> <br >
+                            
+                                <h5 for="github" class="label label-default">GitHub</h5>
+                                <input type="text" class="form-control" name="github" value="{{ github_username }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </form>
+</div>
+{% endblock %}

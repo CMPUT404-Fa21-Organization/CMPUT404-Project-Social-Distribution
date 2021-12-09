@@ -112,6 +112,14 @@ class FriendRequestSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return FriendRequest.objects.create(**validated_data)
 
+class FollowersSerializer(serializers.ModelSerializer):
+    items = AuthorSerializer(read_only=True, many=True)
+    class Meta:
+        model = Author
+        fields = (
+            'type',
+            'items'
+        )
 
 class InboxSerializer(serializers.ModelSerializer):
     iPosts = PostSerializer(read_only=True, many=True)
@@ -128,17 +136,3 @@ class InboxSerializer(serializers.ModelSerializer):
             'iFollows',
             'items'
         )
-        
-# class InboxPostSerializer(serializers.ModelSerializer):
-#     items = PostSerializer()
-#     class Meta:
-#         model = Inbox
-#         fields = (
-#             'author',
-#             'type',
-#             'items',
-#         )
-#         extra_kwargs = { # items is the only writeable field
-#             'author': {'read_only': True},
-#             'type': {'read_only': True}
-#         }

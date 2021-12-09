@@ -1,14 +1,17 @@
-from django.http import JsonResponse, HttpResponse
-from django.views.generic.list import ListView
-from django.shortcuts import render
-from rest_framework.response import Response
+from django.conf import settings
+from django.core import serializers
+from django.utils import timezone
+from django.shortcuts import redirect, render
+from Posts.models import Post, Author
 import requests
 import json
+import uuid
+import re
 from rest_framework import status
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view
-from rest_framework.exceptions import NotFound
 from .serializers import ActivitySerializer
+from django.core.paginator import Paginator
 
 # https://raybesiga.com/basic-django-app-github-api/
 # https://docs.github.com/en/rest/reference/activity
@@ -59,8 +62,17 @@ def GithubEventsView(request):
                     }
                     activities.append(event_object)
 
-            serializer = ActivitySerializer(activities, many=True)
-            context = {'activities': serializer.data}
+            page_number = request.GET.get('page')
+            if 'size' in request.GET:
+                page_size = request.GET.get('size')
+            else:
+                page_size = 5
+
+            paginator = Paginator(activities, page_size)
+            page_obj = paginator.get_page(page_number)
+
+            serializer = ActivitySerializer(page_obj, many=True)
+            context = {'pages': page_obj, 'activities': serializer.data}
 
             # django REST framework API view
             # return Response(context, status=status.HTTP_200_OK)
@@ -79,8 +91,45 @@ def GithubEventsView(request):
             # return HttpResponse(activities, status=status.HTTP_200_OK)
             # return JsonResponse(context, safe=False, status=status.HTTP_200_OK)
     except Exception as e:
-        # raise NotFound(e)
+        # raise (e)
+        print(e, "==============================")
         return render(request, 'LinkedSpace/GitHub/github_404.html', status=status.HTTP_404_NOT_FOUND)
 
-def gitPost(request):
-    print(request)
+def gitPost(request, event_id):
+    if request.user.is_authenticated:
+        git_url = request.user.github
+        git_username = git_url.replace("http://github.com/", "")
+        response = requests.get(f'https://api.github.com/users/{git_username}/events/public')
+
+        data = response.json() # list
+        for event in data:
+            if event['id'] == event_id:
+                break
+
+        title = "Shared GitHub Activity: " + event['type']
+        descirption = "GitHub event from " + event['created_at']
+        categories = ['GitHub']
+        visibility = 'Public'
+        unlisted = False
+        contentType = 'text/plain'
+        # print(type(event['actor']['display_login']))
+        # print(event["repo"], type(event["repo"]))
+
+        content = event['actor']['display_login'] + " made changes to " + event["repo"]['name']
+        source = settings.SERVER_URL + "/"
+        origin = settings.SERVER_URL + "/"
+
+        author_id = Author.objects.get(pk=request.user.pk)
+        id = author_id.url
+        author = json.loads(serializers.serialize('json', Author.objects.filter(pk=request.user.pk), fields=('type', 'id', 'host', 'displayName', 'url', 'github',)))[0]['fields']
+
+        r_uid = uuid.uuid4().hex
+        uid = re.sub('-', '', r_uid)
+        id = id + '/posts/' + uid + "/"
+        comments_id = id + "comments/"
+
+        published = timezone.now()
+
+        posts = Post(pk=uid, id=id, author_id=author_id, author=author, title=title, source=source, origin=origin, description=descirption, contentType=contentType, count=0, size=10, categories=categories,visibility=visibility, unlisted=unlisted, published=published, content=content, comments=comments_id)
+        posts.save()
+        return redirect(GithubEventsView)

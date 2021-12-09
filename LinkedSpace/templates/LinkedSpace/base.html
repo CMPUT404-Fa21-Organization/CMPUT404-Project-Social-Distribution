@@ -11,7 +11,14 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
         
         <!-- Custom CSS -->
-        <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+        <!-- <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}"> -->
+        <style>
+            .postContent img{
+                max-width: 500pt;;
+                max-height: 200pt;
+            }
+        </style>
+        
         <title>
             {% block title %}
             {% endblock %}
@@ -29,7 +36,16 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href={% url 'authorHome' %}>Authors</a>
+                        <a class="nav-link" href={% url 'authors-view' %}>Authors</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href={% url 'foreign-authors-view' %}>Foreign Authors</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href={% url 'local-posts-view' %}>Local Posts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href={% url 'foreign-posts-view' %}>Foreign Posts</a>
                     </li>
                     {% if request.user.is_authenticated %}
                     <li class="nav-item">

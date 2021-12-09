@@ -5,32 +5,43 @@
 {% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-body">
-        <h2>Profile</h2>
-        <hr>
-        <b>Username:</b><br/>
-        {{ object.displayName }}<br/>
-        <br/>
-        <b>Email:</b><br/>
-        {{ object.email }}<br/>
-        <br/>
-        <b>Github:</b><br/>
-        {{ object.github }}<br/>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="card" style="width: 50rem">
+            <div class="card-body">
+                <a href="{% url 'add_private_post' object.auth_pk %}" class="btn btn-info float-right mr-2">Send Private Post</a>
+                <h2>Profile</h2>
+                <hr>
+                <h5 class="card-text">Display Name</h5>
+                <p class="card-text">{{ object.displayName }}</p>
+                <h5 class="card-text">Email</h5>
+                <p class="card-text">{{ object.email }}</p>
+                <h5 class="card-text">GitHub</h5>
+                <p class="card-text"><a href="{{ object.github }}">{{ git_username }}</a></p>
+                <hr>
+                <div>
+                {% if actor %}
+                <form method="POST" action='inbox/' style = 'display: inline;'>
+                    {% csrf_token %}
+                    <input id="frontend" type="hidden" name="frontend" class="form-control" value="yes" >
+                    <input id="type" type="hidden" name="type" class="form-control" value="follow" >
+                    <input id="actor" type="hidden" name="actor" class="form-control" value="{{ actor.id }}" >
+                    <input id="object" type="hidden" name="object" class="form-control" value="{{ object.id }}" >
+                    <button type="submit" class="btn btn-primary">Follow</button>
+                </form>
+                {% endif %}
+                <a class="btn btn-secondary" href="posts/" style = 'display: inline;'>View Posts</a>
 
-        <hr>
-        {% if actor %}
-        <form method="POST" action='inbox/'>
-            {% csrf_token %}
-            <input id="frontend" type="hidden" name="frontend" class="form-control" value="yes" >
-            <input id="type" type="hidden" name="type" class="form-control" value="follow" >
-            <input id="actor" type="hidden" name="actor" class="form-control" value="{{ actor.id }}" >
-            <input id="object" type="hidden" name="object" class="form-control" value="{{ object.id }}" >
-            <button type="submit" class="btn btn-primary">Send friend request</button>
-        </form>
-        {% endif %}
-
+                <form method="POST" action='unfriend/' style = 'display: inline; float:right;'>
+                    {% csrf_token %}
+                    <input id="frontend" type="hidden" name="frontend" class="form-control" value="yes" >
+                    <button type="submit" class="btn btn-danger">Unfriend</button>
+                </form> 
+            </div>
+            </div>
+        </div>
     </div>
 </div>
+
 
 {% endblock %}

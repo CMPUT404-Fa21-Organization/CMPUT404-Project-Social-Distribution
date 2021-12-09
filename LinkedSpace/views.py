@@ -1,7 +1,7 @@
 from django import forms
 from django.db.models import manager
 from django.shortcuts import redirect, render, HttpResponse, HttpResponseRedirect
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from Author.forms import CreateAuthorForm
 from Author.serializers import *
 from django.urls import reverse
@@ -12,6 +12,8 @@ from Author.serializers import *
 from django.contrib.auth import authenticate, login, logout
 from .models import *
 from Author.models import AuthorManager, Author, Followers, Inbox
+from Author.forms import EditAuthorForm
+from django.core.paginator import Paginator
 
 # Create your views here.
 def homeView(request):
@@ -25,11 +27,48 @@ def profileView(request):
 
         user = Author.objects.get(email = request.user.email)
         git_username = user.github.replace("http://github.com/", "")
-        context = {'user':user, 'git_username':git_username}
+
+        followers = Followers(auth_pk = user)
+
+        context = {'user':user, 'git_username':git_username, 'followers': followers.items.all()}
         return HttpResponse(render(request, template_name, context),status=200)
 
     else:
         return HttpResponse(render(request, 'LinkedSpace/login.html'),status=200)
+
+def profileEdit(request):
+    template_name = 'LinkedSpace/profile_edit.html'
+
+    if request.method == "POST":
+        form = EditAuthorForm(request.POST, instance=request.user)
+
+        if form.is_valid():
+            github_username = form.cleaned_data['github']
+            displayName = form.cleaned_data['displayName']
+            email = form.cleaned_data['email']
+
+            request.user.github = "http://github.com/" + github_username
+            request.user.displayName = displayName
+            request.user.email = email
+
+            form.save()
+            messages.success(request, 'Profile updated successfully.', extra_tags='success')
+            return HttpResponseRedirect('/profile/')
+        else:
+            messages.success(request, 'Profile could not be updated.', extra_tags='failure')
+            return HttpResponseRedirect('/profile/')
+    else:
+        form = EditAuthorForm(instance=request.user)
+        git_url = request.user.github
+        displayName = request.user.displayName
+        email = request.user.email
+
+        gituser = git_url.replace("http://github.com/", "")
+        context = {'form':form, 'github_username':gituser, 'displayName':displayName, 'email':email}
+        
+        return HttpResponse(render(request, template_name, context),status=200)
+    
+    return HttpResponse(render(request, 'LinkedSpace/profile.html'),status=200)
 
 # https://stackoverflow.com/questions/49553511/why-authenticate-return-none-for-inactive-users
 
@@ -93,4 +132,18 @@ def registerView(request):
 
 def authorsView(request):
     template_name = 'LinkedSpace/authors.html'
-    return render(request, template_name)
+
+    authorObjects = Author.objects.filter(id__icontains = "linkedspace-staging") | Author.objects.filter(id__icontains = "127.0.0.1")
+
+    page_number = request.GET.get('page')
+    if 'size' in request.GET:
+        page_size = request.GET.get('size')
+    else:
+        page_size = 10
+
+    paginator = Paginator(authorObjects, page_size)
+    page_obj = paginator.get_page(page_number)
+
+    context = {'Authors':page_obj}
+
+    return HttpResponse(render(request, template_name, context),status=200)
